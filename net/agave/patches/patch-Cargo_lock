@@ -34,3 +34,11 @@ Use path source identities for the four packages fetched by DIST_TUPLE.
  dependencies = [
   "libc",
   "librocksdb-sys",
+@@ -9837,6 +9833,7 @@
+ version = "4.4.1"
+ dependencies = [
+  "assert_matches",
++ "cc",
+  "console 0.16.4",
+  "dialoguer",
+  "hex",

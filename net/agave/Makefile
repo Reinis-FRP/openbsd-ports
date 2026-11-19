@@ -9,12 +9,13 @@ DIST_TUPLE =		github anza-xyz agave v4.4.1 . \
 			5ee1c6ec671d94db14ed9238eb99e59a84555aad ../crossbeam \
 			github anza-xyz rust-rocksdb \
 			4dba80dfe9434e595a971f5b2985ff9ba4fb31e7 ../rust-rocksdb
+REVISION =		0
 CATEGORIES =		net
 
 # Apache-2.0
 PERMIT_PACKAGE =	Yes
 
-WANTLIB +=		${MODCARGO_WANTLIB} hidapi-libusb m usb-1.0 zstd
+WANTLIB +=		${MODCARGO_WANTLIB} hidapi-libusb m usb-1.0 usbhid zstd
 
 MODULES =		devel/cargo
 LIB_DEPENDS =		archivers/zstd \
@@ -32,6 +33,12 @@ MODCARGO_FEATURES =	solana-cli/remote-wallet-libusb \
 			solana-keygen/remote-wallet-libusb
 
 .include "crates.inc"
+
+post-patch:
+	${INSTALL_DATA} ${FILESDIR}/openbsd_ledger.rs ${WRKSRC}/remote-wallet/src/
+	${INSTALL_DATA} ${FILESDIR}/ledger_uhid.c ${WRKSRC}/remote-wallet/
+	${INSTALL_DATA} ${FILESDIR}/remote-wallet-build.rs \
+	    ${WRKSRC}/remote-wallet/build.rs
 
 do-install:
 	${INSTALL_PROGRAM} ${MODCARGO_TARGET_DIR}/release/solana \

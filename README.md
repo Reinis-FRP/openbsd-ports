@@ -85,7 +85,9 @@ doas pkg_add rust cargo-generate-vendor zstd libhidapi libusb1--
 The ports framework reuses matching installed packages. On a clean build,
 Cargo compiles Agave and the Rust crates needed for the two binaries.
 For example, it compiles the `hidapi` bindings and links to the installed
-USB libraries.
+USB libraries. When upgrading this port from 4.4.1 to 4.4.1p0 on a builder
+with an existing Agave work directory, run `make clean` in the port first so
+the new patches are applied. The downloaded distfiles are reusable.
 
 ```sh
 cd /usr/ports/mystuff/net/agave
@@ -137,6 +139,10 @@ doas pkg_add "$signed_pkg"
 sh /usr/ports/mystuff/net/agave/files/smoke-test /usr/local/bin
 ```
 
+On a host with `agave-4.4.1` already installed, use `pkg_add -nr "$signed_pkg"`
+for the dry run and `doas pkg_add -r "$signed_pkg"` for the replacement.
+Check the installed revision with `pkg_info -e agave-4.4.1p0`.
+
 On a host that only installs Agave, `pkg_add` resolves its direct runtime
 dependencies `zstd`, `libhidapi`, and `libusb1`. Rust and
 `cargo-generate-vendor` are build-time tools.
@@ -151,9 +157,38 @@ That setting waives signature verification for packages in that directory.
 Use the signed archive above when moving the package between hosts.
 
 The smoke test prints both versions, generates a temporary keypair, and
-checks a signature with its public key. For a separate Ledger test, attach
-and unlock the device, open its Solana app, and run
-`solana-keygen pubkey usb://ledger` as the user who will use the device.
+checks a signature with its public key.
+
+#### Ledger on OpenBSD
+
+Starting with `agave-4.4.1p0`, both binaries look for the Ledger application
+on native `/dev/uhidN` nodes. They check the USB vendor and product IDs,
+the Ledger HID collection, and the 64-byte input and output report sizes
+before sending a request. The existing libusb discovery path is also enabled.
+
+Unlock the Ledger and open its Solana app. In the latest `dmesg` attachment,
+find the Ledger's interface 0 and follow its `uhidev` parent to the
+`uhidN` child. Unit numbers can change on reconnect. On the tested Nano X
+this was `uhid12`. If that node is missing, substitute the current unit in
+these commands. `MAKEDEV` creates it with root-only permissions.
+
+```sh
+(cd /dev && doas sh MAKEDEV uhid12)
+doas usbhidctl -f /dev/uhid12 -r
+```
+
+The separate package hardware test reads a public key. Run it as a user
+with read and write access to the current Ledger node. For a first test
+with the default node permissions, use the second command.
+
+```sh
+/usr/local/bin/solana-keygen pubkey usb://ledger
+doas /usr/local/bin/solana-keygen pubkey usb://ledger
+```
+
+On the OpenBSD 8.0 release host, a direct native HID configuration request
+to a Nano X returned status `9000` and Solana app version `1.12.1`.
+The hardware test above verifies the installed package separately.
 
 After an OS upgrade, repeat the build with matching ports and dependencies
 and fresh work and package directories. After signing the rebuilt package, use
@@ -167,8 +202,10 @@ and distfile checksums. The two Cargo patches redirect the four Git package
 entries to the extracted archives. Cargo builds both binaries with a private
 Cargo home, the ports vendor directory, and `--frozen`.
 
-Both binaries enable Agave's libusb remote-wallet feature. Their build
-graph uses blstrs and crossbeam-epoch. Cargo also resolves rocksdb and
+Both binaries enable Agave's libusb remote-wallet feature. The OpenBSD
+Ledger code also links base libusbhid to inspect native report descriptors.
+The probe uses the `cc` crate already pinned in the workspace lockfile.
+The build graph uses blstrs and crossbeam-epoch. Cargo also resolves rocksdb and
 librocksdb-sys for the workspace lockfile. Building the two binaries
 requires only their manifests from rust-rocksdb, so the RocksDB and Snappy
 submodule archives are omitted.
@@ -176,7 +213,7 @@ submodule archives are omitted.
 ### Build on the development snapshot
 
 OpenBSD 8.0-current/amd64 GENERIC#156 with Rust 1.99.1 built and packaged
-Agave 4.4.1 from a fresh ports fetch and an empty Cargo home. All 937
+the original agave-4.4.1 package from a fresh ports fetch and an empty Cargo home. All 937
 distfiles passed checksum verification. All 933 registry checksums also
 matched the upstream lockfile. The ports smoke test, fake installation,
 package creation, portcheck, and both library-dependency checks passed.
@@ -188,9 +225,18 @@ The unsigned snapshot package passed a dry-run install with its local
 package directory in `TRUSTED_PKG_PATH`. Plain `pkg_add -n` rejected it.
 A copy signed with a disposable key passed `signify -Vz` verification.
 
-The clean 8.0-release build and installed smoke test remain pending. Run
-the release procedure at the top of this file with the matching 8.0 ports
-tree and packages. The Ledger public-key read requires a physical device.
+Revision p0 also built on GENERIC#156 from a fresh work directory and
+empty Cargo home using the same 937 verified distfiles. The ports test,
+fake, package, portcheck, library checks, and local package dry run passed.
+Both extracted binaries reported 4.4.1 at commit `5bb30402` and linked
+to base libusbhid as well as libhidapi-libusb and libusb. The extracted
+keygen passed the disposable-keypair smoke test. A simulated native HID
+exchange exercised app configuration and the default Solana public-key
+request on the snapshot.
+
+To validate revision p0 on 8.0-release, rebuild from a clean work directory
+with the matching release ports tree and packages, sign and install the new
+archive, then run the installed smoke test and Ledger public-key read above.
 
 #### Prepare the fresh build disk once
 

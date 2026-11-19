@@ -1,0 +1,22 @@
+Discover Ledger application interfaces claimed by uhid(4).
+
+--- remote-wallet/src/remote_wallet.rs.orig
++++ remote-wallet/src/remote_wallet.rs
+@@ -136,6 +136,8 @@
+ 
+         let mut detected_devices = vec![];
+         let mut errors = vec![];
++        #[cfg(target_os = "openbsd")]
++        crate::openbsd_ledger::scan(&self.devices.read(), &mut detected_devices, &mut errors)?;
+         Self::scan_ledger_devices(&usb, &mut detected_devices, &mut errors);
+         Self::scan_trezor_devices(&mut detected_devices, &mut errors);
+         #[cfg(feature = "keystone")]
+@@ -147,7 +149,7 @@
+             return Err(errors[0].clone());
+         }
+ 
+-        Ok(num_curr_devices - num_prev_devices)
++        Ok(num_curr_devices.saturating_sub(num_prev_devices))
+     }
+ 
+     #[cfg(feature = "hidapi")]

@@ -1,0 +1,14 @@
+Build the OpenBSD Ledger descriptor probe using the system USB headers.
+
+--- remote-wallet/Cargo.toml.orig
++++ remote-wallet/Cargo.toml
+@@ -56,6 +56,9 @@
+ ur-registry = { workspace = true, optional = true }
+ uriparse = { workspace = true }
+ 
++[build-dependencies]
++cc = "1"
++
+ [dev-dependencies]
+ assert_matches = { workspace = true }
+ serial_test = { workspace = true }
