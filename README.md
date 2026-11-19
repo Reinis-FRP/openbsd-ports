@@ -156,7 +156,7 @@ sh /usr/ports/mystuff/net/agave/files/smoke-test /usr/local/bin
 
 On a host with an earlier Agave package installed, use `pkg_add -nr "$signed_pkg"`
 for the dry run and `doas pkg_add -r "$signed_pkg"` for the replacement.
-Check the installed revision with `pkg_info -e agave-4.4.1p1`.
+Check the installed revision with `pkg_info -e agave-4.4.1p2`.
 
 On a host that only installs Agave, `pkg_add` resolves its direct runtime
 dependencies `zstd`, `libhidapi`, and `libusb1`. Rust and
@@ -207,11 +207,15 @@ controllers. A separate native probe retried the read-only configuration
 request on the same open handle, received status `9000`, then received the
 32-byte public key with status `9000`. The Solana app version was 1.12.1.
 
-Revision p1 uses a five-second input wait during native discovery. It sends
-the configuration request at most three times on the same handle. It checks
-the public-key reply separately and ignores matching late configuration
-replies within the number of retransmissions. Interactive operations keep
-their original confirmation behavior.
+On the same release host, p1 read the public key on consecutive invocations.
+A trace of a slow read showed two five-second configuration timeouts before
+a reply arrived after the third write.
+
+In p2, native discovery waits one second after each of the first two
+configuration writes and five seconds after the third. All three attempts
+use the same open handle. Discovery sends the public-key request once and
+waits up to five seconds per input report, ignoring matching late
+configuration replies up to the number of retries.
 
 To check reopening on the release host, leave the device connected and the
 Solana app open across both invocations. With default node permissions, run:
@@ -275,7 +279,7 @@ from the archive passed the version checks and keygen passed the disposable
 keypair test. Simulated HID reports covered retries, delayed duplicates,
 silent devices, legacy configuration, and a delayed signing confirmation.
 
-To validate revision p1 on 8.0-release, rebuild from a clean work directory
+To validate revision p2 on 8.0-release, rebuild from a clean work directory
 with the matching release ports tree and packages, sign and install the new
 archive, then run the installed smoke test and consecutive Ledger reads above.
 

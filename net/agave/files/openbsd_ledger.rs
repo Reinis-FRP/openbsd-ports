@@ -49,8 +49,8 @@ impl LedgerDevice {
     }
 }
 
-
 const DISCOVERY_WAIT_MS: i32 = 5000;
+const CONFIGURATION_WAITS_MS: [i32; 3] = [1000, 1000, DISCOVERY_WAIT_MS];
 
 /// Configuration retries may leave extra replies on the ordered HID input pipe.
 /// Consume those replies before accepting the single public-key response.
@@ -68,9 +68,9 @@ impl<'a> Discovery<'a> {
         &mut self,
         mut send: impl FnMut() -> Result<(), RemoteWalletError>,
     ) -> Result<Vec<u8>, RemoteWalletError> {
-        for retries in 0..3 {
+        for (retries, wait_ms) in CONFIGURATION_WAITS_MS.into_iter().enumerate() {
             send()?;
-            if let Some(reply) = self.next_reply()? {
+            if let Some(reply) = self.next_reply(wait_ms)? {
                 self.duplicates.extend(std::iter::repeat_n(reply.clone(), retries));
                 return Ok(reply);
             }
@@ -81,15 +81,15 @@ impl<'a> Discovery<'a> {
     }
 
     pub(crate) fn pubkey_reply(&mut self) -> Result<Vec<u8>, RemoteWalletError> {
-        self.next_reply()?.ok_or_else(|| RemoteWalletError::Hid(
+        self.next_reply(DISCOVERY_WAIT_MS)?.ok_or_else(|| RemoteWalletError::Hid(
             "timed out waiting for the Ledger discovery public key".into(),
         ))
     }
 
-    fn next_reply(&mut self) -> Result<Option<Vec<u8>>, RemoteWalletError> {
+    fn next_reply(&mut self, wait_ms: i32) -> Result<Option<Vec<u8>>, RemoteWalletError> {
         loop {
             // Only this reader consumes frames from the exclusively opened uhid file.
-            match unsafe { agave_ledger_wait(self.file.as_raw_fd(), DISCOVERY_WAIT_MS) } {
+            match unsafe { agave_ledger_wait(self.file.as_raw_fd(), wait_ms) } {
                 -1 => return Err(hid_error(io::Error::last_os_error())),
                 0 => return Ok(None),
                 _ => {}
