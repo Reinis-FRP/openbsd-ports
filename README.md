@@ -3,8 +3,37 @@
 ## Agave 4.4.1 on amd64
 
 Use an amd64 builder running the same OpenBSD release as the installation
-host, with its matching ports tree and packages. Check out this overlay at
-`/usr/ports/mystuff`.
+host, with its matching ports tree and packages.
+
+### Check out the overlay
+
+Once the main ports tree is in place, create the overlay directory if
+`/usr/ports/mystuff` does not yet exist. Run Git as your regular user with
+SSH access to the private repository. The `022` umask makes the checked-out
+port files readable by `_pbuild` and `_pfetch`.
+
+```sh
+doas mkdir -m 0755 /usr/ports/mystuff &&
+    doas chown "$(id -un):$(id -gn)" /usr/ports/mystuff &&
+    (umask 022 && git clone --branch main \
+        git@github.com:Reinis-FRP/openbsd-ports.git /usr/ports/mystuff)
+```
+
+For an existing checkout of this repository, including one restored after
+a ports tree refresh, update it as the same user:
+
+```sh
+(umask 022 && git -C /usr/ports/mystuff pull --ff-only)
+```
+
+Verify the checked-out commit and that the ports framework resolves the
+overlay port as `net/agave`:
+
+```sh
+cd /usr/ports/mystuff/net/agave
+git log -1 --oneline
+make show=PKGPATH
+```
 
 ### Release builder with ports privilege separation
 
