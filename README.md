@@ -74,6 +74,19 @@ directly to the build as your regular user.
 
 ### Build the release package
 
+On the builder, install the dependencies from the official OpenBSD 8.0/amd64
+packages. These include Rust 1.98.1, the version pinned by Agave v4.4.1.
+The trailing `--` selects the standard flavor of `libusb1`.
+
+```sh
+doas pkg_add rust cargo-generate-vendor zstd libhidapi libusb1--
+```
+
+The ports framework reuses matching installed packages. On a clean build,
+Cargo compiles Agave and the Rust crates needed for the two binaries.
+For example, it compiles the `hidapi` bindings and links to the installed
+USB libraries.
+
 ```sh
 cd /usr/ports/mystuff/net/agave
 make fetch
@@ -123,6 +136,10 @@ pkg_add -n "$signed_pkg"
 doas pkg_add "$signed_pkg"
 sh /usr/ports/mystuff/net/agave/files/smoke-test /usr/local/bin
 ```
+
+On a host that only installs Agave, `pkg_add` resolves its direct runtime
+dependencies `zstd`, `libhidapi`, and `libusb1`. Rust and
+`cargo-generate-vendor` are build-time tools.
 
 The last command uses the overlay's smoke-test script. On a host without
 the overlay, copy the script alongside the package and run it with the same
