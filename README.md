@@ -91,9 +91,21 @@ so the new patches are applied. The downloaded distfiles are reusable.
 
 ```sh
 cd /usr/ports/mystuff/net/agave
+sysctl -n hw.ncpuonline
+make show=MAKE_JOBS
+```
+
+This port defaults to one Cargo job unless the builder overrides `MAKE_JOBS`.
+The two commands above show the online CPU count and the configured job limit.
+The Cargo module passes `MAKE_JOBS` to Cargo as `CARGO_BUILD_JOBS`. To use
+the online CPUs, set the limit on the build command as shown below. Use a
+smaller limit such as `MAKE_JOBS=4` to leave resources for other desktop work.
+The parallel desktop build completed Cargo's optimized release phase in 1m 44s.
+
+```sh
 make fetch
 make checksum
-make build
+make MAKE_JOBS="$(sysctl -n hw.ncpuonline)" build
 make test
 make fake
 make port-lib-depends-check
@@ -103,6 +115,9 @@ pkgfile=$(make show=PKGFILE)
 pkg_info -D unsigned -f "$pkgfile"
 tar -tzf "$pkgfile"
 ```
+
+To build and package in one command, use
+`make MAKE_JOBS="$(sysctl -n hw.ncpuonline)" package` from the port directory.
 
 ### Sign and install the release package
 
