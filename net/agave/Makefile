@@ -9,7 +9,7 @@ DIST_TUPLE =		github anza-xyz agave v4.4.1 . \
 			5ee1c6ec671d94db14ed9238eb99e59a84555aad ../crossbeam \
 			github anza-xyz rust-rocksdb \
 			4dba80dfe9434e595a971f5b2985ff9ba4fb31e7 ../rust-rocksdb
-REVISION =		0
+REVISION =		1
 CATEGORIES =		net
 
 # Apache-2.0

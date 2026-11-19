@@ -3,6 +3,8 @@
 #include <sys/ioctl.h>
 #include <dev/usb/usb.h>
 #include <usbhid.h>
+#include <errno.h>
+#include <poll.h>
 #include <string.h>
 
 int
@@ -40,4 +42,18 @@ agave_ledger_product(int fd, uint16_t vendor, char *model, char *serial,
 out:
 	hid_dispose_report_desc(desc);
 	return product;
+}
+
+int
+agave_ledger_wait(int fd, int timeout_ms)
+{
+	struct pollfd pfd = { .fd = fd, .events = POLLIN };
+	int ready = poll(&pfd, 1, timeout_ms);
+
+	if (ready <= 0)
+		return ready;
+	if (pfd.revents & POLLIN)
+		return 1;
+	errno = EIO;
+	return -1;
 }

@@ -1,4 +1,4 @@
-Use the same Ledger framing and wallet operations on uhid(4) and HIDAPI.
+Use native OpenBSD HID for Ledger discovery and bound configuration retries.
 
 --- remote-wallet/src/ledger.rs.orig
 +++ remote-wallet/src/ledger.rs
@@ -45,7 +45,7 @@ Use the same Ledger framing and wallet operations on uhid(4) and HIDAPI.
          Self {
              device,
              pretty_path: String::default(),
-@@ -141,6 +152,18 @@
+@@ -141,6 +152,42 @@
          }
      }
  
@@ -53,6 +53,30 @@ Use the same Ledger framing and wallet operations on uhid(4) and HIDAPI.
 +        &mut self,
 +        mut info: RemoteWalletInfo,
 +    ) -> Result<RemoteWalletInfo, RemoteWalletError> {
++        #[cfg(target_os = "openbsd")]
++        if let LedgerDevice::Uhid(file) = &self.device {
++            let mut discovery = crate::openbsd_ledger::Discovery::new(file);
++            let current = discovery.configuration(|| {
++                self.write(commands::GET_APP_CONFIGURATION, 0, 0, &[], false)
++            })?;
++            let config = Self::configuration_from_reply(Self::parse_reply(current), || {
++                let legacy = discovery.configuration(|| {
++                    self.write(commands::DEPRECATED_GET_APP_CONFIGURATION, 0, 0, &[], true)
++                })?;
++                Self::parse_reply(legacy)
++            })?;
++            self.version = config.firmware_version;
++
++            let path = extend_and_serialize(&DerivationPath::default());
++            self.write(self.pubkey_command(), P1_NON_CONFIRM, 0, &path, self.outdated_app())?;
++            let reply = discovery.pubkey_reply()?;
++            match Self::parse_reply(reply) {
++                Ok(key) => info.pubkey = Self::parse_pubkey(key)?,
++                Err(err) => info.error = Some(err),
++            }
++            return Ok(info);
++        }
++
 +        self.version = self.get_firmware_version()?;
 +        match self.get_pubkey(&DerivationPath::default(), false) {
 +            Ok(key) => info.pubkey = key,
@@ -64,7 +88,66 @@ Use the same Ledger framing and wallet operations on uhid(4) and HIDAPI.
      // Transport Protocol:
      //		* Communication Channel Id		(2 bytes big endian )
      //		* Command Tag				(1 byte)
-@@ -434,20 +457,12 @@
+@@ -281,6 +328,10 @@
+                 break;
+             }
+         }
++        Self::parse_reply(message)
++    }
++
++    fn parse_reply(mut message: Vec<u8>) -> Result<Vec<u8>, RemoteWalletError> {
+         if message.len() < 2 {
+             return Err(RemoteWalletError::Protocol("No status word"));
+         }
+@@ -336,7 +387,17 @@
+     }
+ 
+     fn get_configuration(&self) -> Result<Configuration, RemoteWalletError> {
+-        if let Ok(config) = self._send_apdu(commands::GET_APP_CONFIGURATION, 0, 0, &[], false) {
++        let current = self._send_apdu(commands::GET_APP_CONFIGURATION, 0, 0, &[], false);
++        Self::configuration_from_reply(current, || {
++            self._send_apdu(commands::DEPRECATED_GET_APP_CONFIGURATION, 0, 0, &[], true)
++        })
++    }
++
++    fn configuration_from_reply(
++        current: Result<Vec<u8>, RemoteWalletError>,
++        legacy: impl FnOnce() -> Result<Vec<u8>, RemoteWalletError>,
++    ) -> Result<Configuration, RemoteWalletError> {
++        if let Ok(config) = current {
+             match config.len() {
+                 WALLET_SCREEN_APP_CONFIGURATION_LEN => Ok(Configuration {
+                     settings: LedgerSettings {
+@@ -375,8 +436,7 @@
+                 _ => Err(RemoteWalletError::Protocol("Version packet size mismatch")),
+             }
+         } else {
+-            let config =
+-                self._send_apdu(commands::DEPRECATED_GET_APP_CONFIGURATION, 0, 0, &[], true)?;
++            let config = legacy()?;
+             if config.len() != 4 {
+                 return Err(RemoteWalletError::Protocol("Version packet size mismatch"));
+             }
+@@ -396,6 +456,18 @@
+         }
+     }
+ 
++    fn pubkey_command(&self) -> u8 {
++        if self.outdated_app() {
++            commands::DEPRECATED_GET_PUBKEY
++        } else {
++            commands::GET_PUBKEY
++        }
++    }
++
++    fn parse_pubkey(key: Vec<u8>) -> Result<Pubkey, RemoteWalletError> {
++        Pubkey::try_from(key).map_err(|_| RemoteWalletError::Protocol("Key packet size mismatch"))
++    }
++
+     fn outdated_app(&self) -> bool {
+         self.version < DEPRECATE_VERSION_BEFORE
+     }
+@@ -434,20 +506,12 @@
              .replace(' ', "-");
          let serial = dev_info.serial_number().unwrap_or("Unknown").to_string();
          let host_device_path = dev_info.path().to_string_lossy().to_string();
@@ -87,3 +170,25 @@ Use the same Ledger framing and wallet operations on uhid(4) and HIDAPI.
          })
      }
  
+@@ -459,11 +523,7 @@
+         let derivation_path = extend_and_serialize(derivation_path);
+ 
+         let key = self.send_apdu(
+-            if self.outdated_app() {
+-                commands::DEPRECATED_GET_PUBKEY
+-            } else {
+-                commands::GET_PUBKEY
+-            },
++            self.pubkey_command(),
+             if confirm_key {
+                 P1_CONFIRM
+             } else {
+@@ -472,7 +532,7 @@
+             0,
+             &derivation_path,
+         )?;
+-        Pubkey::try_from(key).map_err(|_| RemoteWalletError::Protocol("Key packet size mismatch"))
++        Self::parse_pubkey(key)
+     }
+ 
+     fn sign_message(

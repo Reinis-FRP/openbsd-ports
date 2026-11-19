@@ -14,6 +14,7 @@ use {
 };
 
 unsafe extern "C" {
+    fn agave_ledger_wait(fd: c_int, timeout_ms: c_int) -> c_int;
     fn agave_ledger_product(
         fd: c_int,
         vendor: u16,
@@ -44,6 +45,68 @@ impl LedgerDevice {
         match self {
             Self::HidApi(device) => Ok(device.read(buf)?),
             Self::Uhid(file) => (&*file).read(buf).map_err(hid_error),
+        }
+    }
+}
+
+
+const DISCOVERY_WAIT_MS: i32 = 5000;
+
+/// Configuration retries may leave extra replies on the ordered HID input pipe.
+/// Consume those replies before accepting the single public-key response.
+pub(crate) struct Discovery<'a> {
+    file: &'a File,
+    duplicates: Vec<Vec<u8>>,
+}
+
+impl<'a> Discovery<'a> {
+    pub(crate) fn new(file: &'a File) -> Self {
+        Self { file, duplicates: Vec::new() }
+    }
+
+    pub(crate) fn configuration(
+        &mut self,
+        mut send: impl FnMut() -> Result<(), RemoteWalletError>,
+    ) -> Result<Vec<u8>, RemoteWalletError> {
+        for retries in 0..3 {
+            send()?;
+            if let Some(reply) = self.next_reply()? {
+                self.duplicates.extend(std::iter::repeat_n(reply.clone(), retries));
+                return Ok(reply);
+            }
+        }
+        Err(RemoteWalletError::Hid(
+            "no Ledger configuration reply after three attempts on the same uhid handle".into(),
+        ))
+    }
+
+    pub(crate) fn pubkey_reply(&mut self) -> Result<Vec<u8>, RemoteWalletError> {
+        self.next_reply()?.ok_or_else(|| RemoteWalletError::Hid(
+            "timed out waiting for the Ledger discovery public key".into(),
+        ))
+    }
+
+    fn next_reply(&mut self) -> Result<Option<Vec<u8>>, RemoteWalletError> {
+        loop {
+            // Only this reader consumes frames from the exclusively opened uhid file.
+            match unsafe { agave_ledger_wait(self.file.as_raw_fd(), DISCOVERY_WAIT_MS) } {
+                -1 => return Err(hid_error(io::Error::last_os_error())),
+                0 => return Ok(None),
+                _ => {}
+            }
+            // Both discovery commands return a single unnumbered 64-byte report.
+            let mut frame = [0; 64];
+            let n = (&*self.file).read(&mut frame).map_err(hid_error)?;
+            let length = u16::from_be_bytes([frame[5], frame[6]]) as usize;
+            if n != frame.len() || frame[..5] != [1, 1, 5, 0, 0] || !(2..=57).contains(&length) {
+                return Err(RemoteWalletError::Protocol("Invalid Ledger discovery report"));
+            }
+            let reply = &frame[7..7 + length];
+            if let Some(i) = self.duplicates.iter().position(|old| old == reply) {
+                self.duplicates.swap_remove(i);
+                continue;
+            }
+            return Ok(Some(reply.to_vec()));
         }
     }
 }

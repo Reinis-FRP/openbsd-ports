@@ -85,9 +85,9 @@ doas pkg_add rust cargo-generate-vendor zstd libhidapi libusb1--
 The ports framework reuses matching installed packages. On a clean build,
 Cargo compiles Agave and the Rust crates needed for the two binaries.
 For example, it compiles the `hidapi` bindings and links to the installed
-USB libraries. When upgrading this port from 4.4.1 to 4.4.1p0 on a builder
-with an existing Agave work directory, run `make clean` in the port first so
-the new patches are applied. The downloaded distfiles are reusable.
+USB libraries. When updating the overlay to a new port revision on a builder
+with an existing Agave work directory, run `make clean` in the port first
+so the new patches are applied. The downloaded distfiles are reusable.
 
 ```sh
 cd /usr/ports/mystuff/net/agave
@@ -139,9 +139,9 @@ doas pkg_add "$signed_pkg"
 sh /usr/ports/mystuff/net/agave/files/smoke-test /usr/local/bin
 ```
 
-On a host with `agave-4.4.1` already installed, use `pkg_add -nr "$signed_pkg"`
+On a host with an earlier Agave package installed, use `pkg_add -nr "$signed_pkg"`
 for the dry run and `doas pkg_add -r "$signed_pkg"` for the replacement.
-Check the installed revision with `pkg_info -e agave-4.4.1p0`.
+Check the installed revision with `pkg_info -e agave-4.4.1p1`.
 
 On a host that only installs Agave, `pkg_add` resolves its direct runtime
 dependencies `zstd`, `libhidapi`, and `libusb1`. Rust and
@@ -186,9 +186,28 @@ with the default node permissions, use the second command.
 doas /usr/local/bin/solana-keygen pubkey usb://ledger
 ```
 
-On the OpenBSD 8.0 release host, a direct native HID configuration request
-to a Nano X returned status `9000` and Solana app version `1.12.1`.
-The hardware test above verifies the installed package separately.
+On 8.0-release, the installed p0 keygen read a Nano X public key after
+attachment and timed out on the next invocation. This occurred on two USB
+controllers. A separate native probe retried the read-only configuration
+request on the same open handle, received status `9000`, then received the
+32-byte public key with status `9000`. The Solana app version was 1.12.1.
+
+Revision p1 uses a five-second input wait during native discovery. It sends
+the configuration request at most three times on the same handle. It checks
+the public-key reply separately and ignores matching late configuration
+replies within the number of retransmissions. Interactive operations keep
+their original confirmation behavior.
+
+To check reopening on the release host, leave the device connected and the
+Solana app open across both invocations. With default node permissions, run:
+
+```sh
+for run in 1 2; do
+    doas timeout -k 2 40 /usr/local/bin/solana-keygen pubkey usb://ledger || break
+done
+```
+
+Both invocations should print the same public key.
 
 After an OS upgrade, repeat the build with matching ports and dependencies
 and fresh work and package directories. After signing the rebuilt package, use
@@ -234,9 +253,16 @@ keygen passed the disposable-keypair smoke test. A simulated native HID
 exchange exercised app configuration and the default Solana public-key
 request on the snapshot.
 
-To validate revision p0 on 8.0-release, rebuild from a clean work directory
+On the same snapshot, p1 passed the frozen build with an empty Cargo home,
+the ports smoke test, fake, package creation, portcheck, both dependency
+checks, and a local package installation dry run. Both binaries extracted
+from the archive passed the version checks and keygen passed the disposable
+keypair test. Simulated HID reports covered retries, delayed duplicates,
+silent devices, legacy configuration, and a delayed signing confirmation.
+
+To validate revision p1 on 8.0-release, rebuild from a clean work directory
 with the matching release ports tree and packages, sign and install the new
-archive, then run the installed smoke test and Ledger public-key read above.
+archive, then run the installed smoke test and consecutive Ledger reads above.
 
 #### Prepare the fresh build disk once
 
