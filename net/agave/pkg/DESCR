@@ -1,0 +1,3 @@
+Agave provides the Solana command-line client and key generation tool.
+Use solana to interact with a Solana cluster and solana-keygen to create
+and verify keypairs. Both programs include hardware-wallet support.

@@ -1,0 +1,36 @@
+Use path source identities for the four packages fetched by DIST_TUPLE.
+
+--- Cargo.lock.orig
++++ Cargo.lock
+@@ -1438,7 +1438,6 @@
+ [[package]]
+ name = "blstrs"
+ version = "0.7.1"
+-source = "git+https://github.com/anza-xyz/blstrs?rev=a1faffa3420bdaf4102425c43f00cdd815d4f145#a1faffa3420bdaf4102425c43f00cdd815d4f145"
+ dependencies = [
+  "blst",
+  "byte-slice-cast",
+@@ -2134,7 +2133,6 @@
+ [[package]]
+ name = "crossbeam-epoch"
+ version = "0.9.20"
+-source = "git+https://github.com/anza-xyz/crossbeam?rev=5ee1c6ec671d94db14ed9238eb99e59a84555aad#5ee1c6ec671d94db14ed9238eb99e59a84555aad"
+ dependencies = [
+  "crossbeam-utils",
+ ]
+@@ -4368,7 +4366,6 @@
+ [[package]]
+ name = "librocksdb-sys"
+ version = "0.17.3+10.4.2"
+-source = "git+https://github.com/anza-xyz/rust-rocksdb?rev=4dba80dfe9434e595a971f5b2985ff9ba4fb31e7#4dba80dfe9434e595a971f5b2985ff9ba4fb31e7"
+ dependencies = [
+  "bindgen",
+  "bzip2-sys",
+@@ -6126,7 +6123,6 @@
+ [[package]]
+ name = "rocksdb"
+ version = "0.24.0"
+-source = "git+https://github.com/anza-xyz/rust-rocksdb?rev=4dba80dfe9434e595a971f5b2985ff9ba4fb31e7#4dba80dfe9434e595a971f5b2985ff9ba4fb31e7"
+ dependencies = [
+  "libc",
+  "librocksdb-sys",

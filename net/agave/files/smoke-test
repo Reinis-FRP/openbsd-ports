@@ -1,0 +1,15 @@
+#!/bin/sh
+# Run against either a build directory or the bin directory from a package.
+set -eu
+bindir=${1:?supply the directory containing solana and solana-keygen}
+"$bindir/solana" --version
+"$bindir/solana-keygen" --version
+
+umask 077
+tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/agave-keygen.XXXXXXXX")
+trap 'rm -f "$tmpdir/keypair.json"; rmdir "$tmpdir"' EXIT
+trap 'exit 1' HUP INT TERM
+keygen=$bindir/solana-keygen
+"$keygen" new --silent --no-bip39-passphrase --outfile "$tmpdir/keypair.json" >/dev/null
+pubkey=$("$keygen" pubkey "$tmpdir/keypair.json")
+"$keygen" verify "$pubkey" "$tmpdir/keypair.json" >/dev/null
