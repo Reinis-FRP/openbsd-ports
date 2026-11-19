@@ -4,8 +4,46 @@
 
 Use an amd64 builder running the same OpenBSD release as the installation
 host, with its matching ports tree and packages. Check out this overlay at
-`/usr/ports/mystuff`. On a fresh builder with ports work and package
-directories set up for your build user, run:
+`/usr/ports/mystuff`.
+
+### Release builder with ports privilege separation
+
+Check the builder's effective settings before changing anything. From
+`/usr/ports/mystuff/net/agave`, run:
+
+```sh
+make show=PORTS_PRIVSEP
+make show=FETCH_USER
+make show=BUILD_USER
+make show=PKGFILE
+```
+
+The documented desktop setup gives `Yes`, `_pfetch`, and `_pbuild` for the
+first three values, using these entries in `/etc/mk.conf`.
+
+```make
+PORTS_PRIVSEP=Yes
+WRKOBJDIR=/usr/obj/ports
+DISTDIR=/usr/distfiles
+PACKAGE_REPOSITORY=/usr/packages
+```
+
+With these paths the package lands in `/usr/packages/amd64/all/`. The
+following `/etc/doas.conf` rules from the desktop notes allow a build user
+in `wheel` to run commands as the two service accounts.
+
+```text
+permit keepenv nopass :wheel as _pbuild
+permit keepenv nopass :wheel as _pfetch
+```
+
+When first enabling privilege separation or moving the ports directories,
+run `cd /usr/ports && doas make fix-permissions` to set their ownership.
+The service accounts also need search permission on parent directories
+and read access to the overlay. On an already configured builder, proceed
+directly to the build as your regular user.
+
+### Build the release package
 
 ```sh
 cd /usr/ports/mystuff/net/agave
@@ -22,13 +60,49 @@ pkg_info -D unsigned -f "$pkgfile"
 tar -tzf "$pkgfile"
 ```
 
-To install the inspected package and verify the installed programs:
+### Sign and install the release package
+
+The ports build above produces an unsigned package. For distribution to
+your release host, use the local package-signing key from your OpenBSD
+desktop setup. If this is the builder's first signing key, generate the pair
+once. `-n` creates a passphrase-free secret key. Keep it on the builder.
 
 ```sh
-doas env TRUSTED_PKG_PATH="${pkgfile%/*}/" PKG_PATH=installpath \
-    pkg_add "${pkgfile##*/}"
-sh files/smoke-test /usr/local/bin
+doas signify -Gns /etc/signify/my-pkg.sec -p /etc/signify/my-pkg.pub
 ```
+
+From the same shell as the build, sign just the Agave archive into a sibling
+`signed` directory. Verify it with the builder's public key.
+
+```sh
+signed_dir="${pkgfile%/*}/../signed"
+doas pkg_sign -s signify2 -s /etc/signify/my-pkg.sec -o "$signed_dir" "$pkgfile"
+signed_pkg="$signed_dir/${pkgfile##*/}"
+signify -Vz -p /etc/signify/my-pkg.pub -x "$signed_pkg" -m /dev/null
+```
+
+On a separate release host, provision the builder's **public** key as
+`/etc/signify/my-pkg.pub` through a trusted channel. Copy the signed archive
+and set `signed_pkg` to its absolute path on that host. If the signing
+builder is also the installation host, the key and variable are already in
+place. Inspect, dry-run, then install with normal signature checks.
+
+```sh
+unset TRUSTED_PKG_PATH
+pkg_info -f "$signed_pkg"
+pkg_add -n "$signed_pkg"
+doas pkg_add "$signed_pkg"
+sh /usr/ports/mystuff/net/agave/files/smoke-test /usr/local/bin
+```
+
+The last command uses the overlay's smoke-test script. On a host without
+the overlay, copy the script alongside the package and run it with the same
+`/usr/local/bin` argument.
+
+For an unsigned installation directly on the builder, the ports framework
+supplies its local package directory as `TRUSTED_PKG_PATH` for `make install`.
+That setting waives signature verification for packages in that directory.
+Use the signed archive above when moving the package between hosts.
 
 The smoke test prints both versions, generates a temporary keypair, and
 checks a signature with its public key. For a separate Ledger test, attach
@@ -36,8 +110,8 @@ and unlock the device, open its Solana app, and run
 `solana-keygen pubkey usb://ledger` as the user who will use the device.
 
 After an OS upgrade, repeat the build with matching ports and dependencies
-and fresh work and package directories. For a same-version replacement, use
-`pkg_add -r -D installed` with the same package directory and filename.
+and fresh work and package directories. After signing the rebuilt package, use
+`doas pkg_add -r -D installed "$signed_pkg"` for a same-version replacement.
 
 ### Source inputs
 
@@ -64,7 +138,9 @@ package creation, portcheck, and both library-dependency checks passed.
 Both binaries extracted from the package reported 4.4.1 at commit
 `5bb30402` and linked directly to libhidapi-libusb and libusb-1.0. The
 packaged keygen created a temporary keypair and verified a signature.
-The snapshot package passed a dry-run install with `pkg_add -n`.
+The unsigned snapshot package passed a dry-run install with its local
+package directory in `TRUSTED_PKG_PATH`. Plain `pkg_add -n` rejected it.
+A copy signed with a disposable key passed `signify -Vz` verification.
 
 The clean 8.0-release build and installed smoke test remain pending. Run
 the release procedure at the top of this file with the matching 8.0 ports
@@ -120,8 +196,10 @@ df -h /tmp/agave-build
 ```
 
 After mounting the scratch volume at `/tmp/agave-build`, run the following
-from this overlay's root on the development VM. A fresh run directory keeps
-the build and distfiles outside the overlay and system ports tree.
+from this overlay's root on the development VM. The tested snapshot reported
+`No` for `make show=PORTS_PRIVSEP`. Its private `mktemp -d` directory is
+accessible only to the build user. On a builder reporting `Yes`, use the
+privilege-separated directories and release build commands above.
 
 ```sh
 overlay=$PWD
