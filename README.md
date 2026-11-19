@@ -226,11 +226,48 @@ for run in 1 2; do
 done
 ```
 
-Both invocations should print the same public key.
+Both invocations should print the same public key. On OpenBSD 8.0-release/amd64
+with p2 and the Nano X, three consecutive reads took 1.03, 3.03, and 3.03 seconds.
 
 After an OS upgrade, repeat the build with matching ports and dependencies
 and fresh work and package directories. After signing the rebuilt package, use
 `doas pkg_add -r -D installed "$signed_pkg"` for a same-version replacement.
+
+##### Verify a Ledger transaction signature offline
+
+On OpenBSD 8.0-release/amd64, `agave-4.4.1p2` passed this test with a
+Nano X running Solana app 1.12.1. Run this command with the app open.
+
+```sh
+doas /usr/local/bin/solana --url http://127.0.0.1:1 --keypair usb://ledger \
+    transfer --sign-only --blockhash 11111111111111111111111111111111 \
+    11111111111111111111111111111112 0
+```
+
+Review the zero-SOL transfer to the address ending in `12` on the Ledger
+and approve it. The dummy blockhash and `--sign-only` keep the test offline.
+Nothing is broadcast and no fee is incurred. Check that your Ledger public
+key appears under `Signers (Pubkey=Signature)`. Agave verifies the signature
+against the transaction message before listing it there.
+[Agave 4.4.1 signature check](https://github.com/anza-xyz/agave/blob/v4.4.1/cli-output/src/cli_output.rs#L2972-L3000)
+
+##### Off-chain message signing limitation
+
+During `solana sign-offchain-message`, the Nano X returned status `6a81`
+(invalid message header) before displaying an approval prompt. The CLI printed 64 Base58 `1` characters. This encodes
+the all-zero signature that Agave substitutes on signing errors. Treat
+that output as a failed signing attempt.
+[Agave signing call](https://github.com/anza-xyz/solana-sdk/blob/dd35877238a7a8ddb181c9b044bfacabfbaa9133/offchain-message/src/lib.rs#L235-L238) ·
+[Signer error handling](https://github.com/anza-xyz/solana-sdk/blob/9cb351204b128eb7d999fd8d92cd926ef97e10bf/signer/src/lib.rs#L125-L129)
+
+The mismatch was reproduced on the snapshot by passing the output of
+Agave 4.4.1’s pinned serializer directly to the Ledger 1.12.1 parser,
+bypassing USB and the port’s HID code. For `OpenBSD Agave Ledger signing test`,
+the parser rejected Agave’s 53-byte message. It accepted the same text
+with the 32-byte application domain, signer count, and signer public key
+that Ledger expects in its header.
+[Agave message format](https://github.com/anza-xyz/solana-sdk/blob/dd35877238a7a8ddb181c9b044bfacabfbaa9133/offchain-message/src/lib.rs#L94-L105) ·
+[Ledger 1.12.1 parser](https://github.com/LedgerHQ/app-solana/blob/7049e41512b2c33a7b7bfc4badfabc9fb35e657d/libsol/parser.c#L162-L182)
 
 ### Source inputs
 
@@ -281,7 +318,8 @@ silent devices, legacy configuration, and a delayed signing confirmation.
 
 To validate revision p2 on 8.0-release, rebuild from a clean work directory
 with the matching release ports tree and packages, sign and install the new
-archive, then run the installed smoke test and consecutive Ledger reads above.
+archive, then run the installed smoke test, consecutive Ledger reads, and the
+offline transaction-signing test above.
 
 #### Prepare the fresh build disk once
 
