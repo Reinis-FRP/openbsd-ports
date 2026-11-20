@@ -1,0 +1,61 @@
+Use OpenBSD futex(2) for the ledger thread pool wait and wake operations.
+
+--- modcargo-crates/atomic-wait-1.1.0/Cargo.toml.orig
++++ modcargo-crates/atomic-wait-1.1.0/Cargo.toml
+@@ -27,7 +27,7 @@
+ license = "BSD-2-Clause"
+ repository = "https://github.com/m-ou-se/atomic-wait"
+ 
+-[target."cfg(any(target_os = \"linux\", target_os = \"android\", target_os = \"freebsd\"))".dependencies.libc]
++[target."cfg(any(target_os = \"linux\", target_os = \"android\", target_os = \"freebsd\", target_os = \"openbsd\"))".dependencies.libc]
+ version = "0.2"
+ 
+ [target."cfg(windows)".dependencies.windows-sys]
+--- modcargo-crates/atomic-wait-1.1.0/src/lib.rs.orig
++++ modcargo-crates/atomic-wait-1.1.0/src/lib.rs
+@@ -19,6 +19,45 @@
+ #[path = "freebsd.rs"]
+ mod platform;
+ 
++#[cfg(target_os = "openbsd")]
++mod platform {
++    use core::{ptr, sync::atomic::AtomicU32};
++
++    pub fn wait(atomic: &AtomicU32, value: u32) {
++        // A mismatch or an interrupt is a permitted spurious return.
++        unsafe {
++            libc::futex(
++                atomic.as_ptr(),
++                libc::FUTEX_WAIT | libc::FUTEX_PRIVATE_FLAG,
++                value as i32,
++                ptr::null(),
++                ptr::null_mut(),
++            );
++        }
++    }
++
++    fn wake(atomic: *const AtomicU32, count: i32) {
++        // FUTEX_WAKE uses the address as a key without dereferencing it.
++        unsafe {
++            libc::futex(
++                atomic.cast_mut().cast(),
++                libc::FUTEX_WAKE | libc::FUTEX_PRIVATE_FLAG,
++                count,
++                ptr::null(),
++                ptr::null_mut(),
++            );
++        }
++    }
++
++    pub fn wake_one(atomic: *const AtomicU32) {
++        wake(atomic, 1);
++    }
++
++    pub fn wake_all(atomic: *const AtomicU32) {
++        wake(atomic, i32::MAX);
++    }
++}
++
+ /// If the value is `value`, wait until woken up.
+ ///
+ /// This function might also return spuriously,
