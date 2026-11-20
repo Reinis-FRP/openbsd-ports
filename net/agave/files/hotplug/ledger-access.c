@@ -11,6 +11,30 @@
 
 int agave_ledger_product(int, uint16_t, char *, char *, size_t);
 
+/* Product IDs in Agave v4.4.1 remote-wallet/src/ledger.rs. */
+static int
+supported_product(int product)
+{
+	static const struct {
+		int legacy, first, last;
+	} models[] = {
+		{ 0x0001, 0x1000, 0x101f }, /* Nano S */
+		{ 0x0004, 0x4000, 0x401f }, /* Nano X */
+		{ 0x0005, 0x5000, 0x501f }, /* Nano S Plus */
+		{ 0x0006, 0x6000, 0x601f }, /* Stax */
+		{ 0x0007, 0x7000, 0x701f }, /* Flex */
+		{ 0x0008, 0x8000, 0x801f }, /* Nano Gen5 */
+	};
+	size_t i;
+
+	for (i = 0; i < sizeof(models) / sizeof(models[0]); i++) {
+		if (product == models[i].legacy ||
+		    (product >= models[i].first && product <= models[i].last))
+			return 1;
+	}
+	return 0;
+}
+
 /* Called for both attach and detach. Reconcile the current device. */
 int
 main(int argc, char **argv)
@@ -21,7 +45,7 @@ main(int argc, char **argv)
 	char model[USB_MAX_STRING_LEN], serial[USB_MAX_STRING_LEN];
 	const char *unit;
 	gid_t group;
-	int fd, rescan;
+	int fd, product, rescan;
 
 	rescan = argc == 4 && strcmp(argv[3], "--rescan") == 0;
 	if (argc != 3 && !rescan)
@@ -66,8 +90,10 @@ main(int argc, char **argv)
 	if (opened.st_dev != st.st_dev || opened.st_ino != st.st_ino ||
 	    !S_ISCHR(opened.st_mode))
 		return 0;
-	if (agave_ledger_product(fd, 0x2c97, model, serial, sizeof(model)) == 0x4000)
+	product = agave_ledger_product(fd, 0x2c97, model, serial, sizeof(model));
+	if (supported_product(product)) {
 		if (fchown(fd, 0, group) == -1 || fchmod(fd, 0660) == -1)
 			err(1, "grant %s", path);
+	}
 	return 0;
 }

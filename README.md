@@ -236,13 +236,16 @@ and fresh work and package directories. After signing the rebuilt package, use
 ##### Run Ledger commands as a regular user
 
 The optional [hotplug helper](net/agave/files/hotplug) grants the `ledgerusb`
-group access to the Nano X application interface (USB ID `2c97:4000`). It
-checks the HID descriptor on the open device. The matching node gets
-`root:ledgerusb` mode `0660` on attach and returns to `root:wheel` mode
-`0600` on detach. The release desktop observed both transitions on `uhid12`.
+group access to the Ledger application interface. It recognizes the Nano S,
+Nano X, Nano S Plus, Stax, Flex, and Nano Gen5 product IDs from Agave 4.4.1.
+It checks vendor ID `2c97`, the model’s product IDs, and the Ledger HID
+collection with 64-byte input and output reports on the open device.
+The matching node gets `root:ledgerusb` mode `0660` on attach and returns
+to `root:wheel` mode `0600` on detach. The Nano X (USB ID `2c97:4000`) is the only model tested
+on release hardware, where both transitions were observed on `uhid12`.
 
 Build as your regular user. Use this block for a first install or to update
-an existing installation with the rescan fix.
+an existing helper after pulling changes to the overlay.
 
 ```sh
 cd /usr/ports/mystuff/net/agave/files
@@ -279,7 +282,8 @@ doas rcctl start hotplugd
 If you previously took ownership of the Ledger node manually, restore
 `root:wheel` and mode `0600` on that node first. To handle devices already
 attached at boot, add `/etc/hotplug/ledger-rescan` to `/etc/rc.local`.
-With the Nano X connected and its Solana app open, run:
+With the Ledger connected and its Solana app open, verify access as your
+regular user.
 
 ```sh
 doas /etc/hotplug/ledger-rescan && solana-keygen pubkey usb://ledger
