@@ -2,7 +2,7 @@
 
 ## Agave 4.4.1 on amd64
 
-The single `agave-4.4.1p3` package installs `solana`, `solana-keygen`, and
+The single `agave-4.4.1p4` package installs `solana`, `solana-keygen`, and
 `solana-test-validator`. The package stem is `agave`.
 
 Use an amd64 builder running the same OpenBSD release as the installation
@@ -161,7 +161,7 @@ sh /usr/ports/mystuff/net/agave/files/smoke-test /usr/local/bin
 
 On a host with an earlier Agave package installed, use `pkg_add -nr "$signed_pkg"`
 for the dry run and `doas pkg_add -r "$signed_pkg"` for the replacement.
-Check the installed revision with `pkg_info -e agave-4.4.1p3`.
+Check the installed revision with `pkg_info -e agave-4.4.1p4`.
 With the signed archive in a trusted package repository on `PKG_PATH`,
 `doas pkg_add agave` installs all three commands. On a release test host
 with p2 installed, `doas pkg_add -u agave` selects the newer revision from
@@ -196,8 +196,9 @@ cd /usr/ports/mystuff
 
 The script creates a disposable ledger and client key, polls
 `solana --url http://127.0.0.1:8899 --commitment processed slot`, and
-prints two increasing slots. It stops the validator and removes its test
-files on exit.
+prints two increasing slots. It requests a 1 SOL airdrop to a new keypair and
+checks that its confirmed balance is exactly 1,000,000,000 lamports. It stops
+the validator and removes the disposable ledger and keys on exit.
 
 Agave v4.4.1 binds JSON RPC (TCP 8899), WebSocket (TCP 8900), and the
 faucet (TCP 9900) to all IPv4 addresses even with `--bind-address 127.0.0.1`.
@@ -442,25 +443,37 @@ first new slot. Raising the ordinary user's soft limit to 12 GiB for the
 test process allowed the same installed binary to advance from slot 0 to
 slot 1 on a fresh ledger in loopback-only routing domain 174.
 
-For p3 on 8.0-release/amd64, use the release build, dependency checks and
-archive inspection above. On a release test host with p2 installed, check
+On the same release desktop, a direct 1 SOL transfer from the p3 local
+ledger's faucet keypair to the configured CLI wallet succeeded. The CLI
+reported 500,000,001 SOL, consistent with the 500,000,000 SOL assigned
+to the default mint wallet at genesis plus the transfer.
+
+To verify p4 on 8.0-release/amd64, use the release build, dependency checks
+and archive inspection above. On a release test host with p3 installed, check
 the starting version, dry-run the replacement, install the release-built
 archive, and test the upgraded binaries:
 
 ```sh
-pkg_info -e agave-4.4.1p2 &&
+pkg_info -e agave-4.4.1p3 &&
     pkg_add -nr "$signed_pkg" &&
     doas pkg_add -r "$signed_pkg" &&
-    pkg_info -e agave-4.4.1p3 &&
+    pkg_info -e agave-4.4.1p4 &&
     sh /usr/ports/mystuff/net/agave/files/smoke-test /usr/local/bin
 ```
 
 Expect one replacement, all three binaries in `/usr/local/bin`, and a
 successful keypair verification. Run the local validator example
-above to verify RPC slot progression. With a Ledger attached, the existing
-hardware checks also exercise the upgraded CLI and keygen.
+above to verify slot progression and the confirmed airdrop balance. With a
+Ledger attached, the hardware checks also exercise the upgraded CLI and keygen.
 
 ### Build on the development snapshot
+
+On 8.0-current/amd64 GENERIC#156, p3 reproduced the CLI airdrop error. Its
+RPC service tried to connect to the faucet at `0.0.0.0:9900` and OpenBSD
+returned `EINVAL`. In p4, RPC connects to `127.0.0.1` on the configured
+faucet port. After upgrading p3 to p4 in a disposable installation, the
+packaged CLI observed slots advance from 0 to 1 and confirmed a balance
+of 1,000,000,000 lamports on a new account after one airdrop.
 
 On 8.0-current/amd64 GENERIC#156 with Rust 1.99.1, p3 passed the frozen
 build, all 938 distfile checksums, fake installation, package creation and

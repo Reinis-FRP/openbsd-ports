@@ -12,7 +12,7 @@ DIST_TUPLE =		github anza-xyz agave v4.4.1 . \
 			github anza-xyz rocksdb \
 			f4e6cd89d61b747834b1687485ca363ebe6b366e \
 			../rust-rocksdb/librocksdb-sys/rocksdb
-REVISION =		3
+REVISION =		4
 CATEGORIES =		net
 
 # Apache-2.0

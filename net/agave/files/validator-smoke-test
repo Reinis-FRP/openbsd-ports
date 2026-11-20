@@ -54,6 +54,21 @@ config=$work/cli.yml
     --bind-address 127.0.0.1 --rpc-port 8899 --log >"$work/validator.log" 2>&1 &
 pid=$!
 
+check_airdrop() {
+    "$bindir/solana-keygen" --config "$config" new --silent --no-bip39-passphrase \
+        --outfile "$work/recipient.json" >/dev/null
+    recipient=$("$bindir/solana-keygen" pubkey "$work/recipient.json")
+    timeout -k 2 60 "$bindir/solana" --config "$config" --url "$url" \
+        --commitment confirmed airdrop 1 "$recipient"
+    balance=$(timeout -k 1 5 "$bindir/solana" --config "$config" --url "$url" \
+        --commitment confirmed balance --lamports "$recipient")
+    if [ "$balance" != "1000000000 lamports" ]; then
+        echo "Unexpected recipient balance after a 1 SOL airdrop: $balance" >&2
+        return 1
+    fi
+    echo "Local faucet credited $balance"
+}
+
 first=
 deadline=$(( $(date +%s) + 180 ))
 while kill -0 "$pid" 2>/dev/null && [ "$(date +%s)" -lt "$deadline" ]; do
@@ -66,6 +81,7 @@ while kill -0 "$pid" 2>/dev/null && [ "$(date +%s)" -lt "$deadline" ]; do
             first=$slot
         elif [ "$slot" -gt "$first" ] && kill -0 "$pid" 2>/dev/null; then
             printf 'Local RPC slots advanced from %s to %s\n' "$first" "$slot"
+            check_airdrop
             exit 0
         fi
     fi
