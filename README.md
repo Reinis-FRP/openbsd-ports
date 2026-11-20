@@ -186,60 +186,30 @@ checks a signature with its public key.
 
 #### Test the packaged local validator
 
-Use a dedicated loopback-only routing domain. In v4.4.1 the faucet,
-JSON RPC and RPC WebSocket listen on wildcard addresses even with
-`--bind-address 127.0.0.1`. The example creates an isolated domain on a
-test host. Check `netstat -R` and `ifconfig -l` first and choose an unused
-domain and loopback number. Run the following as your regular user from
-the overlay root, `/usr/ports/mystuff` in the documented layout. For a
-checkout elsewhere, substitute its root in the `cd` command.
+Run the check as your regular user from the overlay root in the default
+routing domain. The release desktop used a 12 GiB soft data limit.
 
 ```sh
-(
-    set -eu
-    cd /usr/ports/mystuff
-    domain=173
-    user=$(id -un)
-    if ifconfig "lo$domain" >/dev/null 2>&1 ||
-        route -T "$domain" -n show >/dev/null 2>&1; then
-        echo "Select an unused routing domain and loopback number." >&2
-        exit 1
-    fi
-    doas ifconfig "lo$domain" create
-    trap 'doas ifconfig "lo$domain" destroy' EXIT
-    trap 'exit 1' HUP INT TERM
-    doas ifconfig "lo$domain" rdomain "$domain"
-    doas ifconfig "lo$domain" inet 127.0.0.1/8 up
-    doas route -T "$domain" exec doas -u "$user" sh -c '
-        ulimit -Sd 12582912 || exit 1
-        exec sh "$1" /usr/local/bin
-    ' sh "$PWD/net/agave/files/validator-smoke-test"
-)
+cd /usr/ports/mystuff
+(ulimit -Sd 12582912 && sh net/agave/files/validator-smoke-test /usr/local/bin)
 ```
 
-The script generates a temporary client key and CLI configuration, starts
-the packaged validator on a fresh ledger, and polls
-`solana --url http://127.0.0.1:8899 --commitment processed slot`.
-A pass prints two increasing slot numbers. The script stops its child
-and removes the ledger and keys on success or failure. The 12 GiB soft data
-limit applies to the test process and its children. It was sufficient on
-the 16-CPU release desktop. The exact minimum was not measured.
+The script creates a disposable ledger and client key, polls
+`solana --url http://127.0.0.1:8899 --commitment processed slot`, and
+prints two increasing slots. It stops the validator and removes its test
+files on exit.
 
-##### Remove the test routing domain
+Agave v4.4.1 binds JSON RPC (TCP 8899), WebSocket (TCP 8900), and the
+faucet (TCP 9900) to all IPv4 addresses even with `--bind-address 127.0.0.1`.
+This workflow assumes the host firewall blocks unwanted inbound access.
+For Anchor tests, run Anchor from the directory containing `Anchor.toml`.
+It can start the validator there and use outbound RPC to clone accounts.
 
-The block's exit trap destroys the loopback interface. If the shell was
-killed before cleanup, stop any remaining test validator, then run
-`netstat -R` and identify the domain you created. For example, if domain
-174 still contains only the test interface `lo174`, remove it with:
-
-```sh
-doas ifconfig lo174 destroy
-netstat -R
-```
-
-The `Rdomain 174` section and `lo174` should disappear. OpenBSD moves
-the empty routing table 174 to domain 0, where it can remain listed until
-reboot. If the exit trap already removed the domain, cleanup is complete.
+If you previously created a dedicated routing domain for this test,
+`netstat -R` shows its interfaces. For example, if domain 174 still
+contains only your test interface `lo174`, stop the test validator and run
+`doas ifconfig lo174 destroy`. The domain disappears and its empty routing
+table can remain listed under domain 0 until reboot.
 
 #### Ledger on OpenBSD
 
@@ -486,7 +456,7 @@ pkg_info -e agave-4.4.1p2 &&
 ```
 
 Expect one replacement, all three binaries in `/usr/local/bin`, and a
-successful keypair verification. Run the loopback-only validator example
+successful keypair verification. Run the local validator example
 above to verify RPC slot progression. With a Ledger attached, the existing
 hardware checks also exercise the upgraded CLI and keygen.
 

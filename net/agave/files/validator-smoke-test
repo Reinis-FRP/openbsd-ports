@@ -1,15 +1,9 @@
 #!/bin/sh
-# Run as an ordinary user in a dedicated OpenBSD routing domain.
+# Run as an ordinary user against the installed package.
 set -eu
 bindir=$(cd "${1:?supply the package bin directory}" && pwd -P)
-table=$(id -R)
-if [ "$(id -u)" -eq 0 ] || [ "$table" -eq 0 ] ||
-    ! netstat -R | awk -v table="$table" '
-        $1 == "Rdomain" { selected = ($2 == table) }
-        selected && $1 ~ /^Interfaces?:$/ { local_only = (NF == 2 && $2 ~ /^lo[0-9]+$/) }
-        END { exit !local_only }
-    '; then
-    echo "Run as an ordinary user in a dedicated loopback-only routing domain." >&2
+if [ "$(id -u)" -eq 0 ]; then
+    echo "Run the validator smoke test as an ordinary user." >&2
     exit 1
 fi
 

@@ -58,7 +58,7 @@ do-install:
 		${MODCARGO_TARGET_DIR}/release/solana-keygen \
 		${MODCARGO_TARGET_DIR}/release/solana-test-validator ${PREFIX}/bin/
 
-# The RPC test needs a loopback-only routing domain (see README).
+# Run the networked RPC smoke test separately (see README).
 do-test:
 	sh ${FILESDIR}/smoke-test ${MODCARGO_TARGET_DIR}/release
 
