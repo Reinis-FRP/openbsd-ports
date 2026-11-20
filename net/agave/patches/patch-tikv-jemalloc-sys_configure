@@ -1,0 +1,13 @@
+Use POSIX extended regular expressions when validating the Jemalloc version.
+
+--- modcargo-crates/tikv-jemalloc-sys-0.6.1+5.3.0-1-ge13ca993e8ccb9ba9847cc330696e02839f328f7/configure/configure.orig
++++ modcargo-crates/tikv-jemalloc-sys-0.6.1+5.3.0-1-ge13ca993e8ccb9ba9847cc330696e02839f328f7/configure/configure
+@@ -8256,7 +8256,7 @@
+ # Check whether --with-version was given.
+ if test "${with_version+set}" = set; then :
+   withval=$with_version;
+-    echo "${with_version}" | grep '^[0-9]\+\.[0-9]\+\.[0-9]\+-[0-9]\+-g[0-9a-f]\+$' 2>&1 1>/dev/null
++    echo "${with_version}" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+-[0-9]+-g[0-9a-f]+$' 2>&1 1>/dev/null
+     if test $? -eq 0 ; then
+       echo "$with_version" > "${objroot}VERSION"
+     else

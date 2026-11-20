@@ -1,0 +1,23 @@
+OpenBSD has no pthread CPU affinity API. Keep background purging available.
+
+--- modcargo-crates/tikv-jemalloc-sys-0.6.1+5.3.0-1-ge13ca993e8ccb9ba9847cc330696e02839f328f7/jemalloc/src/background_thread.c.orig
++++ modcargo-crates/tikv-jemalloc-sys-0.6.1+5.3.0-1-ge13ca993e8ccb9ba9847cc330696e02839f328f7/jemalloc/src/background_thread.c
+@@ -80,6 +80,10 @@
+ 
+ static inline bool
+ set_current_thread_affinity(int cpu) {
++#ifdef __OpenBSD__
++	/* CPU affinity is unavailable. Keep the background thread unbound. */
++	return true;
++#else
+ #if defined(JEMALLOC_HAVE_SCHED_SETAFFINITY)
+ 	cpu_set_t cpuset;
+ #else
+@@ -109,6 +113,7 @@
+ 	cpuset_destroy(cpuset);
+ #  endif
+ 	return ret != 0;
++#endif
+ #endif
+ }
+ 
