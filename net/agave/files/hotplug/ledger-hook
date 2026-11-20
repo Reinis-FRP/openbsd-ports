@@ -1,0 +1,6 @@
+#!/bin/sh
+case "$1:$2" in
+0:uhid[0-9]*)
+    /etc/hotplug/ledger-access "$1" "$2"
+    ;;
+esac

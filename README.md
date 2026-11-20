@@ -233,6 +233,64 @@ After an OS upgrade, repeat the build with matching ports and dependencies
 and fresh work and package directories. After signing the rebuilt package, use
 `doas pkg_add -r -D installed "$signed_pkg"` for a same-version replacement.
 
+##### Run Ledger commands as a regular user
+
+The optional [hotplug helper](net/agave/files/hotplug) grants the `ledgerusb`
+group access to the Nano X application interface (USB ID `2c97:4000`). It
+checks the HID descriptor on the open device. The matching node gets
+`root:ledgerusb` mode `0660` on attach and returns to `root:wheel` mode
+`0600` on detach. The release desktop observed both transitions on `uhid12`.
+
+Build as your regular user. Use this block for a first install or to update
+an existing installation with the rescan fix.
+
+```sh
+cd /usr/ports/mystuff/net/agave/files
+builddir=$(mktemp -d /tmp/ledger-build.XXXXXXXX)
+cc -Wall -Wextra -Werror -o "$builddir/ledger-access" \
+    hotplug/ledger-access.c ledger_uhid.c -lusbhid &&
+    doas install -o root -g wheel -m 0755 \
+        "$builddir/ledger-access" hotplug/ledger-rescan /etc/hotplug/
+```
+
+For a first install, create the group and add your desktop account. Log
+out and back in, then check that `id -Gn` includes `ledgerusb`.
+
+```sh
+doas groupadd ledgerusb
+doas usermod -G ledgerusb "$(id -un)"
+```
+
+From the same `files` directory, install the sample hook for each missing
+event script. For an existing attach or detach script, keep its current
+actions and add `/etc/hotplug/ledger-access "$1" "$2"` on the event path
+before it exits.
+
+```sh
+for event in attach detach; do
+    if [ ! -e "/etc/hotplug/$event" ]; then
+        doas install -o root -g wheel -m 0755 hotplug/ledger-hook "/etc/hotplug/$event"
+    fi
+done
+doas rcctl enable hotplugd
+doas rcctl start hotplugd
+```
+
+If you previously took ownership of the Ledger node manually, restore
+`root:wheel` and mode `0600` on that node first. To handle devices already
+attached at boot, add `/etc/hotplug/ledger-rescan` to `/etc/rc.local`.
+With the Nano X connected and its Solana app open, run:
+
+```sh
+doas /etc/hotplug/ledger-rescan && solana-keygen pubkey usb://ledger
+```
+
+During a full scan, opening an unrelated, unmanaged HID node can return
+`EIO`, as happened on the desktop with `uhid0`. The rescan skips that node.
+Other reported failures leave the final scan status nonzero after it has
+checked the remaining nodes. Normal attach and detach events still report
+open-time `EIO` on the affected node.
+
 ##### Verify a Ledger transaction signature offline
 
 On OpenBSD 8.0-release/amd64, `agave-4.4.1p2` passed this test with a

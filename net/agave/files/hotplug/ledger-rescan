@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+status=0
+for node in /dev/uhid[0-9]*; do
+    [ -c "$node" ] || continue
+    /etc/hotplug/ledger-access 0 "${node##*/}" --rescan || status=1
+done
+exit "$status"
