@@ -2,6 +2,9 @@
 
 ## Agave 4.4.1 on amd64
 
+The single `agave-4.4.1p3` package installs `solana`, `solana-keygen`, and
+`solana-test-validator`. The package stem is `agave`.
+
 Use an amd64 builder running the same OpenBSD release as the installation
 host, with its matching ports tree and packages.
 
@@ -79,11 +82,14 @@ packages. These include Rust 1.98.1, the version pinned by Agave v4.4.1.
 The trailing `--` selects the standard flavor of `libusb1`.
 
 ```sh
-doas pkg_add rust cargo-generate-vendor zstd libhidapi libusb1--
+doas pkg_add rust cargo-generate-vendor zstd libhidapi libusb1-- gmake protobuf
+# Install the LLVM version selected by the matching ports tree for bindgen.
+llvm_port=/usr/ports/devel/llvm/$(make show=MODCLANG_VERSION)
+doas pkg_add "$(cd "$llvm_port" && make show=FULLPKGNAME)"
 ```
 
 The ports framework reuses matching installed packages. On a clean build,
-Cargo compiles Agave and the Rust crates needed for the two binaries.
+Cargo compiles Agave and the Rust crates needed for all three binaries.
 For example, it compiles the `hidapi` bindings and links to the installed
 USB libraries. When updating the overlay to a new port revision on a builder
 with an existing Agave work directory, run `make clean` in the port first
@@ -100,7 +106,6 @@ The two commands above show the online CPU count and the configured job limit.
 The Cargo module passes `MAKE_JOBS` to Cargo as `CARGO_BUILD_JOBS`. To use
 the online CPUs, set the limit on the build command as shown below. Use a
 smaller limit such as `MAKE_JOBS=4` to leave resources for other desktop work.
-The parallel desktop build completed Cargo's optimized release phase in 1m 44s.
 
 ```sh
 make fetch
@@ -156,11 +161,15 @@ sh /usr/ports/mystuff/net/agave/files/smoke-test /usr/local/bin
 
 On a host with an earlier Agave package installed, use `pkg_add -nr "$signed_pkg"`
 for the dry run and `doas pkg_add -r "$signed_pkg"` for the replacement.
-Check the installed revision with `pkg_info -e agave-4.4.1p2`.
+Check the installed revision with `pkg_info -e agave-4.4.1p3`.
+With the signed archive in a trusted package repository on `PKG_PATH`,
+`doas pkg_add agave` installs all three commands. On a release test host
+with p2 installed, `doas pkg_add -u agave` selects the newer revision from
+that repository and upgrades just the requested package and any required
+dependencies.
 
 On a host that only installs Agave, `pkg_add` resolves its direct runtime
-dependencies `zstd`, `libhidapi`, and `libusb1`. Rust and
-`cargo-generate-vendor` are build-time tools.
+dependencies `zstd`, `libhidapi`, and `libusb1`. Rust, `cargo-generate-vendor`, LLVM, gmake, and protoc are build-time tools.
 
 The last command uses the overlay's smoke-test script. On a host without
 the overlay, copy the script alongside the package and run it with the same
@@ -173,6 +182,42 @@ Use the signed archive above when moving the package between hosts.
 
 The smoke test prints both versions, generates a temporary keypair, and
 checks a signature with its public key.
+
+#### Test the packaged local validator
+
+Use a dedicated loopback-only routing domain. In v4.4.1 the faucet,
+JSON RPC and RPC WebSocket listen on wildcard addresses even with
+`--bind-address 127.0.0.1`. The example creates an isolated domain on a
+test host. Check `netstat -R` and `ifconfig -l` first and choose an unused
+domain and loopback number. Run from the overlay root as your regular user.
+
+```sh
+(
+    set -eu
+    domain=173
+    user=$(id -un)
+    if ifconfig "lo$domain" >/dev/null 2>&1 ||
+        route -T "$domain" -n show >/dev/null 2>&1; then
+        echo "Select an unused routing domain and loopback number." >&2
+        exit 1
+    fi
+    doas ifconfig "lo$domain" create
+    trap 'doas ifconfig "lo$domain" destroy' EXIT
+    trap 'exit 1' HUP INT TERM
+    doas ifconfig "lo$domain" rdomain "$domain"
+    doas ifconfig "lo$domain" inet 127.0.0.1/8 up
+    doas route -T "$domain" exec doas -u "$user" \
+        sh "$PWD/net/agave/files/validator-smoke-test" /usr/local/bin
+)
+```
+
+The script generates a temporary client key and CLI configuration, starts
+the packaged validator on a fresh ledger, and polls
+`solana --url http://127.0.0.1:8899 --commitment processed slot`.
+A pass prints two increasing slot numbers. The script stops its child
+and removes the ledger and keys on success or failure. Destroying the
+interface removes the routing domain. OpenBSD retains the empty routing
+table until reboot.
 
 #### Ledger on OpenBSD
 
@@ -376,16 +421,20 @@ that Ledger expects in its header.
 `net/agave/Makefile` pins Anza's tag and the three Git revisions from its
 workspace lockfile. `crates.inc` and `distinfo` list the registry crates
 and distfile checksums. The two Cargo patches redirect the four Git package
-entries to the extracted archives. Cargo builds both binaries with a private
+entries to the extracted archives. Cargo builds the three binaries with a private
 Cargo home, the ports vendor directory, and `--frozen`.
 
-Both binaries enable Agave's libusb remote-wallet feature. The OpenBSD
+The CLI and keygen enable Agave's libusb remote-wallet feature. The OpenBSD
 Ledger code also links base libusbhid to inspect native report descriptors.
 The probe uses the `cc` crate already pinned in the workspace lockfile.
-The build graph uses blstrs and crossbeam-epoch. Cargo also resolves rocksdb and
-librocksdb-sys for the workspace lockfile. Building the two binaries
-requires only their manifests from rust-rocksdb, so the RocksDB and Snappy
-submodule archives are omitted.
+The validator builds separately with `-p agave-validator --bin solana-test-validator`
+so its features resolve independently of the CLI and keygen. The ledger uses
+the rust-rocksdb wrapper with LZ4 and compiles RocksDB from its checksummed
+gitlink revision `f4e6cd89d61b747834b1687485ca363ebe6b366e`. Snappy is
+disabled in this graph. Replay and the unified scheduler use Jemalloc arenas
+and statistics. The OpenBSD build requests prefixed Jemalloc symbols for Rust
+allocations and keeps libc's allocator available for C allocations. Agave's
+sysctl crate dependency follows its Linux-only network-limit query.
 
 ### Build on the development snapshot
 
@@ -418,10 +467,23 @@ from the archive passed the version checks and keygen passed the disposable
 keypair test. Simulated HID reports covered retries, delayed duplicates,
 silent devices, legacy configuration, and a delayed signing confirmation.
 
-To validate revision p2 on 8.0-release, rebuild from a clean work directory
-with the matching release ports tree and packages, sign and install the new
-archive, then run the installed smoke test, consecutive Ledger reads, and the
-offline transaction-signing test above.
+For p3 on 8.0-release/amd64, use the release build, dependency checks and
+archive inspection above. On a release test host with p2 installed, check
+the starting version, dry-run the replacement, install the release-built
+archive, and test the upgraded binaries:
+
+```sh
+pkg_info -e agave-4.4.1p2 &&
+    pkg_add -nr "$signed_pkg" &&
+    doas pkg_add -r "$signed_pkg" &&
+    pkg_info -e agave-4.4.1p3 &&
+    sh /usr/ports/mystuff/net/agave/files/smoke-test /usr/local/bin
+```
+
+Expect one replacement, all three binaries in `/usr/local/bin`, and a
+successful keypair verification. Run the loopback-only validator example
+above to verify RPC slot progression. With a Ledger attached, the existing
+hardware checks also exercise the upgraded CLI and keygen.
 
 #### Prepare the fresh build disk once
 
@@ -500,6 +562,7 @@ pkgfile=$(m show=PKGFILE)
 pkg_info -D unsigned -f "$pkgfile"
 tar -tzf "$pkgfile"
 mkdir "$buildroot/payload"
-tar -xzf "$pkgfile" -C "$buildroot/payload" bin/solana bin/solana-keygen
+tar -xzf "$pkgfile" -C "$buildroot/payload" \
+    bin/solana bin/solana-keygen bin/solana-test-validator
 sh files/smoke-test "$buildroot/payload/bin"
 ```

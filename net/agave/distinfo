@@ -1,6 +1,7 @@
 SHA256 (anza-xyz-agave-v4.4.1.tar.gz) = wy0IfUP3MJTflEHMd9sReFzdPpBkoQXLjy2sWxDkdOY=
 SHA256 (anza-xyz-blstrs-a1faffa3420bdaf4102425c43f00cdd815d4f145.tar.gz) = Oe+gK2tYX0PHCFgJA1t1BDLPt7xFsFtacPfNfXQ/OcI=
 SHA256 (anza-xyz-crossbeam-5ee1c6ec671d94db14ed9238eb99e59a84555aad.tar.gz) = +y1aeCV1VuPDuV3YfPw7UrSnbBkAtJGmDO3UE2Q9UzA=
+SHA256 (anza-xyz-rocksdb-f4e6cd89d61b747834b1687485ca363ebe6b366e.tar.gz) = XZx/DNZsi6vZxipD+BBappIjvol/fl0uhIGxJktrWhM=
 SHA256 (anza-xyz-rust-rocksdb-4dba80dfe9434e595a971f5b2985ff9ba4fb31e7.tar.gz) = O8++rvZaBLrZpvTe3aRVVckJYqEz1jrrr7ObfYVj1U8=
 SHA256 (cargo/Inflector-0.11.4.tar.gz) = /kOMY0WHBuA0eUQnQ7qubIglZJjmQxcI9t/FIKJlFdM=
 SHA256 (cargo/adler2-2.0.1.tar.gz) = MgEZV5/K2cIYhPXEhh0WF00OBiUGJSZvUP5omDQKvvo=
@@ -938,6 +939,7 @@ SHA256 (cargo/zstd-sys-2.1.0+zstd.1.5.7.tar.gz) = DvCoAn7D7nEwCrO8vNA5P0NKpyuRym
 SIZE (anza-xyz-agave-v4.4.1.tar.gz) = 5549110
 SIZE (anza-xyz-blstrs-a1faffa3420bdaf4102425c43f00cdd815d4f145.tar.gz) = 63973
 SIZE (anza-xyz-crossbeam-5ee1c6ec671d94db14ed9238eb99e59a84555aad.tar.gz) = 275214
+SIZE (anza-xyz-rocksdb-f4e6cd89d61b747834b1687485ca363ebe6b366e.tar.gz) = 13849134
 SIZE (anza-xyz-rust-rocksdb-4dba80dfe9434e595a971f5b2985ff9ba4fb31e7.tar.gz) = 179842
 SIZE (cargo/Inflector-0.11.4.tar.gz) = 17438
 SIZE (cargo/adler2-2.0.1.tar.gz) = 13366

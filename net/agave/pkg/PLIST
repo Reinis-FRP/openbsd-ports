@@ -1,2 +1,3 @@
 @bin bin/solana
 @bin bin/solana-keygen
+@bin bin/solana-test-validator

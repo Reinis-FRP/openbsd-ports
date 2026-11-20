@@ -1,6 +1,6 @@
 ONLY_FOR_ARCHS =	amd64
 
-COMMENT =		Solana command-line client and key generation tool
+COMMENT =		Solana CLI, key generation tool and local test validator
 
 DIST_TUPLE =		github anza-xyz agave v4.4.1 . \
 			github anza-xyz blstrs \
@@ -8,16 +8,25 @@ DIST_TUPLE =		github anza-xyz agave v4.4.1 . \
 			github anza-xyz crossbeam \
 			5ee1c6ec671d94db14ed9238eb99e59a84555aad ../crossbeam \
 			github anza-xyz rust-rocksdb \
-			4dba80dfe9434e595a971f5b2985ff9ba4fb31e7 ../rust-rocksdb
-REVISION =		2
+			4dba80dfe9434e595a971f5b2985ff9ba4fb31e7 ../rust-rocksdb \
+			github anza-xyz rocksdb \
+			f4e6cd89d61b747834b1687485ca363ebe6b366e \
+			../rust-rocksdb/librocksdb-sys/rocksdb
+REVISION =		3
 CATEGORIES =		net
 
 # Apache-2.0
 PERMIT_PACKAGE =	Yes
 
-WANTLIB +=		${MODCARGO_WANTLIB} hidapi-libusb m usb-1.0 usbhid zstd
+WANTLIB +=		${MODCARGO_WANTLIB} c++ crypto hidapi-libusb m ssl \
+			usb-1.0 usbhid zstd
 
-MODULES =		devel/cargo
+MODULES =		devel/cargo lang/clang
+MODCLANG_COMPILER_LINKS = No
+BUILD_DEPENDS +=	devel/gmake devel/protobuf
+MODCARGO_ENV +=		LIBCLANG_PATH=${LOCALBASE}/llvm${MODCLANG_VERSION}/lib \
+			LD_LIBRARY_PATH=${LOCALBASE}/llvm${MODCLANG_VERSION}/lib \
+			PROTOC=${LOCALBASE}/bin/protoc
 LIB_DEPENDS =		archivers/zstd \
 			comms/libhidapi>=0.15.0 \
 			devel/libusb1
@@ -40,11 +49,16 @@ post-patch:
 	${INSTALL_DATA} ${FILESDIR}/remote-wallet-build.rs \
 	    ${WRKSRC}/remote-wallet/build.rs
 
+post-build:
+	${MODCARGO_CARGO_RUN} build --release --frozen \
+	    -p agave-validator --bin solana-test-validator
+
 do-install:
 	${INSTALL_PROGRAM} ${MODCARGO_TARGET_DIR}/release/solana \
-		${MODCARGO_TARGET_DIR}/release/solana-keygen ${PREFIX}/bin/
+		${MODCARGO_TARGET_DIR}/release/solana-keygen \
+		${MODCARGO_TARGET_DIR}/release/solana-test-validator ${PREFIX}/bin/
 
-# CLI dev-dependencies pull in the validator. Exercise the shipped tools.
+# The RPC test needs a loopback-only routing domain (see README).
 do-test:
 	sh ${FILESDIR}/smoke-test ${MODCARGO_TARGET_DIR}/release
 

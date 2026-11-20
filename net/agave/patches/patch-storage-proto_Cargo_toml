@@ -1,0 +1,13 @@
+Use protoc from the OpenBSD protobuf package.
+
+--- storage-proto/Cargo.toml.orig
++++ storage-proto/Cargo.toml
+@@ -46,7 +46,7 @@
+ 
+ # windows users should install the protobuf compiler manually and set the PROTOC
+ # envar to point to the installed binary
+-[target."cfg(not(windows))".build-dependencies]
++[target.'cfg(not(any(windows, target_os = "openbsd")))'.build-dependencies]
+ protobuf-src = { workspace = true }
+ 
+ [dev-dependencies]

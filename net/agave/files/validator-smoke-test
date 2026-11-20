@@ -1,0 +1,81 @@
+#!/bin/sh
+# Run as an ordinary user in a dedicated OpenBSD routing domain.
+set -eu
+bindir=$(cd "${1:?supply the package bin directory}" && pwd -P)
+table=$(id -R)
+if [ "$(id -u)" -eq 0 ] || [ "$table" -eq 0 ] ||
+    ! netstat -R | awk -v table="$table" '
+        $1 == "Rdomain" { selected = ($2 == table) }
+        selected && $1 ~ /^Interfaces?:$/ { local_only = (NF == 2 && $2 ~ /^lo[0-9]+$/) }
+        END { exit !local_only }
+    '; then
+    echo "Run as an ordinary user in a dedicated loopback-only routing domain." >&2
+    exit 1
+fi
+
+url=http://127.0.0.1:8899
+if nc -nz -w 1 127.0.0.1 8899; then
+    echo "The test RPC port is already in use." >&2
+    exit 1
+fi
+
+umask 077
+work=$(mktemp -d "${TMPDIR:-/tmp}/agave-rpc.XXXXXXXX")
+work=$(cd "$work" && pwd -P)
+pid=
+cleanup() {
+    status=$?
+    trap - EXIT
+    trap '' HUP INT TERM
+    if [ -n "$pid" ]; then
+        kill "$pid" 2>/dev/null || :
+        for delay in 1 2 3 4 5; do
+            kill -0 "$pid" 2>/dev/null || break
+            sleep 1
+        done
+        kill -KILL "$pid" 2>/dev/null || :
+        wait "$pid" 2>/dev/null || :
+    fi
+    if [ "$status" -ne 0 ] && [ -f "$work/validator.log" ]; then
+        tail -50 "$work/validator.log" >&2
+    fi
+    find "$work" -depth -delete
+    exit "$status"
+}
+trap cleanup EXIT
+trap 'exit 1' HUP INT TERM
+
+cd "$work"
+ulimit -c 0
+export TMPDIR=$work
+unset SOLANA_METRICS_CONFIG
+export no_proxy=127.0.0.1 NO_PROXY=127.0.0.1
+"$bindir/solana-test-validator" --version
+key=$work/client.json
+config=$work/cli.yml
+"$bindir/solana-keygen" --config "$config" new --silent --no-bip39-passphrase \
+    --outfile "$key" >/dev/null
+"$bindir/solana" --config "$config" config set --url "$url" --keypair "$key" >/dev/null
+"$bindir/solana-test-validator" --config "$config" --ledger "$work/ledger" \
+    --bind-address 127.0.0.1 --rpc-port 8899 --log >"$work/validator.log" 2>&1 &
+pid=$!
+
+first=
+deadline=$(( $(date +%s) + 180 ))
+while kill -0 "$pid" 2>/dev/null && [ "$(date +%s)" -lt "$deadline" ]; do
+    if slot=$(timeout -k 1 4 "$bindir/solana" --config "$config" --url "$url" \
+        --commitment processed slot 2>/dev/null); then
+        case $slot in
+            ''|*[!0-9]*) echo "Invalid slot: $slot" >&2; exit 1 ;;
+        esac
+        if [ -z "$first" ]; then
+            first=$slot
+        elif [ "$slot" -gt "$first" ] && kill -0 "$pid" 2>/dev/null; then
+            printf 'Local RPC slots advanced from %s to %s\n' "$first" "$slot"
+            exit 0
+        fi
+    fi
+    sleep 1
+done
+echo "Validator exited or local slots failed to advance within 180 seconds." >&2
+exit 1
