@@ -251,6 +251,46 @@ key appears under `Signers (Pubkey=Signature)`. Agave verifies the signature
 against the transaction message before listing it there.
 [Agave 4.4.1 signature check](https://github.com/anza-xyz/agave/blob/v4.4.1/cli-output/src/cli_output.rs#L2972-L3000)
 
+##### Verify a transaction that spans two Ledger commands
+
+This offline test uses a dummy nonce account and a temporary software key
+as its nonce authority. The Ledger signs as the sender and fee payer.
+These extra accounts bring the serialized message to 256 bytes. The nonce
+account does not need to exist for `--sign-only`.
+
+```sh
+(
+    set -eu
+    umask 077
+    work=$(mktemp -d /tmp/agave-ledger-tx.XXXXXXXX)
+    trap 'rm -f "$work/authority.json"; rmdir "$work"' EXIT
+    trap 'exit 1' HUP INT TERM
+    /usr/local/bin/solana-keygen new --silent --no-bip39-passphrase \
+        --outfile "$work/authority.json" >/dev/null
+    /usr/local/bin/solana-keygen pubkey "$work/authority.json"
+    doas /usr/local/bin/solana --url http://127.0.0.1:1 --keypair usb://ledger \
+        transfer --sign-only --blockhash 11111111111111111111111111111111 \
+        --nonce 11111111111111111111111111111113 \
+        --nonce-authority "$work/authority.json" \
+        11111111111111111111111111111112 0
+)
+```
+
+Review the zero-SOL transfer to the address ending in `12` on the Nano X.
+Approve once. A pass lists two entries under `Signers (Pubkey=Signature)`,
+one for your Ledger address and one for the temporary authority printed
+before the prompt. Both signatures are verified locally.
+
+On the development snapshot, the packaged CLI signed this message with
+two disposable software keys. A simulated Ledger exchange confirmed that
+Agave sent two signing commands with 255 and 11 payload bytes and that the
+reassembled transaction message matched the CLI output.
+
+On OpenBSD 8.0-release/amd64 with `agave-4.4.1p2` and Solana app 1.12.1,
+the Nano X approved the 256-byte message in one prompt. The CLI listed both
+the Ledger and the temporary nonce authority under `Signers`, confirming
+that both signatures verified locally.
+
 ##### Off-chain message signing limitation
 
 During `solana sign-offchain-message`, the Nano X returned status `6a81`
