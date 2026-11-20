@@ -169,7 +169,8 @@ that repository and upgrades just the requested package and any required
 dependencies.
 
 On a host that only installs Agave, `pkg_add` resolves its direct runtime
-dependencies `zstd`, `libhidapi`, and `libusb1`. Rust, `cargo-generate-vendor`, LLVM, gmake, and protoc are build-time tools.
+dependencies `zstd`, `libhidapi`, and `libusb1`. Rust, `cargo-generate-vendor`,
+LLVM, gmake, and protoc are build-time tools.
 
 The last command uses the overlay's smoke-test script. On a host without
 the overlay, copy the script alongside the package and run it with the same
@@ -189,11 +190,14 @@ Use a dedicated loopback-only routing domain. In v4.4.1 the faucet,
 JSON RPC and RPC WebSocket listen on wildcard addresses even with
 `--bind-address 127.0.0.1`. The example creates an isolated domain on a
 test host. Check `netstat -R` and `ifconfig -l` first and choose an unused
-domain and loopback number. Run from the overlay root as your regular user.
+domain and loopback number. Run the following as your regular user from
+the overlay root, `/usr/ports/mystuff` in the documented layout. For a
+checkout elsewhere, substitute its root in the `cd` command.
 
 ```sh
 (
     set -eu
+    cd /usr/ports/mystuff
     domain=173
     user=$(id -un)
     if ifconfig "lo$domain" >/dev/null 2>&1 ||
@@ -206,8 +210,10 @@ domain and loopback number. Run from the overlay root as your regular user.
     trap 'exit 1' HUP INT TERM
     doas ifconfig "lo$domain" rdomain "$domain"
     doas ifconfig "lo$domain" inet 127.0.0.1/8 up
-    doas route -T "$domain" exec doas -u "$user" \
-        sh "$PWD/net/agave/files/validator-smoke-test" /usr/local/bin
+    doas route -T "$domain" exec doas -u "$user" sh -c '
+        ulimit -Sd 12582912 || exit 1
+        exec sh "$1" /usr/local/bin
+    ' sh "$PWD/net/agave/files/validator-smoke-test"
 )
 ```
 
@@ -215,9 +221,25 @@ The script generates a temporary client key and CLI configuration, starts
 the packaged validator on a fresh ledger, and polls
 `solana --url http://127.0.0.1:8899 --commitment processed slot`.
 A pass prints two increasing slot numbers. The script stops its child
-and removes the ledger and keys on success or failure. Destroying the
-interface removes the routing domain. OpenBSD retains the empty routing
-table until reboot.
+and removes the ledger and keys on success or failure. The 12 GiB soft data
+limit applies to the test process and its children. It was sufficient on
+the 16-CPU release desktop. The exact minimum was not measured.
+
+##### Remove the test routing domain
+
+The block's exit trap destroys the loopback interface. If the shell was
+killed before cleanup, stop any remaining test validator, then run
+`netstat -R` and identify the domain you created. For example, if domain
+174 still contains only the test interface `lo174`, remove it with:
+
+```sh
+doas ifconfig lo174 destroy
+netstat -R
+```
+
+The `Rdomain 174` section and `lo174` should disappear. OpenBSD moves
+the empty routing table 174 to domain 0, where it can remain listed until
+reboot. If the exit trap already removed the domain, cleanup is complete.
 
 #### Ledger on OpenBSD
 
@@ -436,7 +458,65 @@ and statistics. The OpenBSD build requests prefixed Jemalloc symbols for Rust
 allocations and keeps libc's allocator available for C allocations. Agave's
 sysctl crate dependency follows its Linux-only network-limit query.
 
+### OpenBSD 8.0-release/amd64 results
+
+On the 16-CPU release desktop, `agave-4.4.1p3.tgz` was 30,266,984 bytes
+(28.86 MiB). The installed packing list contained all three binaries.
+The CLI/keygen smoke test, `port-lib-depends-check` and `lib-depends-check`
+passed. The direct package dependencies were `zstd`, `libhidapi` and
+`libusb1`.
+
+With a 1.5 GiB soft data limit, the validator opened RPC
+and processed genesis, then exited with an allocation failure before the
+first new slot. Raising the ordinary user's soft limit to 12 GiB for the
+test process allowed the same installed binary to advance from slot 0 to
+slot 1 on a fresh ledger in loopback-only routing domain 174.
+
+For p3 on 8.0-release/amd64, use the release build, dependency checks and
+archive inspection above. On a release test host with p2 installed, check
+the starting version, dry-run the replacement, install the release-built
+archive, and test the upgraded binaries:
+
+```sh
+pkg_info -e agave-4.4.1p2 &&
+    pkg_add -nr "$signed_pkg" &&
+    doas pkg_add -r "$signed_pkg" &&
+    pkg_info -e agave-4.4.1p3 &&
+    sh /usr/ports/mystuff/net/agave/files/smoke-test /usr/local/bin
+```
+
+Expect one replacement, all three binaries in `/usr/local/bin`, and a
+successful keypair verification. Run the loopback-only validator example
+above to verify RPC slot progression. With a Ledger attached, the existing
+hardware checks also exercise the upgraded CLI and keygen.
+
 ### Build on the development snapshot
+
+On 8.0-current/amd64 GENERIC#156 with Rust 1.99.1, p3 passed the frozen
+build, all 938 distfile checksums, fake installation, package creation and
+both library-dependency checks. A fresh extraction and configure run reproduced
+all patched source files from the overlay.
+
+| Archive | Bytes | MiB |
+| --- | ---: | ---: |
+| `agave-4.4.1p2.tgz` | 10,869,063 | 10.37 |
+| `agave-4.4.1p3.tgz` | 30,311,437 | 28.91 |
+| Increase | 19,442,374 | 18.54 |
+
+The added validator executable occupies 47,389,864 bytes (45.19 MiB)
+installed. It adds base `libc++`, `libssl` and `libcrypto` to the package's
+shared-library requirements. Both revisions have the same three direct
+package dependencies, `zstd`, `libhidapi` and `libusb1`. The CLI and keygen
+still link to the native HID and libusb libraries.
+
+A fresh install dry run by package name succeeded. An actual
+`pkg_add -u agave` in a disposable installation root upgraded p2 to p3.
+Agave was the only package version that changed. The installed CLI and
+keygen passed their keypair smoke test. With a 12 GiB soft data limit, the
+installed validator served RPC on a fresh ledger and the CLI observed slot
+0 advance to 1 in routing domain 173. The test cleaned up its child and
+ledger. After `ifconfig lo173 destroy`, `netstat -R` showed only domain 0,
+with routing tables 0 and 173.
 
 OpenBSD 8.0-current/amd64 GENERIC#156 with Rust 1.99.1 built and packaged
 the original agave-4.4.1 package from a fresh ports fetch and an empty Cargo home. All 937
@@ -466,24 +546,6 @@ checks, and a local package installation dry run. Both binaries extracted
 from the archive passed the version checks and keygen passed the disposable
 keypair test. Simulated HID reports covered retries, delayed duplicates,
 silent devices, legacy configuration, and a delayed signing confirmation.
-
-For p3 on 8.0-release/amd64, use the release build, dependency checks and
-archive inspection above. On a release test host with p2 installed, check
-the starting version, dry-run the replacement, install the release-built
-archive, and test the upgraded binaries:
-
-```sh
-pkg_info -e agave-4.4.1p2 &&
-    pkg_add -nr "$signed_pkg" &&
-    doas pkg_add -r "$signed_pkg" &&
-    pkg_info -e agave-4.4.1p3 &&
-    sh /usr/ports/mystuff/net/agave/files/smoke-test /usr/local/bin
-```
-
-Expect one replacement, all three binaries in `/usr/local/bin`, and a
-successful keypair verification. Run the loopback-only validator example
-above to verify RPC slot progression. With a Ledger attached, the existing
-hardware checks also exercise the upgraded CLI and keygen.
 
 #### Prepare the fresh build disk once
 
