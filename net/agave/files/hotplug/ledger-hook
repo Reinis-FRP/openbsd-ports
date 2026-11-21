@@ -1,6 +1,9 @@
 #!/bin/sh
 case "$1:$2" in
 0:uhid[0-9]*)
-    /etc/hotplug/ledger-access "$1" "$2"
+    if [ "${0##*/}" = attach ]; then
+        set -- "$1" "$2" --attach
+    fi
+    /etc/hotplug/ledger-access "$@"
     ;;
 esac

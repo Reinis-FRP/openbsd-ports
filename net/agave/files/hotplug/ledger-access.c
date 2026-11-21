@@ -1,5 +1,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <dev/usb/usb.h>
 #include <err.h>
 #include <errno.h>
@@ -35,6 +36,29 @@ supported_product(int product)
 	return 0;
 }
 
+/* The parent holds the event lock until creation and probing finish. */
+static void
+create_node(const char *device)
+{
+	pid_t pid;
+	int status;
+
+	if ((pid = fork()) == -1)
+		err(1, "fork");
+	if (pid == 0) {
+		if (chdir("/dev") == -1)
+			err(1, "chdir /dev");
+		execl("/bin/sh", "sh", "/dev/MAKEDEV", device, (char *)NULL);
+		err(1, "exec /bin/sh");
+	}
+	while (waitpid(pid, &status, 0) == -1) {
+		if (errno != EINTR)
+			err(1, "waitpid");
+	}
+	if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)
+		errx(1, "MAKEDEV %s failed", device);
+}
+
 /* Called for both attach and detach. Reconcile the current device. */
 int
 main(int argc, char **argv)
@@ -45,11 +69,12 @@ main(int argc, char **argv)
 	char model[USB_MAX_STRING_LEN], serial[USB_MAX_STRING_LEN];
 	const char *unit;
 	gid_t group;
-	int fd, product, rescan;
+	int attach, fd, product, rescan;
 
+	attach = argc == 4 && strcmp(argv[3], "--attach") == 0;
 	rescan = argc == 4 && strcmp(argv[3], "--rescan") == 0;
-	if (argc != 3 && !rescan)
-		errx(1, "usage: ledger-access class device [--rescan]");
+	if (argc != 3 && !attach && !rescan)
+		errx(1, "usage: ledger-access class device [--attach | --rescan]");
 	if (strcmp(argv[1], "0") != 0 || strncmp(argv[2], "uhid", 4) != 0)
 		return 0;
 	unit = argv[2] + 4;
@@ -63,9 +88,13 @@ main(int argc, char **argv)
 	    O_EXLOCK | O_CLOEXEC, 0600) == -1)
 		err(1, "ledger-access.lock");
 	if (lstat(path, &st) == -1) {
-		if (errno == ENOENT)
+		if (errno != ENOENT)
+			err(1, "%s", path);
+		if (!attach)
 			return 0;
-		err(1, "%s", path);
+		create_node(argv[2]);
+		if (lstat(path, &st) == -1)
+			err(1, "%s after MAKEDEV", path);
 	}
 	if (!S_ISCHR(st.st_mode) || st.st_uid != 0)
 		return 0;

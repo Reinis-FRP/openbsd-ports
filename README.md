@@ -222,8 +222,9 @@ before sending a request. The existing libusb discovery path is also enabled.
 Unlock the Ledger and open its Solana app. In the latest `dmesg` attachment,
 find the Ledger's interface 0 and follow its `uhidev` parent to the
 `uhidN` child. Unit numbers can change on reconnect. On the tested Nano X
-this was `uhid12`. If that node is missing, substitute the current unit in
-these commands. `MAKEDEV` creates it with root-only permissions.
+this was `uhid12`. The optional hotplug helper below creates missing nodes on
+attach. For manual setup, run `MAKEDEV` only if the node is missing. Substitute
+the current unit for `uhid12` in both commands.
 
 ```sh
 (cd /dev && doas sh MAKEDEV uhid12)
@@ -274,13 +275,17 @@ and fresh work and package directories. After signing the rebuilt package, use
 ##### Run Ledger commands as a regular user
 
 The optional [hotplug helper](net/agave/files/hotplug) grants the `ledgerusb`
-group access to the Ledger application interface. It recognizes the Nano S,
-Nano X, Nano S Plus, Stax, Flex, and Nano Gen5 product IDs from Agave 4.4.1.
+group access to the Ledger application interface. On a `uhidN` attach event,
+it creates a missing `/dev/uhidN` with `MAKEDEV` as `root:wheel` mode `0600`.
+It recognizes the Nano S, Nano X, Nano S Plus, Stax, Flex, and Nano Gen5
+product IDs from Agave 4.4.1.
 It checks vendor ID `2c97`, the model’s product IDs, and the Ledger HID
 collection with 64-byte input and output reports on the open device.
 The matching node gets `root:ledgerusb` mode `0660` on attach and returns
-to `root:wheel` mode `0600` on detach. The Nano X (USB ID `2c97:4000`) is the only model tested
-on release hardware, where both transitions were observed on `uhid12`.
+to `root:wheel` mode `0600` on detach. The node stays in `/dev`. Reconnecting
+a supported Ledger grants `ledgerusb` access on its current unit. The Nano X
+(USB ID `2c97:4000`) is the only model tested on release hardware, where both
+permission transitions were observed on `uhid12`.
 
 Build as your regular user. Use this block for a first install or to update
 an existing helper after pulling changes to the overlay.
@@ -303,9 +308,11 @@ doas usermod -G ledgerusb "$(id -un)"
 ```
 
 From the same `files` directory, install the sample hook for each missing
-event script. For an existing attach or detach script, keep its current
-actions and add `/etc/hotplug/ledger-access "$1" "$2"` on the event path
-before it exits.
+event script. For existing scripts, including ones from an earlier installation,
+update or add the helper call before the script exits. Use
+`/etc/hotplug/ledger-access "$1" "$2" --attach` in `/etc/hotplug/attach` and
+`/etc/hotplug/ledger-access "$1" "$2"` in `/etc/hotplug/detach`. Preserve any
+other hotplug actions.
 
 ```sh
 for event in attach detach; do
@@ -320,6 +327,8 @@ doas rcctl start hotplugd
 If you previously took ownership of the Ledger node manually, restore
 `root:wheel` and mode `0600` on that node first. To handle devices already
 attached at boot, add `/etc/hotplug/ledger-rescan` to `/etc/rc.local`.
+The rescan checks existing nodes. If a device was attached before `hotplugd`
+started and its node is missing, reconnect it once to trigger creation.
 With the Ledger connected and its Solana app open, verify access as your
 regular user.
 
