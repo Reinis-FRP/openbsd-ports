@@ -1,16 +1,5 @@
 Use OpenBSD futex(2) for the ledger thread pool wait and wake operations.
 
---- modcargo-crates/atomic-wait-1.1.0/Cargo.toml.orig
-+++ modcargo-crates/atomic-wait-1.1.0/Cargo.toml
-@@ -27,7 +27,7 @@
- license = "BSD-2-Clause"
- repository = "https://github.com/m-ou-se/atomic-wait"
- 
--[target."cfg(any(target_os = \"linux\", target_os = \"android\", target_os = \"freebsd\"))".dependencies.libc]
-+[target."cfg(any(target_os = \"linux\", target_os = \"android\", target_os = \"freebsd\", target_os = \"openbsd\"))".dependencies.libc]
- version = "0.2"
- 
- [target."cfg(windows)".dependencies.windows-sys]
 --- modcargo-crates/atomic-wait-1.1.0/src/lib.rs.orig
 +++ modcargo-crates/atomic-wait-1.1.0/src/lib.rs
 @@ -19,6 +19,45 @@

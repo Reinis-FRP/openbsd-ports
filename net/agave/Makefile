@@ -54,14 +54,16 @@ ERRORS +=		"AGAVE_LEDGER_GROUP must be a valid OpenBSD group name"
 
 post-patch:
 	${INSTALL_DATA} ${FILESDIR}/openbsd_ledger.rs ${WRKSRC}/remote-wallet/src/
-	${INSTALL_DATA} ${FILESDIR}/ledger_uhid.c ${WRKSRC}/remote-wallet/
+	${INSTALL_DATA} ${FILESDIR}/ledger_uhid.c ${FILESDIR}/ledger_uhid.h \
+	    ${WRKSRC}/remote-wallet/
 	${INSTALL_DATA} ${FILESDIR}/remote-wallet-build.rs \
 	    ${WRKSRC}/remote-wallet/build.rs
 
 post-build:
 	${MODCARGO_CARGO_RUN} build --release --frozen \
 	    -p agave-validator --bin solana-test-validator
-	${CC} ${CFLAGS} -DAGAVE_LEDGER_GROUP=\"${AGAVE_LEDGER_GROUP:Q}\" \
+	${CC} ${CFLAGS} -I${FILESDIR} \
+	    -DAGAVE_LEDGER_GROUP=\"${AGAVE_LEDGER_GROUP:Q}\" \
 	    ${LDFLAGS} -o ${WRKBUILD}/ledger-access \
 	    ${FILESDIR}/hotplug/ledger-access.c ${FILESDIR}/ledger_uhid.c -lusbhid
 

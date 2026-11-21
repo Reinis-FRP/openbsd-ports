@@ -1,20 +1,23 @@
-/* Probe the same open file that will carry the Ledger reports. */
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <dev/usb/usb.h>
-#include <usbhid.h>
+
 #include <errno.h>
 #include <poll.h>
 #include <string.h>
+#include <usbhid.h>
 
+#include "ledger_uhid.h"
+
+/* Probe the same open file that will carry the Ledger reports. */
 int
 agave_ledger_product(int fd, uint16_t vendor, char *model, char *serial,
     size_t size)
 {
 	struct usb_device_info info;
+	hid_item_t item;
 	report_desc_t desc;
 	hid_data_t parser;
-	hid_item_t item;
 	int id, product = -1;
 
 	if (ioctl(fd, USB_GET_DEVICEINFO, &info) == -1 ||
@@ -44,12 +47,14 @@ out:
 	return product;
 }
 
+/* Return 1 when input is ready, 0 on timeout, or -1 on error. */
 int
 agave_ledger_wait(int fd, int timeout_ms)
 {
 	struct pollfd pfd = { .fd = fd, .events = POLLIN };
-	int ready = poll(&pfd, 1, timeout_ms);
+	int ready;
 
+	ready = poll(&pfd, 1, timeout_ms);
 	if (ready <= 0)
 		return ready;
 	if (pfd.revents & POLLIN)

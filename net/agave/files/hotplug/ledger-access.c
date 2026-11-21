@@ -2,22 +2,30 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <dev/usb/usb.h>
+
 #include <err.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <grp.h>
+#include <paths.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
-int agave_ledger_product(int, uint16_t, char *, char *, size_t);
+#include "ledger_uhid.h"
+#include "pathnames.h"
+
+static void	create_node(const char *);
+static int	supported_product(int);
 
 /* Product IDs in Agave v4.4.1 remote-wallet/src/ledger.rs. */
 static int
 supported_product(int product)
 {
 	static const struct {
-		int legacy, first, last;
+		int	legacy;
+		int	first;
+		int	last;
 	} models[] = {
 		{ 0x0001, 0x1000, 0x101f }, /* Nano S */
 		{ 0x0004, 0x4000, 0x401f }, /* Nano X */
@@ -46,10 +54,10 @@ create_node(const char *device)
 	if ((pid = fork()) == -1)
 		err(1, "fork");
 	if (pid == 0) {
-		if (chdir("/dev") == -1)
+		if (chdir(_PATH_DEV) == -1)
 			err(1, "chdir /dev");
-		execl("/bin/sh", "sh", "/dev/MAKEDEV", device, (char *)NULL);
-		err(1, "exec /bin/sh");
+		execl(_PATH_BSHELL, "sh", _PATH_MAKEDEV, device, (char *)NULL);
+		err(1, "exec " _PATH_BSHELL);
 	}
 	while (waitpid(pid, &status, 0) == -1) {
 		if (errno != EINTR)
@@ -59,20 +67,22 @@ create_node(const char *device)
 		errx(1, "MAKEDEV %s failed", device);
 }
 
-/* Called for both attach and detach. Reconcile the current device. */
+/* Reconcile Ledger device permissions on attach, detach, or rescan. */
 int
 main(int argc, char **argv)
 {
-	struct group *gr;
-	struct stat st, opened;
-	char path[sizeof("/dev/") + 16];
+	struct stat opened, st;
 	char model[USB_MAX_STRING_LEN], serial[USB_MAX_STRING_LEN];
+	char path[sizeof(_PATH_DEV) + 16];
+	struct group *gr;
 	const char *unit;
+	int attach, fd;
 	gid_t group;
-	int attach, fd, product, rescan;
+	int product, rescan;
 
 	if (argc != 4)
-		errx(1, "usage: ledger-access attach|detach|rescan class device");
+		errx(1, "usage: ledger-access attach|detach|rescan "
+		    "class device");
 	attach = strcmp(argv[1], "attach") == 0;
 	rescan = strcmp(argv[1], "rescan") == 0;
 	if (!attach && !rescan && strcmp(argv[1], "detach") != 0)
@@ -81,12 +91,13 @@ main(int argc, char **argv)
 		return 0;
 	unit = argv[3] + 4;
 	if (*unit == '\0' || unit[strspn(unit, "0123456789")] != '\0' ||
-	    snprintf(path, sizeof(path), "/dev/%s", argv[3]) >= (int)sizeof(path))
+	    snprintf(path, sizeof(path), _PATH_DEV "%s", argv[3]) >=
+	    (int)sizeof(path))
 		return 0;
 	if ((gr = getgrnam(AGAVE_LEDGER_GROUP)) == NULL || gr->gr_gid == 0)
 		errx(1, "a dedicated %s group is required", AGAVE_LEDGER_GROUP);
 	group = gr->gr_gid;
-	if (open("/var/run/ledger-access.lock", O_CREAT | O_RDWR | O_NOFOLLOW |
+	if (open(_PATH_LEDGER_LOCK, O_CREAT | O_RDWR | O_NOFOLLOW |
 	    O_EXLOCK | O_CLOEXEC, 0600) == -1)
 		err(1, "ledger-access.lock");
 	if (lstat(path, &st) == -1) {
@@ -109,7 +120,7 @@ main(int argc, char **argv)
 
 	fd = open(path, O_RDONLY | O_NONBLOCK | O_NOFOLLOW);
 	if (fd == -1) {
-		/* Full scans can encounter unrelated HID nodes that return EIO. */
+		/* Unrelated HID nodes can return EIO during a rescan. */
 		if (rescan && errno == EIO && st.st_gid != group)
 			return 0;
 		if (errno == ENXIO || errno == EBUSY || errno == ENODEV)
@@ -121,7 +132,8 @@ main(int argc, char **argv)
 	if (opened.st_dev != st.st_dev || opened.st_ino != st.st_ino ||
 	    !S_ISCHR(opened.st_mode))
 		return 0;
-	product = agave_ledger_product(fd, 0x2c97, model, serial, sizeof(model));
+	product = agave_ledger_product(fd, 0x2c97, model, serial,
+	    sizeof(model));
 	if (supported_product(product)) {
 		if (fchown(fd, 0, group) == -1 || fchmod(fd, 0660) == -1)
 			err(1, "grant %s", path);

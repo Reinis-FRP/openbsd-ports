@@ -49,7 +49,9 @@ impl LedgerDevice {
     }
 }
 
+// Timeout per HID report for the public key or final configuration request.
 const DISCOVERY_WAIT_MS: i32 = 5000;
+// Retry configuration after each short timeout, then wait longer for a reply.
 const CONFIGURATION_WAITS_MS: [i32; 3] = [1000, 1000, DISCOVERY_WAIT_MS];
 
 /// Configuration retries may leave extra replies on the ordered HID input pipe.
