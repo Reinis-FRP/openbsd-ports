@@ -2,7 +2,7 @@
 
 ## Agave 4.4.1 on amd64
 
-The `agave-4.4.1p6` package installs `solana`, `solana-keygen`, and
+The `agave-4.4.1p7` package installs `solana`, `solana-keygen`, and
 `solana-test-validator`, plus optional Ledger hotplug tools. The package stem
 is `agave`.
 
@@ -180,7 +180,7 @@ sh /usr/ports/mystuff/net/agave/files/smoke-test /usr/local/bin
 
 On a host with an earlier Agave package installed, use `pkg_add -nr "$signed_pkg"`
 for the dry run and `doas pkg_add -r "$signed_pkg"` for the replacement.
-Check the installed revision with `pkg_info -e agave-4.4.1p6`.
+Check the installed revision with `pkg_info -e agave-4.4.1p7`.
 With the signed archive in a trusted package repository on `PKG_PATH`,
 `doas pkg_add agave` installs all three commands. On a release test host
 with p2 installed, `doas pkg_add -u agave` selects the newer revision from
@@ -206,11 +206,11 @@ checks a signature with its public key.
 #### Test the packaged local validator
 
 Run the check as your regular user from the overlay root in the default
-routing domain. The release desktop used a 12 GiB soft data limit.
+routing domain.
 
 ```sh
 cd /usr/ports/mystuff
-(ulimit -Sd 12582912 && sh net/agave/files/validator-smoke-test /usr/local/bin)
+sh net/agave/files/validator-smoke-test /usr/local/bin
 ```
 
 The script creates a disposable ledger and client key, polls
@@ -323,8 +323,8 @@ argument setup with the same line, preserving other handlers:
 ```
 
 If `/etc/rc.local` calls `/etc/hotplug/ledger-rescan`, update its path to
-`/usr/local/libexec/agave/ledger-rescan`. The package README includes fresh
-setup and attach/detach verification. The rescan checks existing nodes. If
+`/usr/local/libexec/agave/ledger-rescan`. The package README covers
+setup and a public-key check. The rescan checks existing nodes. If
 the device was attached at boot and its node is missing, reconnect it once.
 
 During a full scan, opening an unrelated, unmanaged HID node can return
@@ -448,7 +448,7 @@ ledger's faucet keypair to the configured CLI wallet succeeded. The CLI
 reported 500,000,001 SOL, consistent with the 500,000,000 SOL assigned
 to the default mint wallet at genesis plus the transfer.
 
-To verify p6 on 8.0-release/amd64, use the release build, dependency checks
+To verify p7 on 8.0-release/amd64, use the release build, dependency checks
 and archive inspection above. On a release test host with p5 installed, check
 the starting version, dry-run the replacement, install the release-built
 archive, and test the upgraded binaries:
@@ -457,7 +457,7 @@ archive, and test the upgraded binaries:
 pkg_info -e agave-4.4.1p5 &&
     pkg_add -nr "$signed_pkg" &&
     doas pkg_add -r "$signed_pkg" &&
-    pkg_info -e agave-4.4.1p6 &&
+    pkg_info -e agave-4.4.1p7 &&
     sh /usr/ports/mystuff/net/agave/files/smoke-test /usr/local/bin
 ```
 

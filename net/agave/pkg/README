@@ -2,81 +2,56 @@
 | Running ${PKGSTEM} on OpenBSD
 +-------------------------------------------------------------------------------
 
-Optional Ledger access
-======================
+Ledger hardware wallets
+=======================
 
-This build uses the ${AGAVE_LEDGER_GROUP} group for Ledger access. Select its
-members and enable the packaged hooks on each host that needs access.
+Members of the following group can access supported Ledger devices. Create
+the group if needed, or verify that the existing group is dedicated to
+Ledger access.
 
-Upgrading from manually installed hooks
----------------------------------------
+    # groupadd ${AGAVE_LEDGER_GROUP}
 
-If the group name matches your previous build, keep its membership. When
-switching groups, unplug the Ledger before replacing the old helper and
-verify that its node returns to root:wheel mode 0600. Set up the new group
-as described below.
+Add your login account to the group.
 
-In /etc/hotplug/attach and /etc/hotplug/detach replace the old Ledger
-block with this line before any exit that would skip it:
+    $ doas usermod -G ${AGAVE_LEDGER_GROUP} "$(id -un)"
+
+Log out and back in for the new group membership to take effect.
+
+Configure both /etc/hotplug/attach and /etc/hotplug/detach. For each
+missing script, install ${TRUEPREFIX}/share/examples/agave/ledger-hook
+under that name, owned by root:wheel with mode 0755. In an existing
+script, add the following line before any exit or change to the arguments.
 
     ${TRUEPREFIX}/libexec/agave/ledger-access "${0##*/}" "$1" "$2"
 
-Remove the old /etc/hotplug/ledger-access invocation and its Ledger-specific
-argument handling, including any "set --" that appended --attach. Preserve
-other local hotplug actions. For hooks dedicated entirely to the Ledger,
-you can replace each whole script with the packaged example:
+Enable and start hotplugd(8).
 
-    example=${TRUEPREFIX}/share/examples/agave/ledger-hook
-    doas install -o root -g wheel -m 0755 "$example" /etc/hotplug/attach
-    doas install -o root -g wheel -m 0755 "$example" /etc/hotplug/detach
+    # rcctl enable hotplugd
+    # rcctl start hotplugd
 
-If /etc/rc.local calls /etc/hotplug/ledger-rescan, change that call to
-${TRUEPREFIX}/libexec/agave/ledger-rescan. Proceed to verification below.
-Future package upgrades deliver both helpers at these paths.
+Reconnect the Ledger, unlock it, and open the Solana app. Read its public
+key from your regular account to verify access.
 
-First-time setup
-----------------
+    $ solana-keygen pubkey usb://ledger
 
-Run these commands from the desktop account, then log out and back in.
+To set permissions on existing uhid(4) nodes at boot, add
+${TRUEPREFIX}/libexec/agave/ledger-rescan to /etc/rc.local.
 
-    doas groupadd ${AGAVE_LEDGER_GROUP} &&
-        doas usermod -G ${AGAVE_LEDGER_GROUP} "$(id -un)"
+Local test validator
+====================
 
-If groupadd reports that the name already exists, check that the group is
-dedicated to Ledger access before adding members or enabling the hooks.
-If it serves another purpose, rebuild with a different AGAVE_LEDGER_GROUP.
+A 2 GiB soft data size limit was sufficient to start solana-test-validator
+on OpenBSD. If startup fails with an allocation error, check the limit with
+ulimit -Sd in ksh(1). If it is lower, try raising it in the same shell
+before starting the validator again.
 
-For each missing hook, install the example as an executable script. For
-an existing hook, add the invocation above alongside its local actions.
+    $ ulimit -Sd 2097152
 
-    example=${TRUEPREFIX}/share/examples/agave/ledger-hook
-    for hook in /etc/hotplug/attach /etc/hotplug/detach; do
-        if [ -e "$hook" ] || [ -L "$hook" ]; then
-            echo "Existing $hook: integrate the Ledger invocation above"
-        else
-            doas install -o root -g wheel -m 0755 "$example" "$hook"
-        fi
-    done
-    doas rcctl enable hotplugd
-    doas rcctl start hotplugd
+If ulimit -Hd shows a hard limit below 2097152 KiB, ask the administrator
+to raise datasize-max for your login class (see login.conf(5)), then log
+out and back in.
 
-To reconcile existing nodes at boot, add
-${TRUEPREFIX}/libexec/agave/ledger-rescan to /etc/rc.local. If a device
-already attached at boot has no node, reconnect it once to trigger creation.
-If you previously changed a Ledger node's owner or mode manually, restore
-that specific node to root:wheel mode 0600 before enabling Ledger access.
-
-Verification
-------------
-
-Check that "id -Gn" includes ${AGAVE_LEDGER_GROUP} and that
-"rcctl check hotplugd" reports ok. Reconnect the Ledger, unlock it, and open its
-Solana app. Check dmesg for its current uhid unit. For example, for uhid12:
-
-    ls -li /dev/uhid12
-    ${TRUEPREFIX}/bin/solana-keygen pubkey usb://ledger
-
-A verified interface gets root:${AGAVE_LEDGER_GROUP} mode 0660. Run the
-public-key check as your regular user. Unplug the Ledger and run ls again.
-The same inode should remain with root:wheel mode 0600. Reconnect and check the
-grant on the current unit. An attach event creates a missing node automatically.
+The RPC, WebSocket, and faucet services listen on all IPv4 interfaces,
+even with --bind-address 127.0.0.1. For local testing, use pf(4) to
+restrict inbound access to their ports (TCP 8899, 8900, and 9900 by
+default).
