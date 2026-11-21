@@ -12,7 +12,7 @@ DIST_TUPLE =		github anza-xyz agave v4.4.1 . \
 			github anza-xyz rocksdb \
 			f4e6cd89d61b747834b1687485ca363ebe6b366e \
 			../rust-rocksdb/librocksdb-sys/rocksdb
-REVISION =		5
+REVISION =		6
 CATEGORIES =		net
 
 # Apache-2.0
@@ -41,6 +41,15 @@ MODCARGO_NO_DEFAULT_FEATURES = Yes
 MODCARGO_FEATURES =	solana-cli/remote-wallet-libusb \
 			solana-keygen/remote-wallet-libusb
 
+# Read the builder's mk.conf before checking the group name.
+.include <bsd.port.arch.mk>
+
+AGAVE_LEDGER_GROUP ?=	ledgerusb
+SUBST_VARS +=		AGAVE_LEDGER_GROUP
+.if "${AGAVE_LEDGER_GROUP:Q:C/^[A-Za-z0-9_.][A-Za-z0-9_.-]{0,30}$/1/}" != "1"
+ERRORS +=		"AGAVE_LEDGER_GROUP must be a valid OpenBSD group name"
+.endif
+
 .include "crates.inc"
 
 post-patch:
@@ -52,7 +61,8 @@ post-patch:
 post-build:
 	${MODCARGO_CARGO_RUN} build --release --frozen \
 	    -p agave-validator --bin solana-test-validator
-	${CC} ${CFLAGS} ${LDFLAGS} -o ${WRKBUILD}/ledger-access \
+	${CC} ${CFLAGS} -DAGAVE_LEDGER_GROUP=\"${AGAVE_LEDGER_GROUP:Q}\" \
+	    ${LDFLAGS} -o ${WRKBUILD}/ledger-access \
 	    ${FILESDIR}/hotplug/ledger-access.c ${FILESDIR}/ledger_uhid.c -lusbhid
 
 do-install:

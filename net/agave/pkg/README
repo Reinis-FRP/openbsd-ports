@@ -5,16 +5,19 @@
 Optional Ledger access
 ======================
 
-Members of ledgerusb can use a supported Ledger as a regular user. The
-package supplies the helper and an executable hook example. Select the
-users and enable the hooks on each host where you want this access.
+This build uses the ${AGAVE_LEDGER_GROUP} group for Ledger access. Select its
+members and enable the packaged hooks on each host that needs access.
 
 Upgrading from manually installed hooks
 ---------------------------------------
 
-Keep your existing ledgerusb group and membership. In /etc/hotplug/attach
-and /etc/hotplug/detach replace the old Ledger block with this same line,
-before any exit that would skip it:
+If the group name matches your previous build, keep its membership. When
+switching groups, unplug the Ledger before replacing the old helper and
+verify that its node returns to root:wheel mode 0600. Set up the new group
+as described below.
+
+In /etc/hotplug/attach and /etc/hotplug/detach replace the old Ledger
+block with this line before any exit that would skip it:
 
     ${TRUEPREFIX}/libexec/agave/ledger-access "${0##*/}" "$1" "$2"
 
@@ -34,11 +37,14 @@ Future package upgrades deliver both helpers at these paths.
 First-time setup
 ----------------
 
-Create the group if it does not exist and add the desktop account.
-Run the following from that account, then log out and back in.
+Run these commands from the desktop account, then log out and back in.
 
-    groupinfo -e ledgerusb || doas groupadd ledgerusb
-    doas usermod -G ledgerusb "$(id -un)"
+    doas groupadd ${AGAVE_LEDGER_GROUP} &&
+        doas usermod -G ${AGAVE_LEDGER_GROUP} "$(id -un)"
+
+If groupadd reports that the name already exists, check that the group is
+dedicated to Ledger access before adding members or enabling the hooks.
+If it serves another purpose, rebuild with a different AGAVE_LEDGER_GROUP.
 
 For each missing hook, install the example as an executable script. For
 an existing hook, add the invocation above alongside its local actions.
@@ -63,14 +69,14 @@ that specific node to root:wheel mode 0600 before enabling Ledger access.
 Verification
 ------------
 
-Check that "id -Gn" includes ledgerusb and "rcctl check hotplugd" reports
-ok. Reconnect the Ledger, unlock it, open its Solana app and check dmesg
-for its current uhid unit. For example, if that unit is uhid12:
+Check that "id -Gn" includes ${AGAVE_LEDGER_GROUP} and that
+"rcctl check hotplugd" reports ok. Reconnect the Ledger, unlock it, and open its
+Solana app. Check dmesg for its current uhid unit. For example, for uhid12:
 
     ls -li /dev/uhid12
     ${TRUEPREFIX}/bin/solana-keygen pubkey usb://ledger
 
-A verified interface gets root:ledgerusb mode 0660. Run the public-key check
-as your regular user. Unplug the Ledger and run ls again: the same inode
-should remain with root:wheel mode 0600. Reconnect and check the grant on
-the current unit. An attach event creates a missing node automatically.
+A verified interface gets root:${AGAVE_LEDGER_GROUP} mode 0660. Run the
+public-key check as your regular user. Unplug the Ledger and run ls again.
+The same inode should remain with root:wheel mode 0600. Reconnect and check the
+grant on the current unit. An attach event creates a missing node automatically.

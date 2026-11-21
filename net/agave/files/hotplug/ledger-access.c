@@ -83,8 +83,8 @@ main(int argc, char **argv)
 	if (*unit == '\0' || unit[strspn(unit, "0123456789")] != '\0' ||
 	    snprintf(path, sizeof(path), "/dev/%s", argv[3]) >= (int)sizeof(path))
 		return 0;
-	if ((gr = getgrnam("ledgerusb")) == NULL || gr->gr_gid == 0)
-		errx(1, "a dedicated ledgerusb group is required");
+	if ((gr = getgrnam(AGAVE_LEDGER_GROUP)) == NULL || gr->gr_gid == 0)
+		errx(1, "a dedicated %s group is required", AGAVE_LEDGER_GROUP);
 	group = gr->gr_gid;
 	if (open("/var/run/ledger-access.lock", O_CREAT | O_RDWR | O_NOFOLLOW |
 	    O_EXLOCK | O_CLOEXEC, 0600) == -1)

@@ -2,7 +2,7 @@
 
 ## Agave 4.4.1 on amd64
 
-The `agave-4.4.1p5` package installs `solana`, `solana-keygen`, and
+The `agave-4.4.1p6` package installs `solana`, `solana-keygen`, and
 `solana-test-validator`, plus optional Ledger hotplug tools. The package stem
 is `agave`.
 
@@ -125,6 +125,24 @@ tar -tzf "$pkgfile"
 To build and package in one command, use
 `make MAKE_JOBS="$(sysctl -n hw.ncpuonline)" package` from the port directory.
 
+To choose a different Ledger group, set `AGAVE_LEDGER_GROUP` on the build.
+For example, from a clean port work directory:
+
+```sh
+make AGAVE_LEDGER_GROUP=walletusers MAKE_JOBS="$(sysctl -n hw.ncpuonline)" package
+```
+
+The compiled helper and installed package README both use that name. For
+separate make invocations and future rebuilds, set
+`AGAVE_LEDGER_GROUP=walletusers` in `/etc/mk.conf`. The default is
+`ledgerusb`. Each host allocates the GID locally. When changing the setting
+for an already built revision, run `make clean='work packages'` first to
+discard that port's previous work and archive. Before replacing an active
+helper with one using a different group, unplug the Ledger and verify its
+node has returned to `root:wheel` mode `0600`.
+If the installed package has the same revision, use
+`doas pkg_add -r -D installed "$signed_pkg"` with the newly signed archive.
+
 ### Sign and install the release package
 
 The ports build above produces an unsigned package. For distribution to
@@ -162,7 +180,7 @@ sh /usr/ports/mystuff/net/agave/files/smoke-test /usr/local/bin
 
 On a host with an earlier Agave package installed, use `pkg_add -nr "$signed_pkg"`
 for the dry run and `doas pkg_add -r "$signed_pkg"` for the replacement.
-Check the installed revision with `pkg_info -e agave-4.4.1p5`.
+Check the installed revision with `pkg_info -e agave-4.4.1p6`.
 With the signed archive in a trusted package repository on `PKG_PATH`,
 `doas pkg_add agave` installs all three commands. On a release test host
 with p2 installed, `doas pkg_add -u agave` selects the newer revision from
@@ -275,18 +293,19 @@ and fresh work and package directories. After signing the rebuilt package, use
 
 ##### Run Ledger commands as a regular user
 
-The optional [hotplug helper](net/agave/files/hotplug) grants the `ledgerusb`
-group access to the Ledger application interface. On a `uhidN` attach event,
-it creates a missing `/dev/uhidN` with `MAKEDEV` as `root:wheel` mode `0600`.
+The optional [hotplug helper](net/agave/files/hotplug) grants a dedicated
+group access to the Ledger application interface. It defaults to `ledgerusb`.
+On a `uhidN` attach event, it creates a missing `/dev/uhidN` with `MAKEDEV`
+as `root:wheel` mode `0600`.
 It recognizes the Nano S, Nano X, Nano S Plus, Stax, Flex, and Nano Gen5
 product IDs from Agave 4.4.1.
 It checks vendor ID `2c97`, the model’s product IDs, and the Ledger HID
 collection with 64-byte input and output reports on the open device.
-The matching node gets `root:ledgerusb` mode `0660` on attach and returns
+With the default group, the node gets `root:ledgerusb` mode `0660` and returns
 to `root:wheel` mode `0600` on detach. The node stays in `/dev`. Reconnecting
-a supported Ledger grants `ledgerusb` access on its current unit. The Nano X
-(USB ID `2c97:4000`) is the only model tested on release hardware, where both
-permission transitions were observed on `uhid12`.
+a supported Ledger grants the configured group access on its current unit.
+The Nano X (USB ID `2c97:4000`) is the only model tested on release hardware,
+where both permission transitions were observed on `uhid12`.
 
 Starting with p5, the package installs the compiled helper and rescan script
 under `/usr/local/libexec/agave/` and an executable hook example under
@@ -294,10 +313,10 @@ under `/usr/local/libexec/agave/` and an executable hook example under
 follow the [package README](net/agave/pkg/README), installed as
 `/usr/local/share/doc/pkg-readmes/agave`.
 
-**Upgrading from the manually installed helper:** keep the existing `ledgerusb`
-group and membership. In both `/etc/hotplug/attach` and `/etc/hotplug/detach`,
-replace the old Ledger invocation and any Ledger-specific argument setup with
-the same line, preserving other handlers:
+**Upgrading from the manually installed helper:** keep the existing group
+and membership when using the same group name. In both `/etc/hotplug/attach`
+and `/etc/hotplug/detach`, replace the old Ledger invocation and any Ledger-specific
+argument setup with the same line, preserving other handlers:
 
 ```sh
 /usr/local/libexec/agave/ledger-access "${0##*/}" "$1" "$2"
@@ -429,16 +448,16 @@ ledger's faucet keypair to the configured CLI wallet succeeded. The CLI
 reported 500,000,001 SOL, consistent with the 500,000,000 SOL assigned
 to the default mint wallet at genesis plus the transfer.
 
-To verify p5 on 8.0-release/amd64, use the release build, dependency checks
-and archive inspection above. On a release test host with p4 installed, check
+To verify p6 on 8.0-release/amd64, use the release build, dependency checks
+and archive inspection above. On a release test host with p5 installed, check
 the starting version, dry-run the replacement, install the release-built
 archive, and test the upgraded binaries:
 
 ```sh
-pkg_info -e agave-4.4.1p4 &&
+pkg_info -e agave-4.4.1p5 &&
     pkg_add -nr "$signed_pkg" &&
     doas pkg_add -r "$signed_pkg" &&
-    pkg_info -e agave-4.4.1p5 &&
+    pkg_info -e agave-4.4.1p6 &&
     sh /usr/ports/mystuff/net/agave/files/smoke-test /usr/local/bin
 ```
 
