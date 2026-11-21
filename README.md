@@ -6,8 +6,9 @@ matching ports tree and package mirror.
 
 | Port | Package | Architecture | Contents |
 | --- | --- | --- | --- |
-| [devel/cargo-build-sbf](#cargo-sbf-tools) | `cargo-build-sbf-4.5.0`, `solana-platform-tools-1.57` | amd64 | Cargo build and test commands and the Solana SBF cross compiler |
 | [net/agave](#agave) | `agave-4.4.1p7` | amd64 | Solana CLI, key generation, local test validator, and optional Ledger support |
+| [devel/solana-platform-tools](#solana-platform-tools) | `solana-platform-tools-1.57` | amd64 | OpenBSD-hosted Rust cross compiler and Solana SBF target libraries |
+| [devel/cargo-build-sbf](#cargo-build-sbf) | `cargo-build-sbf-4.5.0` | amd64 | Cargo subcommands for building and testing Solana SBF programs |
 
 ## Build a package
 
@@ -129,12 +130,26 @@ For an optional hardware check, unlock the Ledger, open its Solana app, and
 run `solana-keygen pubkey usb://ledger` from the account configured for Ledger
 access. A successful read prints the wallet's public key.
 
-## Cargo SBF tools
+## solana-platform-tools
 
-Build `devel/solana-platform-tools` first for the v1.57 cross compiler.
-Install its signed package on the builder before running `make test` in
-`devel/cargo-build-sbf`. The test runs the compiled v3 program in the
-Solana bytecode interpreter.
+This port builds Anza's v1.57 SBF compiler and target libraries. On a clean
+8.0 builder, install its host dependencies from binary packages first.
+
+```sh
+doas pkg_add rust cargo-generate-vendor cmake-core ninja gmake bash python%3 libarchive xz curl
+```
+
+## cargo-build-sbf
+
+The two Cargo subcommands build with the following host packages.
+
+```sh
+doas pkg_add rust cargo-generate-vendor
+```
+
+Install the signed [solana-platform-tools](#solana-platform-tools) package
+before running `make test` or using the subcommands. The port test builds a
+v3 program and executes it in the Solana bytecode interpreter.
 
 From a Rust program crate with a `cdylib` target, use the Cargo subcommands.
 
