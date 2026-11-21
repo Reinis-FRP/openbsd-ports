@@ -1,0 +1,3 @@
+Cargo subcommands for building Solana SBF programs and running their host
+tests against the compiled programs. The cross compiler and target libraries
+come from the OpenBSD solana-platform-tools package.

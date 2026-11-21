@@ -1,0 +1,2 @@
+@bin bin/cargo-build-sbf
+@bin bin/cargo-test-sbf

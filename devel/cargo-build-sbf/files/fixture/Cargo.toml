@@ -1,0 +1,12 @@
+[package]
+name = "sbf-smoke"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.95"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[target.'cfg(not(target_os = "solana"))'.dev-dependencies]
+solana-sbpf = { version = "=0.24.0", default-features = false }

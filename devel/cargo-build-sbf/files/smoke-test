@@ -1,0 +1,21 @@
+#!/bin/sh
+set -eu
+# Run from a build directory. Copy the fixture so Cargo can write its target.
+fixture=$1
+bindir=$2
+vendor=$3
+work=$(mktemp -d "${TMPDIR:-/tmp}/sbf-smoke.XXXXXXXX")
+mkdir "$work/home"
+cp -R "$fixture" "$work/program"
+cd "$work/program"
+mkdir .cargo
+printf '[source.crates-io]\nreplace-with = "modcargo"\n[source.modcargo]\ndirectory = "%s"\n' \
+    "$vendor" > .cargo/config.toml
+
+env -i HOME="$work/home" PATH="$bindir:/usr/local/bin:/usr/bin:/bin" \
+    CARGO_NET_OFFLINE=true sh -ec '
+        cargo build-sbf --tools-version v1.57 --arch v3
+        readelf -h target/deploy/sbf_smoke.so
+        cargo test-sbf --tools-version v1.57 --arch v3
+    '
+printf 'Verified artifact: %s\n' "$work/program/target/deploy/sbf_smoke.so"

@@ -1,0 +1,19 @@
+#!/bin/sh
+set -eu
+src=$1
+tools=$2
+work=$3
+jobs=$4
+for arch in v0 v1 v2 v3; do
+    flags=-O2
+    if [ "$arch" != v0 ]; then flags="$flags -mcpu=$arch"; fi
+    mkdir -p "$work/build-$arch"
+    (
+        cd "$work/build-$arch"
+        export CC_FOR_BUILD=cc CC="$tools/bin/clang" AR="$tools/bin/llvm-ar" RANLIB="$tools/bin/llvm-ranlib"
+        CFLAGS="$flags" "$src/newlib/configure" --build=x86_64-unknown-openbsd \
+            --host=sbf-solana --target=sbf-solana-solana --prefix="$work/$arch"
+        gmake -j"$jobs"
+        gmake install
+    )
+done

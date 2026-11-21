@@ -1,0 +1,19 @@
+use strict;
+use warnings;
+
+my $root = shift;
+my %seen;
+while (<>) {
+    next unless m{(?:^| )(\S+)-\$\{(HASH_\w+)\}(\.\w+)$};
+    my ($stem, $variable, $suffix) = ($1, $2, $3);
+    next if $seen{$variable}++;
+    # Dependency queries also read the list before the toolchain is built.
+    my $hash = '0000000000000000';
+    if (-d "$root/libexec/solana-platform-tools/rust/lib") {
+        my @paths = glob("$root/$stem-*$suffix");
+        @paths == 1 && $paths[0] =~ /-([0-9a-f]{16})\Q$suffix\E$/
+            or die "Expected one Rust library matching $stem-*$suffix\n";
+        $hash = $1;
+    }
+    print "-D$variable=$hash\n";
+}

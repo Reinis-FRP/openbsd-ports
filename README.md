@@ -6,6 +6,7 @@ matching ports tree and package mirror.
 
 | Port | Package | Architecture | Contents |
 | --- | --- | --- | --- |
+| [devel/cargo-build-sbf](#cargo-sbf-tools) | `cargo-build-sbf-4.5.0`, `solana-platform-tools-1.57` | amd64 | Cargo build and test commands and the Solana SBF cross compiler |
 | [net/agave](#agave) | `agave-4.4.1p7` | amd64 | Solana CLI, key generation, local test validator, and optional Ledger support |
 
 ## Build a package
@@ -127,3 +128,19 @@ for slots to advance, and checks that a local faucet airdrop credits exactly
 For an optional hardware check, unlock the Ledger, open its Solana app, and
 run `solana-keygen pubkey usb://ledger` from the account configured for Ledger
 access. A successful read prints the wallet's public key.
+
+## Cargo SBF tools
+
+Build `devel/solana-platform-tools` first for the v1.57 cross compiler.
+Install its signed package on the builder before running `make test` in
+`devel/cargo-build-sbf`. The test runs the compiled v3 program in the
+Solana bytecode interpreter.
+
+From a Rust program crate with a `cdylib` target, use the Cargo subcommands.
+
+```sh
+cargo build-sbf --tools-version v1.57 --arch v3
+cargo test-sbf --tools-version v1.57 --arch v3
+```
+
+The deployable program is written to `target/deploy/`.
