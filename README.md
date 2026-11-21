@@ -2,8 +2,9 @@
 
 ## Agave 4.4.1 on amd64
 
-The single `agave-4.4.1p4` package installs `solana`, `solana-keygen`, and
-`solana-test-validator`. The package stem is `agave`.
+The `agave-4.4.1p5` package installs `solana`, `solana-keygen`, and
+`solana-test-validator`, plus optional Ledger hotplug tools. The package stem
+is `agave`.
 
 Use an amd64 builder running the same OpenBSD release as the installation
 host, with its matching ports tree and packages.
@@ -161,7 +162,7 @@ sh /usr/ports/mystuff/net/agave/files/smoke-test /usr/local/bin
 
 On a host with an earlier Agave package installed, use `pkg_add -nr "$signed_pkg"`
 for the dry run and `doas pkg_add -r "$signed_pkg"` for the replacement.
-Check the installed revision with `pkg_info -e agave-4.4.1p4`.
+Check the installed revision with `pkg_info -e agave-4.4.1p5`.
 With the signed archive in a trusted package repository on `PKG_PATH`,
 `doas pkg_add agave` installs all three commands. On a release test host
 with p2 installed, `doas pkg_add -u agave` selects the newer revision from
@@ -287,54 +288,25 @@ a supported Ledger grants `ledgerusb` access on its current unit. The Nano X
 (USB ID `2c97:4000`) is the only model tested on release hardware, where both
 permission transitions were observed on `uhid12`.
 
-Build as your regular user. Use this block for a first install or to update
-an existing helper after pulling changes to the overlay.
+Starting with p5, the package installs the compiled helper and rescan script
+under `/usr/local/libexec/agave/` and an executable hook example under
+`/usr/local/share/examples/agave/`. To enable regular-user Ledger access,
+follow the [package README](net/agave/pkg/README), installed as
+`/usr/local/share/doc/pkg-readmes/agave`.
+
+**Upgrading from the manually installed helper:** keep the existing `ledgerusb`
+group and membership. In both `/etc/hotplug/attach` and `/etc/hotplug/detach`,
+replace the old Ledger invocation and any Ledger-specific argument setup with
+the same line, preserving other handlers:
 
 ```sh
-cd /usr/ports/mystuff/net/agave/files
-builddir=$(mktemp -d /tmp/ledger-build.XXXXXXXX)
-cc -Wall -Wextra -Werror -o "$builddir/ledger-access" \
-    hotplug/ledger-access.c ledger_uhid.c -lusbhid &&
-    doas install -o root -g wheel -m 0755 \
-        "$builddir/ledger-access" hotplug/ledger-rescan /etc/hotplug/
+/usr/local/libexec/agave/ledger-access "${0##*/}" "$1" "$2"
 ```
 
-For a first install, create the group and add your desktop account. Log
-out and back in, then check that `id -Gn` includes `ledgerusb`.
-
-```sh
-doas groupadd ledgerusb
-doas usermod -G ledgerusb "$(id -un)"
-```
-
-From the same `files` directory, install the sample hook for each missing
-event script. For existing scripts, including ones from an earlier installation,
-update or add the helper call before the script exits. Use
-`/etc/hotplug/ledger-access "$1" "$2" --attach` in `/etc/hotplug/attach` and
-`/etc/hotplug/ledger-access "$1" "$2"` in `/etc/hotplug/detach`. Preserve any
-other hotplug actions.
-
-```sh
-for event in attach detach; do
-    if [ ! -e "/etc/hotplug/$event" ]; then
-        doas install -o root -g wheel -m 0755 hotplug/ledger-hook "/etc/hotplug/$event"
-    fi
-done
-doas rcctl enable hotplugd
-doas rcctl start hotplugd
-```
-
-If you previously took ownership of the Ledger node manually, restore
-`root:wheel` and mode `0600` on that node first. To handle devices already
-attached at boot, add `/etc/hotplug/ledger-rescan` to `/etc/rc.local`.
-The rescan checks existing nodes. If a device was attached before `hotplugd`
-started and its node is missing, reconnect it once to trigger creation.
-With the Ledger connected and its Solana app open, verify access as your
-regular user.
-
-```sh
-doas /etc/hotplug/ledger-rescan && solana-keygen pubkey usb://ledger
-```
+If `/etc/rc.local` calls `/etc/hotplug/ledger-rescan`, update its path to
+`/usr/local/libexec/agave/ledger-rescan`. The package README includes fresh
+setup and attach/detach verification. The rescan checks existing nodes. If
+the device was attached at boot and its node is missing, reconnect it once.
 
 During a full scan, opening an unrelated, unmanaged HID node can return
 `EIO`, as happened on the desktop with `uhid0`. The rescan skips that node.
@@ -457,16 +429,16 @@ ledger's faucet keypair to the configured CLI wallet succeeded. The CLI
 reported 500,000,001 SOL, consistent with the 500,000,000 SOL assigned
 to the default mint wallet at genesis plus the transfer.
 
-To verify p4 on 8.0-release/amd64, use the release build, dependency checks
-and archive inspection above. On a release test host with p3 installed, check
+To verify p5 on 8.0-release/amd64, use the release build, dependency checks
+and archive inspection above. On a release test host with p4 installed, check
 the starting version, dry-run the replacement, install the release-built
 archive, and test the upgraded binaries:
 
 ```sh
-pkg_info -e agave-4.4.1p3 &&
+pkg_info -e agave-4.4.1p4 &&
     pkg_add -nr "$signed_pkg" &&
     doas pkg_add -r "$signed_pkg" &&
-    pkg_info -e agave-4.4.1p4 &&
+    pkg_info -e agave-4.4.1p5 &&
     sh /usr/ports/mystuff/net/agave/files/smoke-test /usr/local/bin
 ```
 
@@ -476,6 +448,17 @@ above to verify slot progression and the confirmed airdrop balance. With a
 Ledger attached, the hardware checks also exercise the upgraded CLI and keygen.
 
 ### Build on the development snapshot
+
+On 8.0-current/amd64 GENERIC.MP#163, p5 built from a fresh work directory
+with eight Cargo jobs and Rust 1.99.1. The unsigned archive was 30,320,262
+bytes. The ports smoke test, both library dependency checks, and portcheck
+passed. In disposable installation roots, a fresh install and a p4-to-p5
+upgrade by package name passed the packaged CLI and keygen smoke test.
+The upgrade preserved the existing hooks and boot rescan entry. One-time
+migration covered a Ledger-only hook and a shared hook with another local
+action. Simulated devices exercised node creation, concurrent attach,
+detach, reconnect, and unit reuse. Physical Ledger testing of p5 on
+8.0-release is pending.
 
 On 8.0-current/amd64 GENERIC.MP#163 with eight CPUs online and Rust 1.99.1,
 a clean p4 build with `MAKE_JOBS=6` took 8m44.70s using cached, verified

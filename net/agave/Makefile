@@ -12,7 +12,7 @@ DIST_TUPLE =		github anza-xyz agave v4.4.1 . \
 			github anza-xyz rocksdb \
 			f4e6cd89d61b747834b1687485ca363ebe6b366e \
 			../rust-rocksdb/librocksdb-sys/rocksdb
-REVISION =		4
+REVISION =		5
 CATEGORIES =		net
 
 # Apache-2.0
@@ -52,11 +52,20 @@ post-patch:
 post-build:
 	${MODCARGO_CARGO_RUN} build --release --frozen \
 	    -p agave-validator --bin solana-test-validator
+	${CC} ${CFLAGS} ${LDFLAGS} -o ${WRKBUILD}/ledger-access \
+	    ${FILESDIR}/hotplug/ledger-access.c ${FILESDIR}/ledger_uhid.c -lusbhid
 
 do-install:
 	${INSTALL_PROGRAM} ${MODCARGO_TARGET_DIR}/release/solana \
 		${MODCARGO_TARGET_DIR}/release/solana-keygen \
 		${MODCARGO_TARGET_DIR}/release/solana-test-validator ${PREFIX}/bin/
+	${INSTALL_PROGRAM_DIR} ${PREFIX}/libexec/agave
+	${INSTALL_PROGRAM} ${WRKBUILD}/ledger-access ${PREFIX}/libexec/agave/
+	${SUBST_PROGRAM} ${FILESDIR}/hotplug/ledger-rescan \
+	    ${PREFIX}/libexec/agave/ledger-rescan
+	${INSTALL_DATA_DIR} ${PREFIX}/share/examples/agave
+	${SUBST_PROGRAM} ${FILESDIR}/hotplug/ledger-hook \
+	    ${PREFIX}/share/examples/agave/ledger-hook
 
 # Run the networked RPC smoke test separately (see README).
 do-test:

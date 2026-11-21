@@ -3,6 +3,6 @@ set -eu
 status=0
 for node in /dev/uhid[0-9]*; do
     [ -c "$node" ] || continue
-    /etc/hotplug/ledger-access 0 "${node##*/}" --rescan || status=1
+    ${TRUEPREFIX}/libexec/agave/ledger-access rescan 0 "${node##*/}" || status=1
 done
 exit "$status"

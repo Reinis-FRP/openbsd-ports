@@ -1,3 +1,9 @@
 @bin bin/solana
 @bin bin/solana-keygen
 @bin bin/solana-test-validator
+libexec/agave/
+@bin libexec/agave/ledger-access
+libexec/agave/ledger-rescan
+share/doc/pkg-readmes/${PKGSTEM}
+share/examples/agave/
+share/examples/agave/ledger-hook

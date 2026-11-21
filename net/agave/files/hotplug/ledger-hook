@@ -1,9 +1,2 @@
 #!/bin/sh
-case "$1:$2" in
-0:uhid[0-9]*)
-    if [ "${0##*/}" = attach ]; then
-        set -- "$1" "$2" --attach
-    fi
-    /etc/hotplug/ledger-access "$@"
-    ;;
-esac
+${TRUEPREFIX}/libexec/agave/ledger-access "${0##*/}" "$1" "$2"

@@ -71,15 +71,17 @@ main(int argc, char **argv)
 	gid_t group;
 	int attach, fd, product, rescan;
 
-	attach = argc == 4 && strcmp(argv[3], "--attach") == 0;
-	rescan = argc == 4 && strcmp(argv[3], "--rescan") == 0;
-	if (argc != 3 && !attach && !rescan)
-		errx(1, "usage: ledger-access class device [--attach | --rescan]");
-	if (strcmp(argv[1], "0") != 0 || strncmp(argv[2], "uhid", 4) != 0)
+	if (argc != 4)
+		errx(1, "usage: ledger-access attach|detach|rescan class device");
+	attach = strcmp(argv[1], "attach") == 0;
+	rescan = strcmp(argv[1], "rescan") == 0;
+	if (!attach && !rescan && strcmp(argv[1], "detach") != 0)
+		errx(1, "unknown event: %s", argv[1]);
+	if (strcmp(argv[2], "0") != 0 || strncmp(argv[3], "uhid", 4) != 0)
 		return 0;
-	unit = argv[2] + 4;
+	unit = argv[3] + 4;
 	if (*unit == '\0' || unit[strspn(unit, "0123456789")] != '\0' ||
-	    snprintf(path, sizeof(path), "/dev/%s", argv[2]) >= (int)sizeof(path))
+	    snprintf(path, sizeof(path), "/dev/%s", argv[3]) >= (int)sizeof(path))
 		return 0;
 	if ((gr = getgrnam("ledgerusb")) == NULL || gr->gr_gid == 0)
 		errx(1, "a dedicated ledgerusb group is required");
@@ -92,7 +94,7 @@ main(int argc, char **argv)
 			err(1, "%s", path);
 		if (!attach)
 			return 0;
-		create_node(argv[2]);
+		create_node(argv[3]);
 		if (lstat(path, &st) == -1)
 			err(1, "%s after MAKEDEV", path);
 	}
