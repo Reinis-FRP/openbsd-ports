@@ -34,14 +34,12 @@ options. The following example builds Agave.
 
 ```sh
 cd "$overlay/net/agave"
-make show=FULLPKGNAME
 make build && make test && make package
-make show=PKGFILE
 ```
 
-The ports framework fetches and verifies the distfiles. `make show=PKGFILE`
-prints the archive's full path. When rebuilding after an overlay update, run
-`make clean` in the port directory first so the new sources and patches are used.
+The ports framework fetches and verifies the distfiles. When rebuilding after
+an overlay update, run `make clean` in the port directory first so the new
+sources and patches are used.
 
 ## Install a package
 
