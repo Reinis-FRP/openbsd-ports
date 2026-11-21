@@ -1,632 +1,129 @@
 # Private OpenBSD ports
 
-## Agave 4.4.1 on amd64
+This overlay adds ports to an existing OpenBSD ports tree. Use a builder with
+the same OpenBSD release and architecture as the installation host, and a
+matching ports tree and package mirror.
 
-The `agave-4.4.1p7` package installs `solana`, `solana-keygen`, and
-`solana-test-validator`, plus optional Ledger hotplug tools. The package stem
-is `agave`.
+| Port | Package | Architecture | Contents |
+| --- | --- | --- | --- |
+| [net/agave](#agave) | `agave-4.4.1p7` | amd64 | Solana CLI, key generation, local test validator, and optional Ledger support |
 
-Use an amd64 builder running the same OpenBSD release as the installation
-host, with its matching ports tree and packages.
+## Build a package
 
-### Check out the overlay
-
-Once the main ports tree is in place, create the overlay directory if
-`/usr/ports/mystuff` does not yet exist. Run Git as your regular user with
-SSH access to the private repository. The `022` umask makes the checked-out
-port files readable by `_pbuild` and `_pfetch`.
+OpenBSD searches `/usr/ports/mystuff` for local ports by default. On a builder
+where that directory does not yet exist, clone the overlay as your regular user.
 
 ```sh
-doas mkdir -m 0755 /usr/ports/mystuff &&
-    doas chown "$(id -un):$(id -gn)" /usr/ports/mystuff &&
-    (umask 022 && git clone --branch main \
-        git@github.com:Reinis-FRP/openbsd-ports.git /usr/ports/mystuff)
+overlay=/usr/ports/mystuff
+doas mkdir -m 0755 "$overlay" &&
+    doas chown "$(id -un):$(id -gn)" "$overlay" &&
+    (umask 022 && git clone git@github.com:Reinis-FRP/openbsd-ports.git "$overlay")
 ```
 
-For an existing checkout of this repository, including one restored after
-a ports tree refresh, update it as the same user:
+If you already use `mystuff` for other ports, clone this repository elsewhere,
+set `overlay` to its absolute path, and export
+`PORTSDIR_PATH="/usr/ports:/usr/ports/mystuff:$overlay"`. On a
+privilege-separated builder, both `_pfetch` and `_pbuild` need to be able to
+read the checkout and traverse its parent directories.
+[OpenBSD ports setup](https://www.openbsd.org/faq/ports/ports.html)
+
+Select a port from the table and check its build notes for dependencies and
+options. The following example builds Agave.
 
 ```sh
-(umask 022 && git -C /usr/ports/mystuff pull --ff-only)
-```
-
-Verify the checked-out commit and that the ports framework resolves the
-overlay port as `net/agave`:
-
-```sh
-cd /usr/ports/mystuff/net/agave
-git log -1 --oneline
-make show=PKGPATH
-```
-
-### Release builder with ports privilege separation
-
-Check the builder's effective settings before changing anything. From
-`/usr/ports/mystuff/net/agave`, run:
-
-```sh
-make show=PORTS_PRIVSEP
-make show=FETCH_USER
-make show=BUILD_USER
+cd "$overlay/net/agave"
+make show=FULLPKGNAME
+make build && make test && make package
 make show=PKGFILE
 ```
 
-The documented desktop setup gives `Yes`, `_pfetch`, and `_pbuild` for the
-first three values, using these entries in `/etc/mk.conf`.
+The ports framework fetches and verifies the distfiles. `make show=PKGFILE`
+prints the archive's full path. When rebuilding after an overlay update, run
+`make clean` in the port directory first so the new sources and patches are used.
 
-```make
-PORTS_PRIVSEP=Yes
-WRKOBJDIR=/usr/obj/ports
-DISTDIR=/usr/distfiles
-PACKAGE_REPOSITORY=/usr/packages
-```
+## Install a package
 
-With these paths the package lands in `/usr/packages/amd64/all/`. The
-following `/etc/doas.conf` rules from the desktop notes allow a build user
-in `wheel` to run commands as the two service accounts.
-
-```text
-permit keepenv nopass :wheel as _pbuild
-permit keepenv nopass :wheel as _pfetch
-```
-
-When first enabling privilege separation or moving the ports directories,
-run `cd /usr/ports && doas make fix-permissions` to set their ownership.
-The service accounts also need search permission on parent directories
-and read access to the overlay. On an already configured builder, proceed
-directly to the build as your regular user.
-
-### Build the release package
-
-On the builder, install the dependencies from the official OpenBSD 8.0/amd64
-packages. These include Rust 1.98.1, the version pinned by Agave v4.4.1.
-The trailing `--` selects the standard flavor of `libusb1`.
+Sign the package on the builder, including when installing it there. If the
+builder needs its first package-signing key pair, generate it once with
+`doas signify -Gns /etc/signify/my-pkg.sec -p /etc/signify/my-pkg.pub`.
+This creates a passphrase-free private key that stays on the builder.
+From the port directory, sign the archive at its build path. [pkg_sign(1)](https://man.openbsd.org/pkg_sign.1)
 
 ```sh
-doas pkg_add rust cargo-generate-vendor zstd libhidapi libusb1-- gmake protobuf
-# Install the LLVM version selected by the matching ports tree for bindgen.
-llvm_port=/usr/ports/devel/llvm/$(make show=MODCLANG_VERSION)
-doas pkg_add "$(cd "$llvm_port" && make show=FULLPKGNAME)"
-```
-
-The ports framework reuses matching installed packages. On a clean build,
-Cargo compiles Agave and the Rust crates needed for all three binaries.
-For example, it compiles the `hidapi` bindings and links to the installed
-USB libraries. When updating the overlay to a new port revision on a builder
-with an existing Agave work directory, run `make clean` in the port first
-so the new patches are applied. The downloaded distfiles are reusable.
-
-```sh
-cd /usr/ports/mystuff/net/agave
-sysctl -n hw.ncpuonline
-make show=MAKE_JOBS
-```
-
-This port defaults to one Cargo job unless the builder overrides `MAKE_JOBS`.
-The two commands above show the online CPU count and the configured job limit.
-The Cargo module passes `MAKE_JOBS` to Cargo as `CARGO_BUILD_JOBS`. To use
-the online CPUs, set the limit on the build command as shown below. Use a
-smaller limit such as `MAKE_JOBS=4` to leave resources for other desktop work.
-
-```sh
-make fetch
-make checksum
-make MAKE_JOBS="$(sysctl -n hw.ncpuonline)" build
-make test
-make fake
-make port-lib-depends-check
-make package
-make lib-depends-check
 pkgfile=$(make show=PKGFILE)
-pkg_info -D unsigned -f "$pkgfile"
-tar -tzf "$pkgfile"
+doas pkg_sign -s signify2 -s /etc/signify/my-pkg.sec -o "$(dirname "$pkgfile")" "$pkgfile"
 ```
 
-To build and package in one command, use
-`make MAKE_JOBS="$(sysctl -n hw.ncpuonline)" package` from the port directory.
-
-To choose a different Ledger group, set `AGAVE_LEDGER_GROUP` on the build.
-For example, from a clean port work directory:
-
-```sh
-make AGAVE_LEDGER_GROUP=walletusers MAKE_JOBS="$(sysctl -n hw.ncpuonline)" package
-```
-
-The compiled helper and installed package README both use that name. For
-separate make invocations and future rebuilds, set
-`AGAVE_LEDGER_GROUP=walletusers` in `/etc/mk.conf`. The default is
-`ledgerusb`. Each host allocates the GID locally. When changing the setting
-for an already built revision, run `make clean='work packages'` first to
-discard that port's previous work and archive. Before replacing an active
-helper with one using a different group, unplug the Ledger and verify its
-node has returned to `root:wheel` mode `0600`.
-If the installed package has the same revision, use
-`doas pkg_add -r -D installed "$signed_pkg"` with the newly signed archive.
-
-### Sign and install the release package
-
-The ports build above produces an unsigned package. For distribution to
-your release host, use the local package-signing key from your OpenBSD
-desktop setup. If this is the builder's first signing key, generate the pair
-once. `-n` creates a passphrase-free secret key. Keep it on the builder.
-
-```sh
-doas signify -Gns /etc/signify/my-pkg.sec -p /etc/signify/my-pkg.pub
-```
-
-From the same shell as the build, sign just the Agave archive into a sibling
-`signed` directory. Verify it with the builder's public key.
-
-```sh
-signed_dir="${pkgfile%/*}/../signed"
-doas pkg_sign -s signify2 -s /etc/signify/my-pkg.sec -o "$signed_dir" "$pkgfile"
-signed_pkg="$signed_dir/${pkgfile##*/}"
-signify -Vz -p /etc/signify/my-pkg.pub -x "$signed_pkg" -m /dev/null
-```
-
-On a separate release host, provision the builder's **public** key as
-`/etc/signify/my-pkg.pub` through a trusted channel. Copy the signed archive
-and set `signed_pkg` to its absolute path on that host. If the signing
-builder is also the installation host, the key and variable are already in
-place. Inspect, dry-run, then install with normal signature checks.
+On the builder, install the signed archive directly. For another host,
+copy the signed archive there, set `pkgfile` to its path, and provision
+`/etc/signify/my-pkg.pub` through a trusted channel. On either host,
+verify the signature and preview the installation before installing.
 
 ```sh
 unset TRUSTED_PKG_PATH
-pkg_info -f "$signed_pkg"
-pkg_add -n "$signed_pkg"
-doas pkg_add "$signed_pkg"
-sh /usr/ports/mystuff/net/agave/files/smoke-test /usr/local/bin
+signify -Vz -p /etc/signify/my-pkg.pub -x "$pkgfile" -m /dev/null &&
+    pkg_add -n "$pkgfile" && doas pkg_add "$pkgfile"
 ```
 
-On a host with an earlier Agave package installed, use `pkg_add -nr "$signed_pkg"`
-for the dry run and `doas pkg_add -r "$signed_pkg"` for the replacement.
-Check the installed revision with `pkg_info -e agave-4.4.1p7`.
-With the signed archive in a trusted package repository on `PKG_PATH`,
-`doas pkg_add agave` installs all three commands. On a release test host
-with p2 installed, `doas pkg_add -u agave` selects the newer revision from
-that repository and upgrades just the requested package and any required
-dependencies.
+The same commands upgrade an older revision of the same port. If you publish
+the package in a repository on `PKG_PATH`, users can also update by name
+with `doas pkg_add -u agave`, for example.
 
-On a host that only installs Agave, `pkg_add` resolves its direct runtime
-dependencies `zstd`, `libhidapi`, and `libusb1`. Rust, `cargo-generate-vendor`,
-LLVM, gmake, and protoc are build-time tools.
+## Agave
 
-The last command uses the overlay's smoke-test script. On a host without
-the overlay, copy the script alongside the package and run it with the same
-`/usr/local/bin` argument.
+### Build considerations
 
-For an unsigned installation directly on the builder, the ports framework
-supplies its local package directory as `TRUSTED_PKG_PATH` for `make install`.
-That setting waives signature verification for packages in that directory.
-Use the signed archive above when moving the package between hosts.
-
-The smoke test prints both versions, generates a temporary keypair, and
-checks a signature with its public key.
-
-#### Test the packaged local validator
-
-Run the check as your regular user from the overlay root in the default
-routing domain.
+Agave builds the three binaries from pinned sources with Cargo's `--frozen`
+option. To save time on a clean builder, install the build and library
+dependencies from binary packages first. Run these commands in `net/agave` so
+the LLVM version used by bindgen comes from the matching ports tree.
 
 ```sh
-cd /usr/ports/mystuff
-sh net/agave/files/validator-smoke-test /usr/local/bin
+doas pkg_add rust cargo-generate-vendor gmake protobuf zstd libhidapi libusb1--
+llvm_port=/usr/ports/devel/llvm/$(make show=MODCLANG_VERSION)
+doas pkg_add "$(make -C "$llvm_port" show=FULLPKGNAME)"
 ```
 
-The script creates a disposable ledger and client key, polls
-`solana --url http://127.0.0.1:8899 --commitment processed slot`, and
-prints two increasing slots. It requests a 1 SOL airdrop to a new keypair and
-checks that its confirmed balance is exactly 1,000,000,000 lamports. It stops
-the validator and removes the disposable ledger and keys on exit.
+`libusb1--` selects the standard flavor. To use four Cargo build jobs, for
+example, use `make MAKE_JOBS=4 build` for the build step above. To check the
+package's library dependencies after packaging, run
+`make port-lib-depends-check` and `make lib-depends-check`.
 
-Agave v4.4.1 binds JSON RPC (TCP 8899), WebSocket (TCP 8900), and the
-faucet (TCP 9900) to all IPv4 addresses even with `--bind-address 127.0.0.1`.
-This workflow assumes the host firewall blocks unwanted inbound access.
-For Anchor tests, run Anchor from the directory containing `Anchor.toml`.
-It can start the validator there and use outbound RPC to clone accounts.
+### Runtime notes
 
-If you previously created a dedicated routing domain for this test,
-`netstat -R` shows its interfaces. For example, if domain 174 still
-contains only your test interface `lo174`, stop the test validator and run
-`doas ifconfig lo174 destroy`. The domain disappears and its empty routing
-table can remain listed under domain 0 until reboot.
+- **Ledger access.** The packaged hotplug helper grants a dedicated group
+  access to the Ledger's `uhid(4)` interface. The default is `ledgerusb`.
+  To choose a different name, set `AGAVE_LEDGER_GROUP` in the builder's
+  `/etc/mk.conf` before a clean build. If replacing an active group, unplug
+  the device first and verify its node returns to `root:wheel` mode `0600`.
+  Hook setup is documented in `/usr/local/share/doc/pkg-readmes/agave`.
+  [Package README](net/agave/pkg/README)
+- **Local validator.** RPC, WebSocket, and faucet ports (TCP 8899, 8900, and
+  9900 by default) listen on all IPv4 interfaces even with
+  `--bind-address 127.0.0.1`. Restrict inbound access with PF when testing
+  locally. If startup reports an allocation failure, check the shell's soft
+  data limit. A 2 GiB limit has been sufficient for startup.
+- **Off-chain signing.** With the Nano X Solana app 1.12.1, Agave 4.4.1's
+  `solana sign-offchain-message` can print 64 Base58 `1` characters after
+  the device rejects the message. That all-zero signature indicates failure.
 
-#### Ledger on OpenBSD
+### Smoke tests
 
-Starting with `agave-4.4.1p0`, both binaries look for the Ledger application
-on native `/dev/uhidN` nodes. They check the USB vendor and product IDs,
-the Ledger HID collection, and the 64-byte input and output report sizes
-before sending a request. The existing libusb discovery path is also enabled.
-
-Unlock the Ledger and open its Solana app. In the latest `dmesg` attachment,
-find the Ledger's interface 0 and follow its `uhidev` parent to the
-`uhidN` child. Unit numbers can change on reconnect. On the tested Nano X
-this was `uhid12`. The optional hotplug helper below creates missing nodes on
-attach. For manual setup, run `MAKEDEV` only if the node is missing. Substitute
-the current unit for `uhid12` in both commands.
+After installation, run these scripts as a regular user from the checkout.
+On a host without the overlay, copy the scripts from `net/agave/files/` and
+pass the installed binary directory as their first argument.
 
 ```sh
-(cd /dev && doas sh MAKEDEV uhid12)
-doas usbhidctl -f /dev/uhid12 -r
-```
-
-The separate package hardware test reads a public key. Run it as a user
-with read and write access to the current Ledger node. For a first test
-with the default node permissions, use the second command.
-
-```sh
-/usr/local/bin/solana-keygen pubkey usb://ledger
-doas /usr/local/bin/solana-keygen pubkey usb://ledger
-```
-
-On 8.0-release, the installed p0 keygen read a Nano X public key after
-attachment and timed out on the next invocation. This occurred on two USB
-controllers. A separate native probe retried the read-only configuration
-request on the same open handle, received status `9000`, then received the
-32-byte public key with status `9000`. The Solana app version was 1.12.1.
-
-On the same release host, p1 read the public key on consecutive invocations.
-A trace of a slow read showed two five-second configuration timeouts before
-a reply arrived after the third write.
-
-In p2, native discovery waits one second after each of the first two
-configuration writes and five seconds after the third. All three attempts
-use the same open handle. Discovery sends the public-key request once and
-waits up to five seconds per input report, ignoring matching late
-configuration replies up to the number of retries.
-
-To check reopening on the release host, leave the device connected and the
-Solana app open across both invocations. With default node permissions, run:
-
-```sh
-for run in 1 2; do
-    doas timeout -k 2 40 /usr/local/bin/solana-keygen pubkey usb://ledger || break
-done
-```
-
-Both invocations should print the same public key. On OpenBSD 8.0-release/amd64
-with p2 and the Nano X, three consecutive reads took 1.03, 3.03, and 3.03 seconds.
-
-After an OS upgrade, repeat the build with matching ports and dependencies
-and fresh work and package directories. After signing the rebuilt package, use
-`doas pkg_add -r -D installed "$signed_pkg"` for a same-version replacement.
-
-##### Run Ledger commands as a regular user
-
-The optional [hotplug helper](net/agave/files/hotplug) grants a dedicated
-group access to the Ledger application interface. It defaults to `ledgerusb`.
-On a `uhidN` attach event, it creates a missing `/dev/uhidN` with `MAKEDEV`
-as `root:wheel` mode `0600`.
-It recognizes the Nano S, Nano X, Nano S Plus, Stax, Flex, and Nano Gen5
-product IDs from Agave 4.4.1.
-It checks vendor ID `2c97`, the model’s product IDs, and the Ledger HID
-collection with 64-byte input and output reports on the open device.
-With the default group, the node gets `root:ledgerusb` mode `0660` and returns
-to `root:wheel` mode `0600` on detach. The node stays in `/dev`. Reconnecting
-a supported Ledger grants the configured group access on its current unit.
-The Nano X (USB ID `2c97:4000`) is the only model tested on release hardware,
-where both permission transitions were observed on `uhid12`.
-
-Starting with p5, the package installs the compiled helper and rescan script
-under `/usr/local/libexec/agave/` and an executable hook example under
-`/usr/local/share/examples/agave/`. To enable regular-user Ledger access,
-follow the [package README](net/agave/pkg/README), installed as
-`/usr/local/share/doc/pkg-readmes/agave`.
-
-**Upgrading from the manually installed helper:** keep the existing group
-and membership when using the same group name. In both `/etc/hotplug/attach`
-and `/etc/hotplug/detach`, replace the old Ledger invocation and any Ledger-specific
-argument setup with the same line, preserving other handlers:
-
-```sh
-/usr/local/libexec/agave/ledger-access "${0##*/}" "$1" "$2"
-```
-
-If `/etc/rc.local` calls `/etc/hotplug/ledger-rescan`, update its path to
-`/usr/local/libexec/agave/ledger-rescan`. The package README covers
-setup and a public-key check. The rescan checks existing nodes. If
-the device was attached at boot and its node is missing, reconnect it once.
-
-During a full scan, opening an unrelated, unmanaged HID node can return
-`EIO`, as happened on the desktop with `uhid0`. The rescan skips that node.
-Other reported failures leave the final scan status nonzero after it has
-checked the remaining nodes. Normal attach and detach events still report
-open-time `EIO` on the affected node.
-
-##### Verify a Ledger transaction signature offline
-
-On OpenBSD 8.0-release/amd64, `agave-4.4.1p2` passed this test with a
-Nano X running Solana app 1.12.1. Run this command with the app open.
-
-```sh
-doas /usr/local/bin/solana --url http://127.0.0.1:1 --keypair usb://ledger \
-    transfer --sign-only --blockhash 11111111111111111111111111111111 \
-    11111111111111111111111111111112 0
-```
-
-Review the zero-SOL transfer to the address ending in `12` on the Ledger
-and approve it. The dummy blockhash and `--sign-only` keep the test offline.
-Nothing is broadcast and no fee is incurred. Check that your Ledger public
-key appears under `Signers (Pubkey=Signature)`. Agave verifies the signature
-against the transaction message before listing it there.
-[Agave 4.4.1 signature check](https://github.com/anza-xyz/agave/blob/v4.4.1/cli-output/src/cli_output.rs#L2972-L3000)
-
-##### Verify a transaction that spans two Ledger commands
-
-This offline test uses a dummy nonce account and a temporary software key
-as its nonce authority. The Ledger signs as the sender and fee payer.
-These extra accounts bring the serialized message to 256 bytes. The nonce
-account does not need to exist for `--sign-only`.
-
-```sh
-(
-    set -eu
-    umask 077
-    work=$(mktemp -d /tmp/agave-ledger-tx.XXXXXXXX)
-    trap 'rm -f "$work/authority.json"; rmdir "$work"' EXIT
-    trap 'exit 1' HUP INT TERM
-    /usr/local/bin/solana-keygen new --silent --no-bip39-passphrase \
-        --outfile "$work/authority.json" >/dev/null
-    /usr/local/bin/solana-keygen pubkey "$work/authority.json"
-    doas /usr/local/bin/solana --url http://127.0.0.1:1 --keypair usb://ledger \
-        transfer --sign-only --blockhash 11111111111111111111111111111111 \
-        --nonce 11111111111111111111111111111113 \
-        --nonce-authority "$work/authority.json" \
-        11111111111111111111111111111112 0
-)
-```
-
-Review the zero-SOL transfer to the address ending in `12` on the Nano X.
-Approve once. A pass lists two entries under `Signers (Pubkey=Signature)`,
-one for your Ledger address and one for the temporary authority printed
-before the prompt. Both signatures are verified locally.
-
-On the development snapshot, the packaged CLI signed this message with
-two disposable software keys. A simulated Ledger exchange confirmed that
-Agave sent two signing commands with 255 and 11 payload bytes and that the
-reassembled transaction message matched the CLI output.
-
-On OpenBSD 8.0-release/amd64 with `agave-4.4.1p2` and Solana app 1.12.1,
-the Nano X approved the 256-byte message in one prompt. The CLI listed both
-the Ledger and the temporary nonce authority under `Signers`, confirming
-that both signatures verified locally.
-
-##### Off-chain message signing limitation
-
-During `solana sign-offchain-message`, the Nano X returned status `6a81`
-(invalid message header) before displaying an approval prompt. The CLI printed 64 Base58 `1` characters. This encodes
-the all-zero signature that Agave substitutes on signing errors. Treat
-that output as a failed signing attempt.
-[Agave signing call](https://github.com/anza-xyz/solana-sdk/blob/dd35877238a7a8ddb181c9b044bfacabfbaa9133/offchain-message/src/lib.rs#L235-L238) ·
-[Signer error handling](https://github.com/anza-xyz/solana-sdk/blob/9cb351204b128eb7d999fd8d92cd926ef97e10bf/signer/src/lib.rs#L125-L129)
-
-The mismatch was reproduced on the snapshot by passing the output of
-Agave 4.4.1’s pinned serializer directly to the Ledger 1.12.1 parser,
-bypassing USB and the port’s HID code. For `OpenBSD Agave Ledger signing test`,
-the parser rejected Agave’s 53-byte message. It accepted the same text
-with the 32-byte application domain, signer count, and signer public key
-that Ledger expects in its header.
-[Agave message format](https://github.com/anza-xyz/solana-sdk/blob/dd35877238a7a8ddb181c9b044bfacabfbaa9133/offchain-message/src/lib.rs#L94-L105) ·
-[Ledger 1.12.1 parser](https://github.com/LedgerHQ/app-solana/blob/7049e41512b2c33a7b7bfc4badfabc9fb35e657d/libsol/parser.c#L162-L182)
-
-### Source inputs
-
-`net/agave/Makefile` pins Anza's tag and the three Git revisions from its
-workspace lockfile. `crates.inc` and `distinfo` list the registry crates
-and distfile checksums. The two Cargo patches redirect the four Git package
-entries to the extracted archives. Cargo builds the three binaries with a private
-Cargo home, the ports vendor directory, and `--frozen`.
-
-The CLI and keygen enable Agave's libusb remote-wallet feature. The OpenBSD
-Ledger code also links base libusbhid to inspect native report descriptors.
-The probe uses the `cc` crate already pinned in the workspace lockfile.
-The validator builds separately with `-p agave-validator --bin solana-test-validator`
-so its features resolve independently of the CLI and keygen. The ledger uses
-the rust-rocksdb wrapper with LZ4 and compiles RocksDB from its checksummed
-gitlink revision `f4e6cd89d61b747834b1687485ca363ebe6b366e`. Snappy is
-disabled in this graph. Replay and the unified scheduler use Jemalloc arenas
-and statistics. The OpenBSD build requests prefixed Jemalloc symbols for Rust
-allocations and keeps libc's allocator available for C allocations. Agave's
-sysctl crate dependency follows its Linux-only network-limit query.
-
-### OpenBSD 8.0-release/amd64 results
-
-On the 16-CPU release desktop, `agave-4.4.1p3.tgz` was 30,266,984 bytes
-(28.86 MiB). The installed packing list contained all three binaries.
-The CLI/keygen smoke test, `port-lib-depends-check` and `lib-depends-check`
-passed. The direct package dependencies were `zstd`, `libhidapi` and
-`libusb1`.
-
-With a 1.5 GiB soft data limit, the validator opened RPC
-and processed genesis, then exited with an allocation failure before the
-first new slot. Raising the ordinary user's soft limit to 12 GiB for the
-test process allowed the same installed binary to advance from slot 0 to
-slot 1 on a fresh ledger in loopback-only routing domain 174.
-
-On the same release desktop, a direct 1 SOL transfer from the p3 local
-ledger's faucet keypair to the configured CLI wallet succeeded. The CLI
-reported 500,000,001 SOL, consistent with the 500,000,000 SOL assigned
-to the default mint wallet at genesis plus the transfer.
-
-To verify p7 on 8.0-release/amd64, use the release build, dependency checks
-and archive inspection above. On a release test host with p5 installed, check
-the starting version, dry-run the replacement, install the release-built
-archive, and test the upgraded binaries:
-
-```sh
-pkg_info -e agave-4.4.1p5 &&
-    pkg_add -nr "$signed_pkg" &&
-    doas pkg_add -r "$signed_pkg" &&
-    pkg_info -e agave-4.4.1p7 &&
-    sh /usr/ports/mystuff/net/agave/files/smoke-test /usr/local/bin
-```
-
-Expect one replacement, all three binaries in `/usr/local/bin`, and a
-successful keypair verification. Run the local validator example
-above to verify slot progression and the confirmed airdrop balance. With a
-Ledger attached, the hardware checks also exercise the upgraded CLI and keygen.
-
-### Build on the development snapshot
-
-On 8.0-current/amd64 GENERIC.MP#163, p5 built from a fresh work directory
-with eight Cargo jobs and Rust 1.99.1. The unsigned archive was 30,320,262
-bytes. The ports smoke test, both library dependency checks, and portcheck
-passed. In disposable installation roots, a fresh install and a p4-to-p5
-upgrade by package name passed the packaged CLI and keygen smoke test.
-The upgrade preserved the existing hooks and boot rescan entry. One-time
-migration covered a Ledger-only hook and a shared hook with another local
-action. Simulated devices exercised node creation, concurrent attach,
-detach, reconnect, and unit reuse. Physical Ledger testing of p5 on
-8.0-release is pending.
-
-On 8.0-current/amd64 GENERIC.MP#163 with eight CPUs online and Rust 1.99.1,
-a clean p4 build with `MAKE_JOBS=6` took 8m44.70s using cached, verified
-distfiles. The archive was 30,317,335 bytes. The CLI/keygen smoke test
-and both library dependency checks passed. Using the binaries extracted
-from the archive, an ordinary user observed local RPC slots advance from
-0 to 1 and confirmed a 1 SOL airdrop to a fresh account in loopback-only
-routing domain 173.
-
-On 8.0-current/amd64 GENERIC#156, p3 reproduced the CLI airdrop error. Its
-RPC service tried to connect to the faucet at `0.0.0.0:9900` and OpenBSD
-returned `EINVAL`. In p4, RPC connects to `127.0.0.1` on the configured
-faucet port. After upgrading p3 to p4 in a disposable installation, the
-packaged CLI observed slots advance from 0 to 1 and confirmed a balance
-of 1,000,000,000 lamports on a new account after one airdrop.
-
-On 8.0-current/amd64 GENERIC#156 with Rust 1.99.1, p3 passed the frozen
-build, all 938 distfile checksums, fake installation, package creation and
-both library-dependency checks. A fresh extraction and configure run reproduced
-all patched source files from the overlay.
-
-| Archive | Bytes | MiB |
-| --- | ---: | ---: |
-| `agave-4.4.1p2.tgz` | 10,869,063 | 10.37 |
-| `agave-4.4.1p3.tgz` | 30,311,437 | 28.91 |
-| Increase | 19,442,374 | 18.54 |
-
-The added validator executable occupies 47,389,864 bytes (45.19 MiB)
-installed. It adds base `libc++`, `libssl` and `libcrypto` to the package's
-shared-library requirements. Both revisions have the same three direct
-package dependencies, `zstd`, `libhidapi` and `libusb1`. The CLI and keygen
-still link to the native HID and libusb libraries.
-
-A fresh install dry run by package name succeeded. An actual
-`pkg_add -u agave` in a disposable installation root upgraded p2 to p3.
-Agave was the only package version that changed. The installed CLI and
-keygen passed their keypair smoke test. With a 12 GiB soft data limit, the
-installed validator served RPC on a fresh ledger and the CLI observed slot
-0 advance to 1 in routing domain 173. The test cleaned up its child and
-ledger. After `ifconfig lo173 destroy`, `netstat -R` showed only domain 0,
-with routing tables 0 and 173.
-
-OpenBSD 8.0-current/amd64 GENERIC#156 with Rust 1.99.1 built and packaged
-the original agave-4.4.1 package from a fresh ports fetch and an empty Cargo home. All 937
-distfiles passed checksum verification. All 933 registry checksums also
-matched the upstream lockfile. The ports smoke test, fake installation,
-package creation, portcheck, and both library-dependency checks passed.
-
-Both binaries extracted from the package reported 4.4.1 at commit
-`5bb30402` and linked directly to libhidapi-libusb and libusb-1.0. The
-packaged keygen created a temporary keypair and verified a signature.
-The unsigned snapshot package passed a dry-run install with its local
-package directory in `TRUSTED_PKG_PATH`. Plain `pkg_add -n` rejected it.
-A copy signed with a disposable key passed `signify -Vz` verification.
-
-Revision p0 also built on GENERIC#156 from a fresh work directory and
-empty Cargo home using the same 937 verified distfiles. The ports test,
-fake, package, portcheck, library checks, and local package dry run passed.
-Both extracted binaries reported 4.4.1 at commit `5bb30402` and linked
-to base libusbhid as well as libhidapi-libusb and libusb. The extracted
-keygen passed the disposable-keypair smoke test. A simulated native HID
-exchange exercised app configuration and the default Solana public-key
-request on the snapshot.
-
-On the same snapshot, p1 passed the frozen build with an empty Cargo home,
-the ports smoke test, fake, package creation, portcheck, both dependency
-checks, and a local package installation dry run. Both binaries extracted
-from the archive passed the version checks and keygen passed the disposable
-keypair test. Simulated HID reports covered retries, delayed duplicates,
-silent devices, legacy configuration, and a delayed signing confirmation.
-
-#### Prepare the fresh build disk once
-
-After attaching the disk and booting the VM, identify it by capacity and
-check which disk holds the root filesystem.
-
-```sh
-sysctl hw.disknames
-dmesg | grep '^sd[0-9]'
-df -h /
-```
-
-Replace `sdN` below with the **confirmed empty disk**. Before the reboot,
-this VM used `sd0` for its system disk. The following steps overwrite the
-selected disk's partition table and create a new filesystem.
-
-```sh
-doas fdisk -g sdN
-doas disklabel -E sdN
-```
-
-Confirm the GPT write in `fdisk`. At the `disklabel` prompt, enter `a a`
-to add partition `a`. Accept the default offset, enter `*` for all
-available space, and choose `4.2BSD` for the filesystem type. Enter `p`
-to check the layout, then `w` to write and `q` to quit.
-
-```sh
-doas disklabel sdN          # check partition a and record the duid
-doas newfs /dev/rsdNa       # for example, /dev/rsd1a if the new disk is sd1
-```
-
-Place this entry after the existing `/tmp` entry in `/etc/fstab`, replacing
-`<DUID>` with the new disk's 16-digit hex DUID.
-
-```fstab
-<DUID>.a /tmp/agave-build ffs rw,nodev,nosuid,noauto 0 2
-```
-
-On this snapshot, `/etc/rc` clears `/tmp` after the automatic local mounts.
-Use `noauto` to mount the volume after boot. Cargo runs build scripts from
-this volume. The effective port setting is `USE_WXNEEDED=No`. The last
-two fields skip dump scheduling for scratch data and select the usual
-non-root fsck pass.
-
-```sh
-doas mkdir -m 0755 /tmp/agave-build
-doas mount /tmp/agave-build && doas chown reinism:reinism /tmp/agave-build
-df -h /tmp/agave-build
-```
-
-After mounting the scratch volume at `/tmp/agave-build`, run the following
-from this overlay's root on the development VM. The tested snapshot reported
-`No` for `make show=PORTS_PRIVSEP`. Its private `mktemp -d` directory is
-accessible only to the build user. On a builder reporting `Yes`, use the
-privilege-separated directories and release build commands above.
-
-```sh
-overlay=$PWD
 cd "$overlay/net/agave"
-df -h /tmp/agave-build
-buildroot=$(mktemp -d /tmp/agave-build/run.XXXXXXXX)
-m() {
-    make PORTSDIR_PATH="/usr/ports:$overlay" WRKOBJDIR="$buildroot/obj" \
-        DISTDIR="$buildroot/dist" PACKAGE_REPOSITORY="$buildroot/packages" \
-        PLIST_REPOSITORY="$buildroot/plist" "$@"
-}
-m -j6 fetch && m checksum && m build && m test && m fake &&
-    m port-lib-depends-check && m package && m lib-depends-check
+sh files/smoke-test /usr/local/bin
+sh files/validator-smoke-test /usr/local/bin
 ```
 
-Once packaging succeeds, inspect and test the files from the actual archive
-without installing on the development VM.
+The first test prints the CLI and keygen versions and verifies a signature
+using a temporary keypair. The second starts a disposable validator, waits
+for slots to advance, and checks that a local faucet airdrop credits exactly
+1,000,000,000 lamports. It stops the validator and removes its ledger on exit.
 
-```sh
-pkgfile=$(m show=PKGFILE)
-pkg_info -D unsigned -f "$pkgfile"
-tar -tzf "$pkgfile"
-mkdir "$buildroot/payload"
-tar -xzf "$pkgfile" -C "$buildroot/payload" \
-    bin/solana bin/solana-keygen bin/solana-test-validator
-sh files/smoke-test "$buildroot/payload/bin"
-```
+For an optional hardware check, unlock the Ledger, open its Solana app, and
+run `solana-keygen pubkey usb://ledger` from the account configured for Ledger
+access. A successful read prints the wallet's public key.
