@@ -22,10 +22,12 @@ doas mkdir -m 0755 "$overlay" &&
 
 If you already use `mystuff` for other ports, clone this repository elsewhere,
 set `overlay` to its absolute path, and export
-`PORTSDIR_PATH="/usr/ports:/usr/ports/mystuff:$overlay"`. On a
-privilege-separated builder, both `_pfetch` and `_pbuild` need to be able to
-read the checkout and traverse its parent directories.
-[OpenBSD ports setup](https://www.openbsd.org/faq/ports/ports.html)
+`PORTSDIR_PATH="/usr/ports:/usr/ports/mystuff:$overlay"`.
+
+With `PORTS_PRIVSEP=Yes`, the fetch and build users (by default `_pfetch`
+and `_pbuild`) need to read the checkout and traverse its parent directories.
+For the `doas.conf` rules and the `fix-permissions` target, see
+[bsd.port.mk(5), PORTS_PRIVSEP](https://man.openbsd.org/bsd.port.mk.5#PORTS_PRIVSEP).
 
 Select a port from the table and check its build notes for dependencies and
 options. The following example builds Agave.
