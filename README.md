@@ -468,6 +468,14 @@ Ledger attached, the hardware checks also exercise the upgraded CLI and keygen.
 
 ### Build on the development snapshot
 
+On 8.0-current/amd64 GENERIC.MP#163 with eight CPUs online and Rust 1.99.1,
+a clean p4 build with `MAKE_JOBS=6` took 8m44.70s using cached, verified
+distfiles. The archive was 30,317,335 bytes. The CLI/keygen smoke test
+and both library dependency checks passed. Using the binaries extracted
+from the archive, an ordinary user observed local RPC slots advance from
+0 to 1 and confirmed a 1 SOL airdrop to a fresh account in loopback-only
+routing domain 173.
+
 On 8.0-current/amd64 GENERIC#156, p3 reproduced the CLI airdrop error. Its
 RPC service tried to connect to the faucet at `0.0.0.0:9900` and OpenBSD
 returned `EINVAL`. In p4, RPC connects to `127.0.0.1` on the configured
