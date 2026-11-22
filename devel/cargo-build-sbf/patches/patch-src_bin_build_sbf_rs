@@ -1,3 +1,6 @@
+Use the packaged SBF Cargo and compiler for both the program and its
+host build scripts on OpenBSD.
+
 --- src/bin/build_sbf.rs.orig
 +++ src/bin/build_sbf.rs
 @@ -120,11 +120,21 @@
@@ -7,7 +10,7 @@
 -    let cargo_build = PathBuf::from("cargo");
 +    let cargo_build = if cfg!(target_os = "openbsd") {
 +        let bin = platform_tools_dir.join("rust/bin");
-+        // The SBF Cargo child must use the matching compiler for host build scripts too.
++        // Host build scripts also need the matching compiler.
 +        unsafe {
 +            env::set_var("RUSTC", bin.join("rustc"));
 +            env::set_var("RUSTDOC", bin.join("rustdoc"));

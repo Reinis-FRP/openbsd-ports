@@ -1,0 +1,15 @@
+Use the newest LibreSSL configuration known to this crate for versions
+shipped by OpenBSD that it does not recognize.
+
+Index: vendor/openssl-sys-0.9.109/build/main.rs
+--- vendor/openssl-sys-0.9.109/build/main.rs.orig
++++ vendor/openssl-sys-0.9.109/build/main.rs
+@@ -451,7 +451,7 @@
+             (4, 0, _) => ('4', '0', 'x'),
+             (4, 1, 0) => ('4', '1', '0'),
+             (4, 1, _) => ('4', '1', 'x'),
+-            _ => version_error(),
++            _ => ('4', '1', 'x'),
+         };
+ 
+         println!("cargo:libressl=true");

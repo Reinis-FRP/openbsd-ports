@@ -1,12 +1,18 @@
+Use the version of platform-tools installed by the OpenBSD package.
+The package manager handles installation and upgrades.
+
 --- src/toolchain.rs.orig
 +++ src/toolchain.rs
-@@ -102,6 +102,13 @@
+@@ -102,6 +102,16 @@
  }
  
  pub fn validate_platform_tools_version(requested_version: &str, builtin_version: &str) -> String {
 +    if cfg!(target_os = "openbsd") {
 +        if semver_version(requested_version) != semver_version(builtin_version) {
-+            error!("The OpenBSD package provides platform-tools {builtin_version}, requested {requested_version}");
++            error!(
++                "The OpenBSD package provides platform-tools {builtin_version}, \
++                 requested {requested_version}"
++            );
 +            exit(1);
 +        }
 +        return builtin_version.to_owned();
@@ -14,7 +20,7 @@
      // Early return here in case it's the first time we're running `cargo build-sbf`
      // and we need to create the cache folders
      if requested_version == builtin_version {
-@@ -138,6 +145,9 @@
+@@ -138,6 +148,9 @@
  }
  
  pub fn make_platform_tools_path_for_version(version: &str) -> PathBuf {
@@ -24,13 +30,17 @@
      platform_tools_cache_dir()
          .join(version)
          .join("platform-tools")
-@@ -449,6 +459,13 @@
+@@ -449,6 +462,17 @@
  /// performed.
  pub fn install_tools(config: &Config, platform_tools_version: &str, use_rest_api: bool) -> bool {
      let target_path = make_platform_tools_path_for_version(platform_tools_version);
 +    if cfg!(target_os = "openbsd") {
 +        if config.force_tools_install || corrupted_toolchain(&target_path) {
-+            error!("Install the solana-platform-tools package for {platform_tools_version} at {}", target_path.display());
++            error!(
++                "Install the solana-platform-tools package for \
++                 {platform_tools_version} at {}",
++                target_path.display()
++            );
 +            exit(1);
 +        }
 +        return false;
@@ -38,7 +48,7 @@
      install_if_missing(config, platform_tools_version, &target_path, use_rest_api).unwrap_or_else(
          |err| {
              // The package version directory doesn't contain a valid
-@@ -526,6 +543,9 @@
+@@ -526,6 +550,9 @@
          install_tools(config, &platform_tools_version, false);
      }
  

@@ -26,7 +26,7 @@ do-install:
 # Run the compatibility fixture with the same compiler that users receive.
 post-test:
 	TMPDIR=${WRKDIR} sh ${FILESDIR}/smoke-test ${FILESDIR}/fixture \
-	    ${MODCARGO_TARGET_DIR}/release ${MODCARGO_VENDOR_DIR}
+	    ${MODCARGO_TARGET_DIR}/release ${MODCARGO_VENDOR_DIR} ${LOCALBASE}/bin
 
 .include "crates.inc"
 .include <bsd.port.mk>

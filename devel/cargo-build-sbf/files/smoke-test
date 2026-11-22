@@ -4,15 +4,19 @@ set -eu
 fixture=$1
 bindir=$2
 vendor=$3
+host_bindir=$4
 work=$(mktemp -d "${TMPDIR:-/tmp}/sbf-smoke.XXXXXXXX")
 mkdir "$work/home"
 cp -R "$fixture" "$work/program"
 cd "$work/program"
 mkdir .cargo
-printf '[source.crates-io]\nreplace-with = "modcargo"\n[source.modcargo]\ndirectory = "%s"\n' \
-    "$vendor" > .cargo/config.toml
+printf '%s\n' \
+    '[source.crates-io]' \
+    'replace-with = "modcargo"' \
+    '[source.modcargo]' \
+    "directory = \"$vendor\"" > .cargo/config.toml
 
-env -i HOME="$work/home" PATH="$bindir:/usr/local/bin:/usr/bin:/bin" \
+env -i HOME="$work/home" PATH="$bindir:$host_bindir:/usr/bin:/bin" \
     CARGO_NET_OFFLINE=true sh -ec '
         cargo build-sbf --tools-version v1.57 --arch v3
         readelf -h target/deploy/sbf_smoke.so
