@@ -1,0 +1,84 @@
+#!/bin/sh
+# Run as an ordinary user. Supply a scratch filesystem with room for Cargo.
+set -eu
+case ${1-} in
+litesvm|validator) mode=$1 ;;
+*) echo "usage: sh $0 litesvm|validator" >&2; exit 2 ;;
+esac
+[ "$(id -u)" -ne 0 ] || { echo "Run as an ordinary user." >&2; exit 1; }
+files=$(cd "$(dirname "$0")" && pwd -P)
+umask 077
+work=$(mktemp -d "${TMPDIR:-/tmp}/anchor-smoke.XXXXXXXX")
+work=$(cd "$work" && pwd -P)
+group=
+cleanup() {
+    status=$?
+    trap - EXIT
+    trap '' HUP INT TERM
+    if [ -n "$group" ]; then
+        # OpenBSD timeout starts a process group for Anchor and its children.
+        kill -TERM -- "-$group" 2>/dev/null || :
+        sleep 1
+        kill -KILL -- "-$group" 2>/dev/null || :
+        wait "$group" 2>/dev/null || :
+    fi
+    if [ "$status" -ne 0 ] && [ -f "$work/counter/.anchor/test-ledger/test-ledger-log.txt" ]; then
+        tail -40 "$work/counter/.anchor/test-ledger/test-ledger-log.txt" >&2
+    fi
+    find "$work" -depth -delete
+    exit "$status"
+}
+trap cleanup EXIT
+trap 'exit 1' HUP INT TERM
+
+cd "$work"
+mkdir -p home/.config/solana tmp
+ulimit -c 0
+env -i HOME="$work/home" TMPDIR="$work/tmp" PATH="$PATH" \
+    CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0 \
+    no_proxy=127.0.0.1,localhost NO_PROXY=127.0.0.1,localhost \
+    timeout -k 10 3h sh -eu -s "$mode" "$files" <<'PROJECT' &
+mode=$1
+files=$2
+url=http://127.0.0.1:8899
+anchor --version
+rustc --version
+cargo --version
+wallet=$HOME/.config/solana/id.json
+if [ "$mode" = litesvm ]; then
+    anchor keygen new --no-passphrase --silent --outfile "$wallet"
+    anchor init counter --no-git
+else
+    for port in 8899 8900 9900; do
+        if nc -nz -w 1 127.0.0.1 "$port"; then
+            echo "Local port $port is already in use." >&2
+            exit 1
+        fi
+    done
+    solana-test-validator --version
+    solana-keygen new --no-bip39-passphrase --silent --outfile "$wallet" >/dev/null
+    solana config set --url "$url" --keypair "$wallet" >/dev/null
+    anchor init counter --no-git --test-template mocha --javascript --package-manager npm
+fi
+cd counter
+anchor build
+test -s target/deploy/counter.so
+readelf -h target/deploy/counter.so
+grep -q "^export type Counter = " target/types/counter.ts
+jq -e 'any(.instructions[]; .name == "initialize") and
+    any(.instructions[]; .name == "increment") and
+    any(.accounts[]; .name == "Counter")' target/idl/counter.json
+if [ "$mode" = litesvm ]; then
+    anchor test > test.log 2>&1 || { tail -80 test.log >&2; exit 1; }
+    grep -F "test test_initialize ... ok" test.log
+else
+    cp "$files/validator-test.cjs" .
+    # Deploy over local RPC after startup, with an empty genesis.
+    sed -i 's/^test = .*/test = "anchor program deploy --use-rpc --no-idl \&\& node validator-test.cjs"/' Anchor.toml
+    printf '%s\n' '' '[test]' 'startup_wait = 120000' '[test.validator]' \
+        'bind_address = "127.0.0.1"' >> Anchor.toml
+    anchor test --skip-build --skip-deploy --validator legacy
+fi
+PROJECT
+group=$!
+wait "$group"

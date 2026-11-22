@@ -11,6 +11,7 @@ Tested on OpenBSD 8.0-release/amd64.
 | [net/agave](#netagave) | `agave-4.4.1p7` | amd64 | Solana CLI, key generation, local test validator, and optional Ledger support |
 | [devel/solana-platform-tools](#develsolana-platform-tools) | `solana-platform-tools-1.57` | amd64 | OpenBSD-hosted Rust cross compiler and Solana SBF target libraries |
 | [devel/cargo-build-sbf](#develcargo-build-sbf) | `cargo-build-sbf-4.5.0` | amd64 | Cargo subcommands for building and testing Solana SBF programs |
+| [devel/anchor-cli](#develanchor-cli) | `anchor-cli-1.2.2` | amd64 | Anchor CLI for building, testing and deploying Solana programs |
 
 ## Build a package
 
@@ -173,3 +174,46 @@ cargo build-sbf --tools-version v1.57 --arch v3 \
 ```
 
 A successful build produces `out/hello_solana_program.so`.
+
+## devel/anchor-cli
+
+### Build considerations
+
+Anchor builds offline from the v1.2.2 workspace and its locked crates.
+You can preinstall its build dependencies with this command.
+
+```sh
+doas pkg_add rust cargo-generate-vendor oniguruma zstd
+```
+
+### Runtime notes
+
+The CLI uses cargo-build-sbf 4.5.0 with platform-tools 1.57 (architecture v3), Agave
+4.4.1p7 for localnet, host Cargo for IDL generation, and Bash for test scripts.
+Leave `RUSTUP_TOOLCHAIN` unset when using packaged Rust.
+The debugger can resolve project sources. The packaged SBF compiler omits
+the Rust standard-library sources.
+
+New projects resolve their own Cargo and npm dependencies on first use.
+Keep `anchor-lang`, `anchor-spl` and `@anchor-lang/core` in the manifests
+of projects that use them. The default LiteSVM template uses Rust tests.
+
+### Smoke tests
+
+Both smoke tests use jq. The validator test also uses Node and npm.
+
+Run each check as a regular user with several GiB free in `TMPDIR`. For
+the validator test, restrict inbound access as described under
+[net/agave](#netagave). Both tests use temporary wallets and workspaces.
+
+```sh
+cd "$overlay/devel/anchor-cli"
+export PATH="$(make show=WRKINST)/usr/local/bin:$PATH"
+sh files/smoke-test litesvm
+sh files/smoke-test validator
+```
+
+Both commands check the SBF program, IDL and TypeScript types. The first
+runs the generated LiteSVM instruction test. The second starts Agave with
+`anchor test --validator legacy`, deploys over loopback and checks that
+the counter advances from zero to one.

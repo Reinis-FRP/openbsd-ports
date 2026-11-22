@@ -1,0 +1,46 @@
+--- cli/src/debugger/source.rs.orig
++++ cli/src/debugger/source.rs
+@@ -136,21 +136,23 @@
+ /// Prefix the Solana `platform-tools` build bakes into DWARF paths for
+ /// stdlib files.
+ #[cfg(target_os = "macos")]
+-pub const CI_PLATFORM_TOOLS_PREFIX: &str =
+-    "/Users/runner/work/platform-tools/platform-tools/out/rust/library/";
++const CI_PLATFORM_TOOLS_PREFIX: Option<&str> =
++    Some("/Users/runner/work/platform-tools/platform-tools/out/rust/library/");
+ #[cfg(target_os = "linux")]
+-pub const CI_PLATFORM_TOOLS_PREFIX: &str =
+-    "/home/runner/work/platform-tools/platform-tools/out/rust/library/";
++const CI_PLATFORM_TOOLS_PREFIX: Option<&str> =
++    Some("/home/runner/work/platform-tools/platform-tools/out/rust/library/");
+ #[cfg(not(any(target_os = "macos", target_os = "linux")))]
+-pub const CI_PLATFORM_TOOLS_PREFIX: &str = compile_error!("Current platform is not supported");
++const CI_PLATFORM_TOOLS_PREFIX: Option<&str> = None;
+ 
+ /// Locate every `platform-tools/rust/lib/rustlib/src/rust/library/` tree
+ /// under `~/.cache/solana/` and return them newest-version-first. Empty
+ /// vec if the solana toolchain isn't installed via `agave-install`.
+ ///
+-/// Callers pair these with [`CI_PLATFORM_TOOLS_PREFIX`] so stdlib frames
+-/// emitted against the CI build path resolve to the local source tree.
+-pub fn discover_platform_tools_stdlib_roots() -> Vec<PathBuf> {
++/// Each rewrite pairs the build host prefix with an installed source tree.
++pub fn platform_tools_stdlib_rewrites() -> Vec<(PathBuf, PathBuf)> {
++    let Some(prefix) = CI_PLATFORM_TOOLS_PREFIX else {
++        return Vec::new();
++    };
+     let Some(home) = dirs::home_dir() else {
+         return Vec::new();
+     };
+@@ -172,7 +174,10 @@
+     // for numeric-minor ordering up to v1.99; beyond that we'd want proper
+     // semver parsing.
+     versions.sort_by(|a, b| b.0.cmp(&a.0));
+-    versions.into_iter().map(|(_, p)| p).collect()
++    versions
++        .into_iter()
++        .map(|(_, p)| (PathBuf::from(prefix), p))
++        .collect()
+ }
+ 
+ fn build(path: &Path) -> anyhow::Result<Inner> {

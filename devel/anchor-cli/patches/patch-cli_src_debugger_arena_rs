@@ -1,0 +1,23 @@
+--- cli/src/debugger/arena.rs.orig
++++ cli/src/debugger/arena.rs
+@@ -12,7 +12,7 @@
+         cargo_deps::{discover_dep_src_roots, discover_path_dep_roots},
+         highlight::highlight_asm,
+         model::{DebugNode, DebugSession, DebugStep, DebugTx, ProgramDisasm, StaticInsn},
+-        source::{discover_platform_tools_stdlib_roots, SourceResolver, CI_PLATFORM_TOOLS_PREFIX},
++        source::{platform_tools_stdlib_rewrites, SourceResolver},
+     },
+     crate::flamegraph::trace::{
+         discover_invocations, find_unstripped_binary, load_function_map, stream_trace,
+@@ -59,10 +59,7 @@
+     // local toolchain's bundled Rust source. One entry per installed
+     // platform-tools version, newest first — `resolve_src_path` picks the
+     // first rewrite whose resulting path exists.
+-    let path_rewrites: Vec<(PathBuf, PathBuf)> = discover_platform_tools_stdlib_roots()
+-        .into_iter()
+-        .map(|replacement| (PathBuf::from(CI_PLATFORM_TOOLS_PREFIX), replacement))
+-        .collect();
++    let path_rewrites = platform_tools_stdlib_rewrites();
+ 
+     let cwd = crate_dir.map(|p| p.to_path_buf());
+ 

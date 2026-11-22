@@ -1,0 +1,22 @@
+--- cli/src/debugger/tui.rs.orig
++++ cli/src/debugger/tui.rs
+@@ -1070,3 +1070,19 @@
+     }
+     None
+ }
++
++#[cfg(all(test, target_os = "openbsd"))]
++#[test]
++fn resolves_project_sources_without_platform_tools_stdlib() {
++    use std::path::Path;
++
++    let rewrites = super::source::platform_tools_stdlib_rewrites();
++    assert!(rewrites.is_empty());
++    let dir = tempfile::tempdir().unwrap();
++    let file = Path::new("program.rs");
++    let path = dir.path().join(file);
++    std::fs::write(&path, "fn main() {}\n").unwrap();
++    let roots = [dir.path().to_owned()];
++    assert_eq!(resolve_src_path(file, &roots, &rewrites, 1), Some(path));
++    assert_eq!(resolve_src_path(Path::new("library/core.rs"), &roots, &rewrites, 1), None);
++}
