@@ -4,6 +4,8 @@ This overlay adds ports to an existing OpenBSD ports tree. Use a builder with
 the same OpenBSD release and architecture as the installation host, and a
 matching ports tree and package mirror.
 
+Tested on OpenBSD 8.0-release/amd64.
+
 | Port | Package | Architecture | Contents |
 | --- | --- | --- | --- |
 | [net/agave](#agave) | `agave-4.4.1p7` | amd64 | Solana CLI, key generation, local test validator, and optional Ledger support |
@@ -133,7 +135,7 @@ access. A successful read prints the wallet's public key.
 ## solana-platform-tools
 
 This port builds Anza's v1.57 SBF compiler and target libraries. On a clean
-8.0 builder, install its host dependencies from binary packages first.
+builder, install its host dependencies from binary packages first.
 
 ```sh
 doas pkg_add rust cargo-generate-vendor cmake-core ninja gmake bash python%3 libarchive xz curl
