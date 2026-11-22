@@ -8,9 +8,9 @@ Tested on OpenBSD 8.0-release/amd64.
 
 | Port | Package | Architecture | Contents |
 | --- | --- | --- | --- |
-| [net/agave](#agave) | `agave-4.4.1p7` | amd64 | Solana CLI, key generation, local test validator, and optional Ledger support |
-| [devel/solana-platform-tools](#solana-platform-tools) | `solana-platform-tools-1.57` | amd64 | OpenBSD-hosted Rust cross compiler and Solana SBF target libraries |
-| [devel/cargo-build-sbf](#cargo-build-sbf) | `cargo-build-sbf-4.5.0` | amd64 | Cargo subcommands for building and testing Solana SBF programs |
+| [net/agave](#netagave) | `agave-4.4.1p7` | amd64 | Solana CLI, key generation, local test validator, and optional Ledger support |
+| [devel/solana-platform-tools](#develsolana-platform-tools) | `solana-platform-tools-1.57` | amd64 | OpenBSD-hosted Rust cross compiler and Solana SBF target libraries |
+| [devel/cargo-build-sbf](#develcargo-build-sbf) | `cargo-build-sbf-4.5.0` | amd64 | Cargo subcommands for building and testing Solana SBF programs |
 
 ## Build a package
 
@@ -33,8 +33,19 @@ and `_pbuild`) need to read the checkout and traverse its parent directories.
 For the `doas.conf` rules and the `fix-permissions` target, see
 [bsd.port.mk(5), PORTS_PRIVSEP](https://man.openbsd.org/bsd.port.mk.5#PORTS_PRIVSEP).
 
-Select a port from the table and check its build notes for dependencies and
-options. The following example builds Agave.
+The ports framework can build missing dependencies from source. To speed up a
+clean build, you can preinstall any of the binary packages listed in the
+port's section with `doas pkg_add`.
+
+To set the number of parallel build jobs, you can add `MAKE_JOBS` to
+the builder’s `/etc/mk.conf`. Choose a value based on the online CPU count
+(`sysctl -n hw.ncpuonline`) and available memory. This example uses eight jobs.
+
+```make
+MAKE_JOBS = 8
+```
+
+Check the port's build notes before starting. The following example builds Agave.
 
 ```sh
 cd "$overlay/net/agave"
@@ -73,24 +84,22 @@ The same commands upgrade an older revision of the same port. If you publish
 the package in a repository on `PKG_PATH`, users can also update by name
 with `doas pkg_add -u agave`, for example.
 
-## Agave
+## net/agave
 
 ### Build considerations
 
 Agave builds the three binaries from pinned sources with Cargo's `--frozen`
-option. To save time on a clean builder, install the build and library
-dependencies from binary packages first. Run these commands in `net/agave` so
-the LLVM version used by bindgen comes from the matching ports tree.
+option. To preinstall its dependencies, run this in `net/agave` so bindgen
+gets the LLVM version selected by the ports tree. `libusb1--` selects the
+standard flavor.
 
 ```sh
-doas pkg_add rust cargo-generate-vendor gmake protobuf zstd libhidapi libusb1--
 llvm_port=/usr/ports/devel/llvm/$(make show=MODCLANG_VERSION)
-doas pkg_add "$(make -C "$llvm_port" show=FULLPKGNAME)"
+doas pkg_add rust cargo-generate-vendor gmake protobuf zstd libhidapi \
+    libusb1-- "$(make -C "$llvm_port" show=FULLPKGNAME)"
 ```
 
-`libusb1--` selects the standard flavor. To use four Cargo build jobs, for
-example, use `make MAKE_JOBS=4 build` for the build step above. To check the
-package's library dependencies after packaging, run
+To check the package's library dependencies after packaging, run
 `make port-lib-depends-check` and `make lib-depends-check`.
 
 ### Runtime notes
@@ -132,24 +141,25 @@ For an optional hardware check, unlock the Ledger, open its Solana app, and
 run `solana-keygen pubkey usb://ledger` from the account configured for Ledger
 access. A successful read prints the wallet's public key.
 
-## solana-platform-tools
+## devel/solana-platform-tools
 
-This port builds Anza's v1.57 SBF compiler and target libraries. On a clean
-builder, install its host dependencies from binary packages first.
+This port builds Anza's v1.57 SBF compiler and target libraries.
+You can preinstall its build dependencies with this command.
 
 ```sh
-doas pkg_add rust cargo-generate-vendor cmake-core ninja gmake bash python%3 libarchive xz curl
+doas pkg_add rust cargo-generate-vendor cmake-core ninja gmake bash \
+    python%3 libarchive xz curl
 ```
 
-## cargo-build-sbf
+## devel/cargo-build-sbf
 
-The two Cargo subcommands build with the following host packages.
+You can preinstall the build dependencies for the two Cargo subcommands.
 
 ```sh
 doas pkg_add rust cargo-generate-vendor
 ```
 
-Install the signed [solana-platform-tools](#solana-platform-tools) package
+Install the signed [solana-platform-tools](#develsolana-platform-tools) package
 before running `make test` or using the subcommands. The port test builds a
 v3 program and executes it in the Solana bytecode interpreter.
 
