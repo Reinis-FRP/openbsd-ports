@@ -156,14 +156,20 @@ doas pkg_add rust cargo-generate-vendor
 ```
 
 Install the signed [solana-platform-tools](#develsolana-platform-tools) package
-before running `make test` or using the subcommands. The port test builds a
-v3 program and executes it in the Solana bytecode interpreter.
+before testing or using the subcommands. Running `make test` in
+`devel/cargo-build-sbf` invokes `cargo test-sbf --tools-version v1.57 --arch v3`
+on the bundled fixture. Its host-side test loads the generated `.so` and
+executes it in the Solana bytecode interpreter.
 
-From a Rust program crate with a `cdylib` target, use the Cargo subcommands.
+After installation, build the Solana Foundation's native Hello Solana example
+from a scratch directory.
 
 ```sh
-cargo build-sbf --tools-version v1.57 --arch v3
-cargo test-sbf --tools-version v1.57 --arch v3
+git clone --depth 1 --revision=b8008ebc18d6523f3d4559f0a034766f13e72ddb \
+    https://github.com/solana-foundation/program-examples.git
+cd program-examples/basics/hello-solana/native
+cargo build-sbf --tools-version v1.57 --arch v3 \
+    --manifest-path program/Cargo.toml --sbf-out-dir out
 ```
 
-The deployable program is written to `target/deploy/`.
+A successful build produces `out/hello_solana_program.so`.
