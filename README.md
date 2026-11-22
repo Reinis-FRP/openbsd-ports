@@ -37,13 +37,9 @@ The ports framework can build missing dependencies from source. To speed up a
 clean build, you can preinstall any of the binary packages listed in the
 port's section with `doas pkg_add`.
 
-To set the number of parallel build jobs, you can add `MAKE_JOBS` to
-the builder’s `/etc/mk.conf`. Choose a value based on the online CPU count
-(`sysctl -n hw.ncpuonline`) and available memory. This example uses eight jobs.
-
-```make
-MAKE_JOBS = 8
-```
+For eight parallel build jobs, set `MAKE_JOBS=8` in the builder’s `/etc/mk.conf`.
+Choose the job count based on the online CPUs (`sysctl -n hw.ncpuonline`) and
+available memory.
 
 Check the port's build notes before starting. The following example builds Agave.
 
