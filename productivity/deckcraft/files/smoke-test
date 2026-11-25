@@ -1,0 +1,61 @@
+#!/usr/bin/env python3
+"""Exercise the staged or independently unpacked CLI with a private home."""
+import json
+import os
+from pathlib import Path
+import re
+import struct
+import subprocess
+import sys
+import tempfile
+
+
+def smoke(cli, work):
+    env = dict(os.environ, HOME=str(work), XDG_CONFIG_HOME=str(work / "config"))
+    for key in ("DISPLAY", "WAYLAND_DISPLAY"):
+        env.pop(key, None)
+
+    def run(*args, stdin=None):
+        return subprocess.run(args, input=stdin, cwd=work, env=env, check=True,
+                              capture_output=True, text=True, timeout=120).stdout
+
+    run(cli, "render", "--sample", "--all", "--scale", "1", "out/")
+    pngs = sorted((work / "out").glob("*.png"))
+    assert len(pngs) == 8, pngs
+    for index, png in enumerate(pngs, 1):
+        assert png.name == f"slide-{index:02}.png", png
+        assert struct.unpack(">II", png.read_bytes()[16:24]) == (960, 540), png
+        run("pngcheck", "-q", png)
+
+    title = "OpenBSD round trip"
+    command = "slide.new=" + json.dumps({"layout": "titleOnly", "title": title})
+    run(cli, "run", "--sample", "--cmd", command, "--save", "edited.deckcraft")
+    run(cli, "run", "--in", "edited.deckcraft", "--save", "edited.pptx")
+    for file in ("edited.deckcraft", "edited.pptx"):
+        slides = json.loads(run(cli, "info", file))["slides"]
+        assert len(slides) == 9 and sum(s["title"] == title for s in slides) == 1, slides
+    run(cli, "run", "--in", "edited.pptx", "--export", "edited.pdf")
+    assert re.search(r"^Pages:\s+9$", run("pdfinfo", "edited.pdf"), re.M)
+
+    messages = [
+        {"id": 1, "method": "initialize", "params": {"protocolVersion": "2025-06-18",
+         "capabilities": {}, "clientInfo": {"name": "ports-smoke", "version": "1"}}},
+        {"method": "notifications/initialized"},
+        {"id": 2, "method": "tools/list", "params": {}},
+        {"id": 3, "method": "tools/call", "params": {"name": "inspect_document",
+                                                    "arguments": {}}},
+    ]
+    frames = "".join(json.dumps(dict(jsonrpc="2.0", **m)) + "\n" for m in messages)
+    output = run(cli, "mcp", "--sample", stdin=frames)
+    init, listing, inspect = [json.loads(line) for line in output.splitlines()]
+    assert [r["id"] for r in (init, listing, inspect)] == [1, 2, 3]
+    assert init["result"]["serverInfo"]["name"] == "deckcraft"
+    assert any(t["name"] == "inspect_document" for t in listing["result"]["tools"])
+    doc = json.loads(inspect["result"]["content"][0]["text"])
+    assert len(doc["slides"]) == 8 and doc["slides"][0]["title"] == "Northern Lights"
+    print("8 PNGs, 9 slides in both formats, 9 PDF pages and stdio MCP passed")
+
+
+if __name__ == "__main__":
+    with tempfile.TemporaryDirectory(prefix="deckcraft-") as directory:
+        smoke(Path(sys.argv[1]).resolve(strict=True), Path(directory))

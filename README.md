@@ -15,6 +15,7 @@ Tested on OpenBSD 8.0-release/amd64.
 | [editors/wordcraft](#editorswordcraft) | `wordcraft-0.18.1`, `wordcraft-cli-0.18.1p0` | amd64 | Desktop word processor, document conversion and headless MCP server |
 | [math/gridcraft](#mathgridcraft) | `gridcraft-0.19.1`, `gridcraft-cli-0.19.1` | amd64 | Desktop spreadsheet, workbook conversion and headless MCP server |
 | [print/pdfcraft](#printpdfcraft) | `pdfcraft-0.22.0`, `pdfcraft-cli-0.22.0`, `pdfcraft-data-0.22.0` | amd64 (8.0-current tested) | Desktop PDF editor, headless editing and OCR, and shared model data |
+| [productivity/deckcraft](#productivitydeckcraft) | `deckcraft-0.19.1`, `deckcraft-cli-0.19.1` | amd64 (8.0-current tested) | Desktop presentation editor, headless rendering and MCP |
 
 ## Build a package
 
@@ -628,4 +629,193 @@ and Vulkan backend. The OpenGL log should identify glow and its driver.
 ```sh
 grep -E 'renderer:|opengl renderer:|No suitable graphics adapter' \
     "$d/default.log" "$d/vulkan.log" "$d/gl.log"
+```
+
+## productivity/deckcraft
+
+### Build considerations
+
+DeckCraft v0.19.1 (`4a980c33ddf37eb64157777fcaeab6d19baa5878`) builds two
+independent packages. `deckcraft` edits and presents slides on the desktop.
+`deckcraft-cli` edits and renders presentations, exports PDF and serves MCP
+over stdio with the display unset. Either package can be installed alone.
+
+Cargo builds both native targets with `--frozen`. The port preserves the
+eight craft-libs revisions and the egui and winit forks from the release
+lockfile. The four OpenBSD wgpu 30.0.1 patches match WordCraft and
+GridCraft. The tagged editor already selects X11 on OpenBSD. Both programs
+embed the pinned craft-fonts input, including LXGW WenKai Lite from the
+native Simplified Chinese manifest. DeckCraft reads `/etc/fonts/fonts.conf` for system fonts, including
+`/usr/X11R6/lib/X11/fonts` and `/usr/local/share/fonts`. The tag supplies
+its contributor credits and the media codecs through the sources already
+listed in the port. Each package includes its own font and codec notices
+and the PDF writer's CC0 ICC profile licence. The desktop package ships
+DeckCraft's slide-board icon. The ArtCraft marks have separate terms in
+`docs/brand/LICENSE-brand.txt` and are omitted from both packages.
+
+Use matching OpenBSD 8.0-release/amd64 ports and binary packages on the
+release builder. Preinstall the build tools, desktop dependencies and CLI
+smoke-test tools.
+
+```sh
+doas pkg_add rust cargo-generate-vendor 'python%3' pngcheck poppler-utils \
+    desktop-file-utils gtk4-update-icon-cache shared-mime-info dbus libxkbcommon \
+    wayland vulkan-loader zenity
+```
+
+Run these blocks from the same shell on a configured privsep builder.
+The `doas` rules for `_pfetch` and `_pbuild` must pass the ports build
+environment to recursive makes, including `MAKEFLAGS` and `PORTSDIR_PATH`.
+Use the account-specific setup in [Build a package](#build-a-package).
+Keep the shared temporary path short for Unix sockets. The snapshot work
+tree used 4.0 GiB, plus 284 MiB for cached distfiles and about 100 MiB
+per pair of packages.
+
+```sh
+cd "$overlay/productivity/deckcraft"
+export PORTSDIR_PATH="/usr/ports:$overlay"
+df -h /tmp/ports-build
+build=$(mktemp -d /tmp/ports-build/dc.XXXXXXXX)
+chmod 755 "$build"
+repo="$build/packages"
+doas install -d -o _pfetch "$build/dist"
+doas install -d -o _pbuild "$build/obj" "$repo" "$build/offline" "$build/plist"
+install -d -m 1777 "$build/t"
+export TMPDIR="$build/t" PKG_TMPDIR="$build/t"
+port() {
+    make PORTS_PRIVSEP=Yes MAKE_JOBS=8 WRKOBJDIR="$build/obj" \
+        WRKOBJDIR_MFS="$build/obj" DISTDIR="$build/dist" \
+        PACKAGE_REPOSITORY="$repo" PLIST_REPOSITORY="$build/plist" "$@"
+}
+
+port checksum && port build test fake package && port clean &&
+    repo="$build/offline" &&
+    port FETCH_CMD=/usr/bin/false checksum build test fake package
+
+/usr/ports/infrastructure/bin/portcheck -p "$overlay"
+for sub in -main -cli; do
+    SUBPACKAGE="$sub" port port-lib-depends-check lib-depends-check || break
+    archive=$(SUBPACKAGE="$sub" port show=PKGFILE)
+    tar tzf "$archive"
+done
+stage="$(port show=WRKINST)/usr/local"
+python3 files/smoke-test "$stage/bin/deckcraft-cli"
+
+cli_archive=$(SUBPACKAGE=-cli port show=PKGFILE)
+mkdir "$build/cli-only"
+tar -xzf "$cli_archive" -C "$build/cli-only" bin share
+python3 files/smoke-test "$build/cli-only/bin/deckcraft-cli"
+```
+
+The smoke test checks all eight 960×540 sample PNGs, adds a titled slide,
+reopens both `.deckcraft` and `.pptx`, and checks the nine-page PDF. A
+fresh stdio MCP process lists its tools and reads the sample deck.
+
+### Snapshot verification
+
+On OpenBSD 8.0-current/amd64 (GENERIC.MP#163, Rust 1.99.1), both the
+initial build and a clean rebuild with fetching disabled produced the two
+packages. Both rebuilt executables matched the originals by SHA-256. All 231
+tests selected by the port passed. One loopback test stalled during the
+parallel repeat. The port runs the test harness
+serially, with compilation still using up to eight jobs.
+
+`portcheck` and both library-dependency checks passed for each package.
+The two archives matched their staged files and had no files in common.
+The CLI archive has no package dependencies and passed the headless smoke
+test with the GUI absent.
+
+On Xvfb, the editor selected the wgpu GL backend and Mesa 25.0.7 llvmpipe.
+Open and Save As both used zenity on plain X11. A new slide survived a save,
+close and reopen. F5 started the slide show, Right advanced it and Escape
+returned to editing.
+The X11 window reported `deckcraft` for both WM_CLASS strings.
+The process opened EGL, the Vulkan loader, libxkbcommon, libxkbcommon-x11
+and libdbus. Both executables link only the base c, c++abi, m and pthread
+libraries.
+
+A live `font.rescan` opened DejaVu in the X11 tree and Noto in the local
+fonts tree. The generated font table included the native Hani/Hans entry
+for LXGW WenKai Lite. The font matched the pinned manifest's SHA-256.
+
+The GUI archive opened a two-slide file through its desktop entry with the CLI
+absent. The registered MIME type was `application/x-deckcraft`. A separate
+Wayland connection probe loaded libwayland-client. The forced Vulkan run
+found no adapter in this VM.
+
+With an embedded H.264 video and AAC tone, the default run reported
+`audio output unavailable (no audio output device)`. With both the default
+and `DECKCRAFT_NO_AUDIO=1`, the playback clock advanced, the displayed
+video changed from red to blue, and Right and Escape still worked. CPAL
+0.16.0 selects its null host on OpenBSD, so this port has no audible
+playback. An older sndio backend was closed unmerged and would need a
+separate porting effort. [CPAL sndio implementation](https://github.com/RustAudio/cpal/pull/493)
+
+The 8.0-release build and physical Radeon display checks remain pending.
+
+### Select and install a package
+
+On the release builder, choose `sub=-main` for the desktop or `sub=-cli`
+for the CLI. Sign the chosen package using the key described in
+[Install a package](#install-a-package).
+
+```sh
+sub=-main
+pkgfile=$(SUBPACKAGE="$sub" port show=PKGFILE)
+doas pkg_sign -s signify2 -s /etc/signify/my-pkg.sec -o "$(dirname "$pkgfile")" "$pkgfile"
+```
+
+On the matching release host, set `pkgfile` to the signed archive's path.
+
+```sh
+unset TRUSTED_PKG_PATH
+signify -Vz -p /etc/signify/my-pkg.pub -x "$pkgfile" -m /dev/null &&
+    pkg_add -n "$pkgfile" && doas pkg_add "$pkgfile"
+```
+
+### Release desktop checks
+
+From an X11 terminal on the Radeon desktop, use the release build's
+`stage` or set `stage=/usr/local` for installed packages. Preserve the
+session's X authority when switching to a private test home.
+
+```sh
+d=$(mktemp -d /tmp/ports-build/dc-x11.XXXXXXXX)
+export XAUTHORITY="${XAUTHORITY:-$HOME/.Xauthority}"
+export HOME="$d" TMPDIR="$d" XDG_CONFIG_HOME="$d/config" XDG_CACHE_HOME="$d/cache"
+export PATH="$stage/bin:$PATH" RUST_LOG=warn,egui_wgpu=debug,rfd=debug
+cd "$d"
+env -u WGPU_BACKEND deckcraft --sample 2>default.log
+WGPU_BACKEND=vulkan deckcraft --sample 2>vulkan.log
+grep -Ei 'wgpu adapter|software rasterizer|no suitable|backend:' default.log vulkan.log
+```
+
+In each run, insert a slide with a distinctive title, use Save As, close
+the deck and reopen it through Open. Check the title, start the slide show
+with F5, advance with Right and return with Escape. Record the adapter
+name and backend from each log. The forced Vulkan run should identify the
+Radeon adapter and `Vulkan`.
+
+To reproduce the media check, use an MP4 containing moving video and a
+known audible track, or generate the red/blue clip below with FFmpeg. The
+fixture has four seconds of H.264 video and a 440 Hz AAC tone.
+
+```sh
+ffmpeg -f lavfi -i color=red:s=160x90:r=8:d=2 \
+    -f lavfi -i color=blue:s=160x90:r=8:d=2 -f lavfi -i sine=frequency=440:duration=4 \
+    -filter_complex '[0:v][1:v]concat=n=2:v=1:a=0[v]' -map '[v]' -map 2:a \
+    -c:v libx264 -profile:v baseline -pix_fmt yuv420p -c:a aac clip.mp4
+```
+
+With both staged frontends on `PATH`, create a two-slide deck. Watch the
+colors and listen on the first slide, advance to the second slide and
+return to the editor. Repeat with audio disabled.
+
+```sh
+deckcraft-cli run --cmd 'insert.video={"path":"clip.mp4","rect":[100,80,760,380]}' \
+    --cmd 'media.options={"autoplay":true,"loop":true}' \
+    --cmd 'slide.new={"layout":"titleOnly","title":"After video"}' --save media.deckcraft
+env -u DECKCRAFT_NO_AUDIO deckcraft --show media.deckcraft 2>audio-default.log
+DECKCRAFT_NO_AUDIO=1 deckcraft --show media.deckcraft 2>audio-disabled.log
+grep -i 'audio output' audio-default.log audio-disabled.log
 ```

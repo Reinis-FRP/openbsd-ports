@@ -1,0 +1,2 @@
+DeckCraft CLI edits presentations, renders slides, exports PDF and serves
+MCP clients over standard input and output. It runs without a display.
