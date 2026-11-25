@@ -104,8 +104,7 @@ DIST_TUPLE +=		github storytold ${repo} ${rev} ../${group}
 CONFIGURE_STYLE =	cargo
 MODCARGO_BUILD_ARGS =	--frozen -p pdfcraft -p pdfcraft-cli --bins
 MODCARGO_TEST_ARGS =	--frozen -p pdfcraft -p pdfcraft-cli
-# Single-instance tests create Unix sockets below the temporary directory.
-TMPDIR ?=		${WRKDIR}
+# Use the framework TMPDIR for Cargo and its single-instance socket tests.
 MODCARGO_ENV +=		CRAFT_FONTS_DIR=${WRKDIR}/fonts CRAFT_FONTS_REQUIRED=1 \
 			CRAFT_I18N_DIR=${WRKDIR}/i18n CRAFT_I18N_REQUIRED=1 \
 			TMPDIR=${TMPDIR}

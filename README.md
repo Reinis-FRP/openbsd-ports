@@ -475,21 +475,32 @@ doas pkg_add rust cargo-generate-vendor python \
 Run these blocks in the same shell. Cargo uses the release lockfile with
 `--frozen`. The port supplies the separately pinned craft-fonts and
 craft-i18n inputs, including the native Simplified Chinese face. Check
-free space before extracting sources and before the second build. Keep
-`TMPDIR` short enough for OpenBSD's Unix socket paths during tests.
+free space before extracting sources and before the second build. On a
+configured privsep builder, `make build test fake package` uses the paths
+from `/etc/mk.conf`. If the overlay is outside `/usr/ports/mystuff`,
+make sure `_pbuild` also sees its `PORTSDIR_PATH` (for example, set it
+in `/etc/mk.conf`) so `pkg_create` can resolve the data subpackage.
+For an isolated build, give each ports account its
+working directories and use a short, shared temporary directory for the
+package metadata and Unix socket tests.
 
 ```sh
 cd "$overlay/print/pdfcraft"
 build=$(mktemp -d /tmp/ports-build/pdfcraft.XXXXXXXX)
-export WRKOBJDIR="$build/obj" WRKOBJDIR_MFS="$build/obj" DISTDIR="$build/dist"
-export PACKAGE_REPOSITORY="$build/packages" PLIST_REPOSITORY="$build/plist"
+chmod 755 "$build"
+repo="$build/packages"
+doas install -d -o _pfetch "$build/dist"
+doas install -d -o _pbuild "$build/obj" "$repo" "$build/offline-packages" "$build/plist"
+install -d -m 1777 "$build/tmp"
 export TMPDIR="$build/tmp" PKG_TMPDIR="$build/tmp"
-mkdir "$TMPDIR"
-port() { make PORTS_PRIVSEP=No SUDO= MAKE_JOBS=8 "$@"; }
+port() {
+    make PORTS_PRIVSEP=Yes MAKE_JOBS=8 WRKOBJDIR="$build/obj" WRKOBJDIR_MFS="$build/obj" \
+        DISTDIR="$build/dist" PACKAGE_REPOSITORY="$repo" PLIST_REPOSITORY="$build/plist" "$@"
+}
 
 port checksum && df -h "$build" && port build test fake package &&
     df -h "$build" && port clean &&
-    export PACKAGE_REPOSITORY="$build/offline-packages" &&
+    repo="$build/offline-packages" &&
     port FETCH_CMD=/usr/bin/false checksum build test fake package
 for sub in -main -cli -data; do
     SUBPACKAGE="$sub" port show=PKGFILE
