@@ -1,0 +1,103 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Cwd qw(abs_path);
+use File::Temp qw(tempdir);
+use IPC::Open2;
+use JSON::PP qw(decode_json encode_json);
+
+@ARGV == 1 or die "usage: $0 /path/to/wordcraft-cli\n";
+my $cli = abs_path($ARGV[0]);
+defined $cli && -x $cli or die "$ARGV[0] is not executable\n";
+my $tmp = tempdir('wordcraft-XXXXXXXX', TMPDIR => 1, CLEANUP => 1);
+%ENV = (HOME => $tmp, PATH => '/bin:/usr/bin', LC_ALL => 'C');
+my $docs = "$tmp/documents";
+mkdir $docs or die "mkdir $docs: $!";
+
+sub output {
+	open my $pipe, '-|', @_ or die "start $_[0]: $!";
+	local $/;
+	my $out = <$pipe>;
+	close $pipe or die "@_ failed ($?)\n";
+	return $out;
+}
+
+my $text = 'Three small words';
+open my $input, '>', "$docs/input.txt" or die $!;
+print {$input} $text;
+close $input or die $!;
+my $docx = "$docs/out.docx";
+output($cli, 'convert', "$docs/input.txt", $docx);
+output($cli, 'text', $docx) eq "$text\n" or die "DOCX text mismatch\n";
+my $info = decode_json(output($cli, 'info', $docx));
+$info->{pages} == 1 && $info->{paragraphs} == 1 && $info->{words} == 3
+    or die "unexpected document counts: " . encode_json($info) . "\n";
+output($cli, 'convert', $docx, "$docs/out.pdf", '--strict');
+my $type = output('/usr/bin/file', '-b', "$docs/out.pdf");
+$type =~ /^PDF document/ or die "unexpected PDF type: $type";
+print "DOCX text verified, one page, one paragraph, three words\n$type";
+
+sub command_result {
+	my ($command, $params, @args) = @_;
+	my $out = output($cli, 'run', @args, '--cmd',
+	    "$command=" . encode_json($params), '--print');
+	$out =~ s/^\Q$command\E: // or die "missing $command result\n";
+	return decode_json($out);
+}
+
+my $list = command_result('font.list', {all => JSON::PP::true});
+my %family = map { $_ => 1 } @{$list->{families}};
+$family{'Shippori Mincho'} or die "missing bundled Shippori Mincho\n";
+if (-f '/usr/X11R6/lib/X11/fonts/TTF/luxirr.ttf') {
+	$family{'Luxi Serif'} or die "missing X11 font Luxi Serif\n";
+	print "X11 font Luxi Serif found\n";
+}
+
+open my $proof, '>', "$docs/proof.txt" or die $!;
+print {$proof} "Speling mistakes abound. ",
+    ("a extraordinarily be uncharacteristic of responsibilities " .
+    "the considerations ") x 12;
+close $proof or die $!;
+my @source = ('--file', "$docs/proof.txt");
+my $issues = command_result('review.issues', {}, @source);
+my ($issue) = grep { $_->{kind} eq 'spelling' && $_->{text} eq 'Speling' }
+    @$issues;
+$issue && grep({ $_ eq 'Spelling' } @{$issue->{suggestions}})
+    or die "missing English spelling correction\n";
+my $break = command_result('layout.manualHyphenation', {}, @source);
+grep({ $_ == $break->{suggest} } @{$break->{points} // []})
+    or die "missing hyphenation point\n";
+print "Spelling correction and hyphenation point verified\n";
+
+my $pid = open2(my $reader, my $writer, $cli, 'mcp',
+    '--automation-read-root', $docs, '--automation-write-root', $docs);
+my $id = 0;
+my $request = sub {
+	my ($method, $params) = @_;
+	print {$writer} encode_json({jsonrpc => '2.0', id => ++$id,
+	    method => $method, params => $params}), "\n" or die $!;
+	my $line = <$reader> // die "MCP closed during $method\n";
+	my $reply = decode_json($line);
+	$reply->{jsonrpc} eq '2.0' && $reply->{id} == $id &&
+	    exists $reply->{result} && !$reply->{result}{isError}
+	    or die "$method failed: $line";
+	return $reply->{result};
+};
+
+alarm 60;
+my $init = $request->('initialize', {protocolVersion => '2025-06-18',
+    capabilities => {},
+    clientInfo => {name => 'ports-smoke-test', version => '1'}});
+$init->{serverInfo}{name} eq 'wordcraft' or die "unexpected MCP server\n";
+print {$writer} encode_json({jsonrpc => '2.0',
+    method => 'notifications/initialized'}), "\n" or die $!;
+my %tools = map { $_->{name} => 1 } @{$request->('tools/list', {})->{tools}};
+$tools{type_text} && $tools{get_text} or die "missing document tools\n";
+$request->('tools/call', {name => 'type_text', arguments => {text => $text}});
+my $result = $request->('tools/call', {name => 'get_text', arguments => {}});
+decode_json($result->{content}[0]{text})->{text} eq $text
+    or die "MCP document text mismatch\n";
+close $writer or die $!;
+waitpid($pid, 0) == $pid && $? == 0 or die "MCP exit status $?\n";
+alarm 0;
+print "MCP initialized, ", scalar(keys %tools), " tools, edit verified\n";

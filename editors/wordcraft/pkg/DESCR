@@ -1,0 +1,3 @@
+WordCraft reads, edits and converts word-processing documents from the
+command line. It can inspect DOCX files, export PDF and run document
+commands through its headless Model Context Protocol server over stdio.

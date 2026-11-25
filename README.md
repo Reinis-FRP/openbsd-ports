@@ -12,6 +12,7 @@ Tested on OpenBSD 8.0-release/amd64.
 | [devel/solana-platform-tools](#develsolana-platform-tools) | `solana-platform-tools-1.57` | amd64 | OpenBSD-hosted Rust cross compiler and Solana SBF target libraries |
 | [devel/cargo-build-sbf](#develcargo-build-sbf) | `cargo-build-sbf-4.5.0` | amd64 | Cargo subcommands for building and testing Solana SBF programs |
 | [devel/anchor-cli](#develanchor-cli) | `anchor-cli-1.2.2` | amd64 | Anchor CLI for building, testing and deploying Solana programs |
+| [editors/wordcraft](#editorswordcraft) | `wordcraft-cli-0.18.1` | amd64 | Document conversion, inspection and headless MCP server |
 
 ## Build a package
 
@@ -218,3 +219,40 @@ Both commands check the SBF program, IDL and TypeScript types. The first
 runs the generated LiteSVM instruction test. The second starts Agave with
 `anchor test --validator legacy`, deploys over loopback and checks that
 the counter advances from zero to one.
+
+## editors/wordcraft
+
+### Build considerations
+
+WordCraft builds `wordcraft-cli` and its built-in headless MCP server from
+v0.18.1 (`079f478bd85df7bcc567e3bafa7d7219096f9c3c`). The port uses
+the release lockfile and checksummed archives for its registry crates, Git
+dependencies, fonts and language data. This port was built on
+OpenBSD 8.0-current/amd64. Build the package on 8.0-release for a release host.
+
+You can preinstall its build dependencies on a clean builder.
+
+```sh
+doas pkg_add rust cargo-generate-vendor
+```
+
+Verify the distfiles, then start a clean, frozen build with fetching disabled.
+
+```sh
+cd "$overlay/editors/wordcraft"
+make checksum && make clean
+make FETCH_CMD=/usr/bin/false MAKE_JOBS=8 build test package
+```
+
+### Smoke test
+
+Run the test as a regular user against the staged executable.
+
+```sh
+perl files/smoke-test "$(make show=WRKINST)/usr/local/bin/wordcraft-cli"
+```
+
+The test converts text to DOCX, checks its text and counts, and exports a
+strict PDF. It checks font discovery, spelling and hyphenation, then edits
+a document over MCP stdio with a temporary home and automation roots. For an
+installed package, pass `/usr/local/bin/wordcraft-cli` instead.

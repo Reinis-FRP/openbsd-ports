@@ -1,0 +1,11 @@
+--- crates/fonts/src/fontdb/names.rs.orig
++++ crates/fonts/src/fontdb/names.rs
+@@ -235,6 +235,8 @@
+             dirs.push(std::path::PathBuf::from(l).join("Microsoft\\Windows\\Fonts"));
+         }
+     } else {
++        #[cfg(target_os = "openbsd")]
++        dirs.push("/usr/X11R6/lib/X11/fonts".into());
+         dirs.extend(["/usr/share/fonts", "/usr/local/share/fonts"].map(Into::into));
+         if let Some(h) = &home {
+             dirs.push(h.join(".fonts"));
