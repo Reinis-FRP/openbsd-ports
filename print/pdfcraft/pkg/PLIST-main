@@ -1,0 +1,23 @@
+@bin bin/pdfcraft
+share/applications/ai.storyteller.pdfcraft.desktop
+share/doc/pdfcraft/LICENSE-icon
+share/doc/pdfcraft/LICENSE-lucide.txt
+share/doc/pdfcraft/i18n/
+share/doc/pdfcraft/i18n/ATTRIBUTION.md
+share/doc/pdfcraft/i18n/LICENSE-APACHE
+share/doc/pdfcraft/i18n/LICENSE-MIT
+share/doc/pdfcraft/licenses/egui-Hack-Regular.txt
+share/doc/pdfcraft/licenses/egui-OFL.txt
+share/doc/pdfcraft/licenses/egui-UFL.txt
+share/doc/pdfcraft/licenses/egui-emoji-icon-font-mit-license.txt
+share/icons/hicolor/128x128/apps/ai.storyteller.pdfcraft.png
+share/icons/hicolor/16x16/apps/ai.storyteller.pdfcraft.png
+share/icons/hicolor/24x24/apps/ai.storyteller.pdfcraft.png
+share/icons/hicolor/256x256/apps/ai.storyteller.pdfcraft.png
+share/icons/hicolor/32x32/apps/ai.storyteller.pdfcraft.png
+share/icons/hicolor/48x48/apps/ai.storyteller.pdfcraft.png
+share/icons/hicolor/512x512/apps/ai.storyteller.pdfcraft.png
+share/icons/hicolor/64x64/apps/ai.storyteller.pdfcraft.png
+share/icons/hicolor/scalable/apps/ai.storyteller.pdfcraft.svg
+@tag gtk-update-icon-cache %D/share/icons/hicolor
+@tag update-desktop-database

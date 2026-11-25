@@ -1,0 +1,2 @@
+PdfCraft's command-line frontend inspects, edits, combines and renders
+PDFs. It includes built-in OCR and a headless MCP server over stdio.

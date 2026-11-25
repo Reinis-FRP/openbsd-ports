@@ -1,0 +1,2 @@
+The shared data for PdfCraft and its CLI includes the Ocrs detection and
+recognition models, attribution and licence texts for the bundled assets.

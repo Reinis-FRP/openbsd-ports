@@ -1,0 +1,15 @@
+PdfCraft uses Robert Knight's Ocrs text detection and text recognition
+models unmodified. Both were trained on HierText.
+
+text-detection.onnx
+https://ocrs-models.s3-accelerate.amazonaws.com/text-detection.onnx
+
+text-recognition.onnx
+https://ocrs-models.s3-accelerate.amazonaws.com/text-recognition.onnx
+
+Model card
+https://huggingface.co/robertknight/ocrs/blob/df0edd170279ab971b53e094c627255a87e1a503/README.md
+
+Both models are licensed under Creative Commons Attribution-ShareAlike 4.0
+International. See CC-BY-SA-4.0.txt and the upstream licence.
+https://creativecommons.org/licenses/by-sa/4.0/

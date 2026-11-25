@@ -1,0 +1,11 @@
+--- modcargo-crates/wgpu-core-30.0.1/Cargo.toml.orig
++++ modcargo-crates/wgpu-core-30.0.1/Cargo.toml
+@@ -212,7 +212,7 @@
+ version = "30.0.0"
+ optional = true
+ 
+-[target.'cfg(any(windows, target_os = "linux", target_os = "android", target_os = "freebsd"))'.dependencies.wgpu-core-deps-windows-linux-android]
++[target.'cfg(any(windows, target_os = "linux", target_os = "android", target_os = "freebsd", target_os = "openbsd"))'.dependencies.wgpu-core-deps-windows-linux-android]
+ version = "30.0.0"
+ optional = true
+ 

@@ -14,6 +14,7 @@ Tested on OpenBSD 8.0-release/amd64.
 | [devel/anchor-cli](#develanchor-cli) | `anchor-cli-1.2.2` | amd64 | Anchor CLI for building, testing and deploying Solana programs |
 | [editors/wordcraft](#editorswordcraft) | `wordcraft-0.18.1`, `wordcraft-cli-0.18.1p0` | amd64 | Desktop word processor, document conversion and headless MCP server |
 | [math/gridcraft](#mathgridcraft) | `gridcraft-0.19.1`, `gridcraft-cli-0.19.1` | amd64 | Desktop spreadsheet, workbook conversion and headless MCP server |
+| [print/pdfcraft](#printpdfcraft) | `pdfcraft-0.22.0`, `pdfcraft-cli-0.22.0`, `pdfcraft-data-0.22.0` | amd64 (8.0-current tested) | Desktop PDF editor, headless editing and OCR, and shared model data |
 
 ## Build a package
 
@@ -448,3 +449,172 @@ xprop WM_CLASS
 Click the GridCraft window for `xprop`. Both WM_CLASS strings should be
 `gridcraft`. Check that both workbooks opened and that the saved sales
 total displays as $217,421.
+
+## print/pdfcraft
+
+### Build considerations
+
+PdfCraft v0.22.0 (`ac140f809d554981a5276d748e6193fcf4d4bdfa`) builds
+two native frontends. Choose `pdfcraft` for the X11 desktop editor or
+`pdfcraft-cli` for headless editing, rendering, OCR and stdio MCP. Both
+can be installed together. Each pulls in `pdfcraft-data`, which owns the
+two Ocrs ONNX models, their CC-BY-SA-4.0 licence and the shared asset
+notices. Tesseract is an optional second OCR engine. The desktop package
+carries the GUI-specific notices and PdfCraft's upstream icon. The port
+omits the restricted ArtCraft marks from Home and About.
+
+Use the matching 8.0-release/amd64 ports tree and package repository.
+Install the build tools and desktop dependencies on the builder. Python
+runs the staged smoke test.
+
+```sh
+doas pkg_add rust cargo-generate-vendor python \
+    desktop-file-utils gtk4-update-icon-cache dbus libxkbcommon wayland vulkan-loader zenity
+```
+
+Run these blocks in the same shell. Cargo uses the release lockfile with
+`--frozen`. The port supplies the separately pinned craft-fonts and
+craft-i18n inputs, including the native Simplified Chinese face. Check
+free space before extracting sources and before the second build. Keep
+`TMPDIR` short enough for OpenBSD's Unix socket paths during tests.
+
+```sh
+cd "$overlay/print/pdfcraft"
+build=$(mktemp -d /tmp/ports-build/pdfcraft.XXXXXXXX)
+export WRKOBJDIR="$build/obj" WRKOBJDIR_MFS="$build/obj" DISTDIR="$build/dist"
+export PACKAGE_REPOSITORY="$build/packages" PLIST_REPOSITORY="$build/plist"
+export TMPDIR="$build/tmp" PKG_TMPDIR="$build/tmp"
+mkdir "$TMPDIR"
+port() { make PORTS_PRIVSEP=No SUDO= MAKE_JOBS=8 "$@"; }
+
+port checksum && df -h "$build" && port build test fake package &&
+    df -h "$build" && port clean &&
+    export PACKAGE_REPOSITORY="$build/offline-packages" &&
+    port FETCH_CMD=/usr/bin/false checksum build test fake package
+for sub in -main -cli -data; do
+    SUBPACKAGE="$sub" port show=PKGFILE
+    SUBPACKAGE="$sub" port port-lib-depends-check lib-depends-check || break
+done
+/usr/ports/infrastructure/bin/portcheck
+stage="$(port show=WRKINST)/usr/local"
+python3 files/smoke-test "$stage/bin/pdfcraft-cli"
+```
+
+On the 8.0-current/amd64 builder (GENERIC.MP#163, Rust 1.99.1), the
+default wgpu renderer used llvmpipe through its GL backend. Explicit
+OpenGL used eframe's glow renderer with Mesa 25.0.7. Both zoomed a
+document, rotated its first page, saved a copy and reopened it. On plain
+X11 with no desktop portal service, both Open and Save As used zenity.
+The explicit Vulkan run found no adapter. The matching release build and
+hardware Vulkan run still need verification.
+
+All 201 upstream tests passed on the builder. Both executables link only
+base libraries (`c`, `c++abi`, `m` and `pthread`). On X11, the default
+renderer loaded EGL and the Vulkan loader, and glow loaded libGL. Both
+loaded libxkbcommon and libdbus. The CLI archive requires only the
+matching data package.
+
+The smoke test creates a two-page PDF, extracts a page, verifies rendered
+PNG data and saves an edit through `pdfcraft-cli mcp --root` over stdio.
+It rasterizes a page, explicitly selects Ocrs and checks the saved PDF for
+the recognized word. Run it against the staged or installed directory layout
+so the executable can find `../share/pdfcraft/models`.
+
+### Select and install a package
+
+Select `sub=-cli` for the headless frontend or `sub=-main` for the GUI.
+Sign both the selected frontend and its matching data archive.
+
+```sh
+sub=-cli
+pkgfile=$(SUBPACKAGE="$sub" port show=PKGFILE)
+data=$(SUBPACKAGE=-data port show=PKGFILE)
+for archive in "$data" "$pkgfile"; do
+    doas pkg_sign -s signify2 -s /etc/signify/my-pkg.sec \
+        -o "$(dirname "$archive")" "$archive" || break
+done
+```
+
+On the matching release host, provision the public key as described in
+[Install a package](#install-a-package). Set `data` and `pkgfile` to the
+two signed archives, then verify and preview the install.
+
+```sh
+unset TRUSTED_PKG_PATH
+signify -Vz -p /etc/signify/my-pkg.pub -x "$data" -m /dev/null &&
+    signify -Vz -p /etc/signify/my-pkg.pub -x "$pkgfile" -m /dev/null &&
+    pkg_add -n "$data" "$pkgfile" && doas pkg_add "$data" "$pkgfile" &&
+    pkg_info -I "$(basename "$pkgfile" .tgz)" &&
+    "/usr/local/bin/$(basename "$pkgfile" -0.22.0.tgz)" --version
+```
+
+### Release desktop checks
+
+Use the staged frontends from the release build or set `stage=/usr/local`
+when both packages are installed. From an X11 terminal, create a private
+test directory and a two-page fixture. Preserve the session's X authority
+when changing home directories.
+
+```sh
+d=$(mktemp -d /tmp/ports-build/pdfcraft-x11.XXXXXXXX)
+python3 files/smoke-test --fixture "$d/Two pages.pdf"
+export XAUTHORITY="${XAUTHORITY:-$HOME/.Xauthority}"
+export HOME="$d" TMPDIR="$d" XDG_CONFIG_HOME="$d/config" XDG_CACHE_HOME="$d/cache"
+export XDG_DATA_HOME="$d/data" PATH="$stage/bin:$PATH"
+export XDG_DATA_DIRS="$stage/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+export RUST_LOG=info,egui_wgpu=debug,egui_glow=debug
+ui() { pdfcraft-cli ui --control "$d/control" "$@"; }
+```
+
+Choose one renderer per run. Set `renderer=default`, `renderer=vulkan`
+or `renderer=gl`. The private control file enables GUI automation for
+that instance.
+
+```sh
+renderer=default
+case "$renderer" in
+    default) env -u PDFCRAFT_RENDERER -u WGPU_BACKEND pdfcraft --control "$d/control" ;;
+    vulkan)  PDFCRAFT_RENDERER=wgpu WGPU_BACKEND=vulkan pdfcraft --control "$d/control" ;;
+    gl)      PDFCRAFT_RENDERER=gl pdfcraft --control "$d/control" ;;
+esac 2>"$d/$renderer.log" &
+```
+
+With the window open, run the following commands. The desktop launcher
+should open the spaced filename and `ui state` should report two pages.
+
+```sh
+mkdir -p "$XDG_DATA_HOME/applications"
+cp "$stage/share/applications/ai.storyteller.pdfcraft.desktop" "$XDG_DATA_HOME/applications/"
+update-desktop-database "$XDG_DATA_HOME/applications"
+gio mime application/pdf
+gio launch "$stage/share/applications/ai.storyteller.pdfcraft.desktop" "$d/Two pages.pdf"
+ui state
+xprop WM_CLASS
+ui set key=zoom value=125
+ui command id=page.rotate
+ui command id=file.save_as
+```
+
+`gio mime` should list `ai.storyteller.pdfcraft.desktop`. Click the window
+for `xprop`. Both WM_CLASS strings should be `pdfcraft`. In Save As,
+enter the full path printed by `echo "$d/$renderer-copy.pdf"`. Close the tab,
+use Open to reopen that copy, and verify the first page is now 120 by 240
+points.
+
+```sh
+ui command id=file.close
+ui command id=file.open
+ui state
+pdfcraft-cli info "$d/$renderer-copy.pdf"
+pdfcraft-cli text "$d/$renderer-copy.pdf"
+ui quit
+```
+
+The text should still read ORCHARD and MEADOW. Repeat with the other
+renderer settings. The Vulkan log should identify the hardware adapter
+and Vulkan backend. The OpenGL log should identify glow and its driver.
+
+```sh
+grep -E 'renderer:|opengl renderer:|No suitable graphics adapter' \
+    "$d/default.log" "$d/vulkan.log" "$d/gl.log"
+```

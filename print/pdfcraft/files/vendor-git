@@ -1,0 +1,26 @@
+#!/bin/sh
+# Cargo resolves inherited manifest keys against the parent workspace.
+set -eu
+repo=$1
+rev=$2
+group=$3
+shift 3
+
+vendor=$PWD/$group/ports-vendor
+# For a crate at the repository root, keep the link outside the repository.
+[ "$1" != . ] || vendor=$PWD/vendor-$group
+mkdir -p "$vendor"
+for crate do
+	src=$PWD/$group/$crate
+	test -f "$src/Cargo.toml"
+	# Ports has verified the archive, including this crate's sources.
+	printf '%s\n' '{"package":null,"files":{}}' > "$src/.cargo-checksum.json"
+	name=${crate##*/}
+	[ "$name" != . ] || name=$repo
+	ln -sfh "$src" "$vendor/$name"
+done
+
+printf '%s\n' "[source.git-$group]" \
+    "git = 'https://github.com/storytold/$repo'" "rev = '$rev'" \
+    "replace-with = 'vendor-$group'" "[source.vendor-$group]" \
+    "directory = '$vendor'" >> .cargo/config.toml
