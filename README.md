@@ -202,9 +202,10 @@ of projects that use them. The default LiteSVM template uses Rust tests.
 
 Both smoke tests use jq. The validator test also uses Node and npm.
 
-Run each check as a regular user with several GiB free in `TMPDIR`. For
-the validator test, restrict inbound access as described under
-[net/agave](#netagave). Both tests use temporary wallets and workspaces.
+Run each check as a regular user with several GiB free in `TMPDIR`. Both tests
+use temporary wallets and workspaces. The legacy validator inherits the shell's
+soft data limit (`ulimit -Sd`). Follow the [net/agave](#netagave) guidance on validator
+startup memory and restricting inbound access with PF.
 
 ```sh
 cd "$overlay/devel/anchor-cli"
