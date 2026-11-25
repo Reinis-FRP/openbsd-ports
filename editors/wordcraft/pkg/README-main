@@ -1,0 +1,2 @@
+WordCraft includes a built-in file browser. To use a GTK file chooser
+on a desktop without an XDG FileChooser portal, install zenity.

@@ -1,0 +1,13 @@
+Match the WM_CLASS reported by the native X11 window.
+
+--- packaging/linux/ai.storyteller.wordcraft.desktop.orig
++++ packaging/linux/ai.storyteller.wordcraft.desktop
+@@ -8,7 +8,7 @@
+ Icon=ai.storyteller.wordcraft
+ Terminal=false
+ StartupNotify=true
+-StartupWMClass=ai.storyteller.wordcraft
++StartupWMClass=wordcraft
+ Categories=Office;WordProcessor;
+ Keywords=word;processor;document;docx;writer;text;letter;report;
+ MimeType=application/vnd.openxmlformats-officedocument.wordprocessingml.document;application/vnd.ms-word.document.macroEnabled.12;application/vnd.openxmlformats-officedocument.wordprocessingml.template;application/vnd.ms-word.template.macroEnabled.12;application/msword;application/msword-template;application/vnd.oasis.opendocument.text;application/rtf;text/rtf;text/markdown;text/x-tex;text/html;

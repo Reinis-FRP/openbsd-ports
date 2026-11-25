@@ -12,7 +12,7 @@ Tested on OpenBSD 8.0-release/amd64.
 | [devel/solana-platform-tools](#develsolana-platform-tools) | `solana-platform-tools-1.57` | amd64 | OpenBSD-hosted Rust cross compiler and Solana SBF target libraries |
 | [devel/cargo-build-sbf](#develcargo-build-sbf) | `cargo-build-sbf-4.5.0` | amd64 | Cargo subcommands for building and testing Solana SBF programs |
 | [devel/anchor-cli](#develanchor-cli) | `anchor-cli-1.2.2` | amd64 | Anchor CLI for building, testing and deploying Solana programs |
-| [editors/wordcraft](#editorswordcraft) | `wordcraft-cli-0.18.1` | amd64 | Document conversion, inspection and headless MCP server |
+| [editors/wordcraft](#editorswordcraft) | `wordcraft-0.18.1`, `wordcraft-cli-0.18.1p0` | amd64 | Desktop word processor, document conversion and headless MCP server |
 
 ## Build a package
 
@@ -224,16 +224,22 @@ the counter advances from zero to one.
 
 ### Build considerations
 
-WordCraft builds `wordcraft-cli` and its built-in headless MCP server from
-v0.18.1 (`079f478bd85df7bcc567e3bafa7d7219096f9c3c`). The port uses
-the release lockfile and checksummed archives for its registry crates, Git
-dependencies, fonts and language data. This port was built on
-OpenBSD 8.0-current/amd64. Build the package on 8.0-release for a release host.
+The port builds two packages from WordCraft v0.18.1
+(`079f478bd85df7bcc567e3bafa7d7219096f9c3c`). Install `wordcraft`
+for the desktop editor or `wordcraft-cli` for the command-line tools and
+headless MCP server. The packages can be installed together. Both use the
+release lockfile and checksummed sources, fonts and language data.
 
-You can preinstall its build dependencies on a clean builder.
+On X11, the desktop editor supports Vulkan and Mesa software OpenGL.
+The CLI and the patched build-tree GUI have been exercised on
+OpenBSD 8.0-release/amd64, the latter on X11 with a Radeon RX 7900 XT.
+
+You can preinstall the build tools and desktop package dependencies on a
+clean builder.
 
 ```sh
-doas pkg_add rust cargo-generate-vendor
+doas pkg_add rust cargo-generate-vendor libxkbcommon wayland vulkan-loader \
+    desktop-file-utils gtk4-update-icon-cache
 ```
 
 Verify the distfiles, then start a clean, frozen build with fetching disabled.
@@ -242,6 +248,8 @@ Verify the distfiles, then start a clean, frozen build with fetching disabled.
 cd "$overlay/editors/wordcraft"
 make checksum && make clean
 make FETCH_CMD=/usr/bin/false MAKE_JOBS=8 build test package
+env SUBPACKAGE=-main make show=PKGFILE
+env SUBPACKAGE=-cli make show=PKGFILE
 ```
 
 ### Smoke test
@@ -256,3 +264,32 @@ The test converts text to DOCX, checks its text and counts, and exports a
 strict PDF. It checks font discovery, spelling and hyphenation, then edits
 a document over MCP stdio with a temporary home and automation roots. For an
 installed package, pass `/usr/local/bin/wordcraft-cli` instead.
+
+On an X11 desktop with a Vulkan driver, launch the staged sample with the
+default backend, close it, then repeat with Vulkan selected explicitly.
+
+```sh
+stage="$(make show=WRKINST)/usr/local"
+env -u WGPU_BACKEND "$stage/bin/wordcraft" --sample
+WGPU_BACKEND=vulkan "$stage/bin/wordcraft" --sample
+```
+
+Both runs should render the two pages of “The Open Studio Handbook”,
+including its ribbon, styled text and table.
+
+To exercise the desktop entry and clipboard, open a disposable document from
+the same staging directory.
+
+```sh
+d=$(mktemp -d)
+printf '%s' 'Original three words' > "$d/input.txt"
+"$stage/bin/wordcraft-cli" convert "$d/input.txt" "$d/check.docx"
+export PATH="$stage/bin:$PATH"
+export XDG_DATA_DIRS="$stage/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+gio launch "$stage/share/applications/ai.storyteller.wordcraft.desktop" "$d/check.docx"
+```
+
+Copy the paragraph into another application, replace it there with
+`Edited clipboard text`, and paste it back over the original paragraph.
+Save, close and repeat the `gio launch` command. The reopened paragraph
+and `wordcraft-cli text "$d/check.docx"` should both read `Edited clipboard text`.

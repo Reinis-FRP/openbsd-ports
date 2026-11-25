@@ -1,3 +1,4 @@
+@pkgpath editors/wordcraft
 @bin bin/wordcraft-cli
 share/doc/wordcraft-cli/
 share/doc/wordcraft-cli/ATTRIBUTION.md
