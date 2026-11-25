@@ -252,6 +252,35 @@ env SUBPACKAGE=-main make show=PKGFILE
 env SUBPACKAGE=-cli make show=PKGFILE
 ```
 
+### Install the signed CLI package
+
+After `make package`, run these commands in `editors/wordcraft` on the builder
+with the signing key from [Install a package](#install-a-package). Selecting
+`-cli` gives the path to `wordcraft-cli-0.18.1p0.tgz`.
+
+```sh
+pkgfile=$(env SUBPACKAGE=-cli make show=PKGFILE)
+doas pkg_sign -s signify2 -s /etc/signify/my-pkg.sec -o "$(dirname "$pkgfile")" "$pkgfile"
+```
+
+On the same machine, keep `pkgfile` as set above. On another 8.0-release/amd64
+host, copy the signed archive from the matching release builder, provision
+`/etc/signify/my-pkg.pub` through a trusted channel, then run
+`pkgfile="$PWD/wordcraft-cli-0.18.1p0.tgz"` in the download directory.
+The following commands verify the signature, preview the installation and
+install the CLI with its headless MCP server.
+
+```sh
+unset TRUSTED_PKG_PATH
+signify -Vz -p /etc/signify/my-pkg.pub -x "$pkgfile" -m /dev/null &&
+    pkg_add -n "$pkgfile" && doas pkg_add "$pkgfile" &&
+    /usr/local/bin/wordcraft-cli --version
+```
+
+This also upgrades an existing `wordcraft-cli-0.18.1`. The version command
+prints `wordcraft-cli 0.18.1`. `pkg_info -I wordcraft-cli` shows the installed
+package revision `0.18.1p0`.
+
 ### Smoke test
 
 Run the test as a regular user against the staged executable.
