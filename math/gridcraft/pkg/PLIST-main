@@ -1,0 +1,41 @@
+@bin bin/gridcraft
+share/applications/ai.storyteller.gridcraft.desktop
+share/doc/gridcraft/
+share/doc/gridcraft/ATTRIBUTION.md
+share/doc/gridcraft/LICENSE-APACHE
+share/doc/gridcraft/LICENSE-MIT
+share/doc/gridcraft/LICENSE-Unicode
+share/doc/gridcraft/LICENSE-icon
+share/doc/gridcraft/NOTICE
+share/doc/gridcraft/NOTICE-pdf
+share/doc/gridcraft/egui-fonts/
+share/doc/gridcraft/egui-fonts/Hack-Regular.txt
+share/doc/gridcraft/egui-fonts/OFL.txt
+share/doc/gridcraft/egui-fonts/UFL.txt
+share/doc/gridcraft/egui-fonts/egui-icons.txt
+share/doc/gridcraft/egui-fonts/emoji-icon-font-mit-license.txt
+share/doc/gridcraft/fonts/
+share/doc/gridcraft/fonts/ATTRIBUTION.md
+share/doc/gridcraft/fonts/OFL-biz-ud-mincho.txt
+share/doc/gridcraft/fonts/OFL-biz-ud-pgothic.txt
+share/doc/gridcraft/fonts/OFL-lxgw-wenkai-lite.txt
+share/doc/gridcraft/fonts/OFL-nanum-gothic.txt
+share/doc/gridcraft/fonts/OFL-noto-sans-arabic.txt
+share/doc/gridcraft/fonts/OFL-noto-sans-devanagari.txt
+share/doc/gridcraft/fonts/OFL-noto-sans-georgian.txt
+share/doc/gridcraft/fonts/OFL-noto-sans-hebrew.txt
+share/doc/gridcraft/fonts/OFL-noto-sans-symbols-2.txt
+share/doc/gridcraft/fonts/OFL-noto-sans-symbols.txt
+share/doc/gridcraft/fonts/OFL-noto-sans-thai.txt
+share/doc/gridcraft/fonts/OFL-shippori-mincho.txt
+share/icons/hicolor/128x128/apps/ai.storyteller.gridcraft.png
+share/icons/hicolor/16x16/apps/ai.storyteller.gridcraft.png
+share/icons/hicolor/24x24/apps/ai.storyteller.gridcraft.png
+share/icons/hicolor/256x256/apps/ai.storyteller.gridcraft.png
+share/icons/hicolor/32x32/apps/ai.storyteller.gridcraft.png
+share/icons/hicolor/48x48/apps/ai.storyteller.gridcraft.png
+share/icons/hicolor/512x512/apps/ai.storyteller.gridcraft.png
+share/icons/hicolor/64x64/apps/ai.storyteller.gridcraft.png
+share/icons/hicolor/scalable/apps/ai.storyteller.gridcraft.svg
+@tag gtk-update-icon-cache %D/share/icons/hicolor
+@tag update-desktop-database

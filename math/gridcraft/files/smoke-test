@@ -1,0 +1,95 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Cwd qw(abs_path);
+use File::Temp qw(tempdir);
+use IPC::Open2;
+use JSON::PP qw(decode_json encode_json);
+
+@ARGV == 1 or die "usage: $0 /path/to/gridcraft-cli\n";
+my $cli = abs_path($ARGV[0]);
+defined $cli && -x $cli or die "$ARGV[0] is not executable\n";
+my $tmp = tempdir('gridcraft-XXXXXXXX',
+    DIR => $ENV{TMPDIR} // '/tmp/ports-build', CLEANUP => 1);
+%ENV = (HOME => $tmp, TMPDIR => $tmp, PATH => '/bin:/usr/bin', LC_ALL => 'C');
+chdir $tmp or die $!;
+
+sub output {
+	my ($status, @args) = @_;
+	open my $pipe, '-|', $cli, @args or die "start $cli: $!";
+	local $/;
+	my $out = <$pipe>;
+	close $pipe;
+	$? == ($status << 8) or die "@args exited with wait status $?\n";
+	return $out;
+}
+
+my $formula = '=SUM(B2:B3)';
+my $values = [['Item', 'Count'], ['A', 3], ['B', 4], ['Total', $formula]];
+output(0, 'run', '--cmd', 'range.setValues=' .
+    encode_json({range => 'A1', values => $values}), '--out', 'book.xlsx');
+output(0, 'cat', 'book.xlsx', '--range', 'B4', '--formulas') =~
+    /^\s*\Q$formula\E\s*$/ or die "lost XLSX formula\n";
+output(0, 'cat', 'book.xlsx', '--range', 'B2:B4') =~ /^\s*3\s+4\s+7\s*$/
+    or die "unexpected XLSX values\n";
+output(0, 'check', 'book.xlsx');
+output(0, 'convert', 'book.xlsx', 'display.csv');
+output(0, 'convert', 'display.csv', 'values.xlsx');
+output(0, 'cat', 'values.xlsx', '--csv') =~
+    /^Item,Count\r?\nA,3\r?\nB,4\r?\nTotal,7\r?\n?$/
+    or die "CSV round trip lost displayed values\n";
+output(0, 'convert', 'book.xlsx', 'book.pdf');
+open my $file, '-|', '/usr/bin/file', '-b', 'book.pdf' or die $!;
+my $type = <$file>;
+close $file or die $!;
+$type =~ /^PDF document/ or die "unexpected PDF type: $type";
+output(2, 'sandbox-check') =~ /^sandbox: unsupported/m
+    or die "unexpected OpenBSD sandbox report\n";
+print "Verified XLSX formula, result 7, workbook check, CSV and $type";
+
+sub mcp_session {
+	my ($edit) = @_;
+	my $pid = open2(my $reader, my $writer, $cli, 'mcp');
+	my $id = 0;
+	my $request = sub {
+		my ($method, $params) = @_;
+		print {$writer} encode_json({jsonrpc => '2.0', id => ++$id,
+		    method => $method, params => $params}), "\n" or die $!;
+		my $line = <$reader> // die "MCP closed during $method\n";
+		my $reply = decode_json($line);
+		$reply->{jsonrpc} eq '2.0' && $reply->{id} == $id &&
+		    exists $reply->{result} && !$reply->{result}{isError}
+		    or die "$method failed: $line";
+		return $reply->{result};
+	};
+	my $call = sub {
+		my ($name, $args) = @_;
+		my $result = $request->('tools/call',
+		    {name => $name, arguments => $args});
+		return decode_json($result->{content}[0]{text});
+	};
+	$request->('initialize', {protocolVersion => '2025-06-18',
+	    capabilities => {}, clientInfo => {name => 'ports', version => '1'}});
+	print {$writer} encode_json({jsonrpc => '2.0',
+	    method => 'notifications/initialized'}), "\n" or die $!;
+	my $book = {path => "$tmp/mcp.xlsx"};
+	if ($edit) {
+		$call->('write_range', {range => 'B2', values => [[3], [4], [$formula]]});
+		$call->('save_workbook', $book);
+	} else {
+		$call->('open_workbook', $book);
+		my $data = $call->('read_range', {range => 'B2:B4'});
+		encode_json($data->{values}) eq '[[3],[4],[7]]'
+		    or die "unexpected MCP values\n";
+		$data = $call->('read_range', {range => 'B4', formulas => JSON::PP::true});
+		$data->{values}[0][0] eq $formula or die "lost MCP formula\n";
+	}
+	close $writer or die $!;
+	waitpid($pid, 0) == $pid && $? == 0 or die "MCP exit status $?\n";
+}
+
+alarm 60;
+mcp_session(1);
+mcp_session(0);
+alarm 0;
+print "Verified persisted cells and formula in a fresh MCP process\n";

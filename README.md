@@ -13,6 +13,7 @@ Tested on OpenBSD 8.0-release/amd64.
 | [devel/cargo-build-sbf](#develcargo-build-sbf) | `cargo-build-sbf-4.5.0` | amd64 | Cargo subcommands for building and testing Solana SBF programs |
 | [devel/anchor-cli](#develanchor-cli) | `anchor-cli-1.2.2` | amd64 | Anchor CLI for building, testing and deploying Solana programs |
 | [editors/wordcraft](#editorswordcraft) | `wordcraft-0.18.1`, `wordcraft-cli-0.18.1p0` | amd64 | Desktop word processor, document conversion and headless MCP server |
+| [math/gridcraft](#mathgridcraft) | `gridcraft-0.19.1`, `gridcraft-cli-0.19.1` | amd64 | Desktop spreadsheet, workbook conversion and headless MCP server |
 
 ## Build a package
 
@@ -322,3 +323,128 @@ Copy the paragraph into another application, replace it there with
 `Edited clipboard text`, and paste it back over the original paragraph.
 Save, close and repeat the `gio launch` command. The reopened paragraph
 and `wordcraft-cli text "$d/check.docx"` should both read `Edited clipboard text`.
+
+## math/gridcraft
+
+### Build considerations
+
+GridCraft v0.19.1 (`476448d7d9f3a5f8e93fcf7d98b47fd52293fe7f`) builds
+two independently installable packages. Choose `gridcraft` for the desktop
+spreadsheet and `gridcraft-cli` for workbook conversion, formulas and the
+headless MCP server. Both can be installed on the same host.
+
+The port uses the release lockfile and checksummed sources. The GUI embeds
+the in-tree translations and the pinned craft-fonts faces, including LXGW
+WenKai Lite. Both binaries use GridCraft's PDF writer. On OpenBSD,
+`gridcraft-cli sandbox-check` reports unsupported and exits 2. Python cells
+require the upstream helper sandbox. Ordinary formulas and `gridcraft-cli mcp`
+work independently.
+
+On the 8.0-current/amd64 snapshot (GENERIC.MP#163, Rust 1.99.1), the sales
+sample rendered with Mesa llvmpipe on X11. Both charts, recalculation, the
+clipboard and XLSX save/reopen worked. With the base X11 DejaVu fonts,
+widen column G to see the full grand total in G11. On plain X11 without
+a desktop portal, Open and Save As need zenity. The VM exposed no Vulkan adapter.
+The release desktop still needs a matching build and Radeon Vulkan test.
+
+Preinstall the build tools and runtime dependencies on a matching builder.
+
+```sh
+doas pkg_add rust cargo-generate-vendor libxkbcommon wayland vulkan-loader \
+    desktop-file-utils gtk4-update-icon-cache zenity
+```
+
+On a single-user builder with a writable filesystem at `/tmp/ports-build`,
+keep the distfiles, work tree, temporary files and packages together. Run
+the following blocks in the same shell.
+
+```sh
+cd "$overlay/math/gridcraft"
+build=$(mktemp -d /tmp/ports-build/gridcraft.XXXXXXXX)
+export WRKOBJDIR="$build/obj" WRKOBJDIR_MFS="$build/obj" DISTDIR="$build/dist"
+export PACKAGE_REPOSITORY="$build/packages" PLIST_REPOSITORY="$build/plist"
+export TMPDIR="$build/tmp"
+mkdir "$TMPDIR"
+port() { make PORTS_PRIVSEP=No SUDO= MAKE_JOBS=8 "$@"; }
+
+port checksum && df -h "$build" && port clean &&
+    port FETCH_CMD=/usr/bin/false build test fake package
+for sub in -main -cli; do
+    SUBPACKAGE="$sub" port show=PKGFILE
+    SUBPACKAGE="$sub" port port-lib-depends-check lib-depends-check
+done
+```
+
+### Select and install a package
+
+Select one output from the matching release build. Use `sub=-cli` for the
+headless package or `sub=-main` for the desktop spreadsheet. Sign the selected
+archive with the builder's package key.
+
+```sh
+sub=-cli
+pkgfile=$(SUBPACKAGE="$sub" port show=PKGFILE)
+doas pkg_sign -s signify2 -s /etc/signify/my-pkg.sec -o "$(dirname "$pkgfile")" "$pkgfile"
+```
+
+On another 8.0-release/amd64 host, copy the signed archive, set `pkgfile` to
+its path and provision the public key as described in [Install a package](#install-a-package).
+Verify, preview and install the selected archive.
+
+```sh
+pkgname=$(basename "$pkgfile" .tgz)
+unset TRUSTED_PKG_PATH
+signify -Vz -p /etc/signify/my-pkg.pub -x "$pkgfile" -m /dev/null &&
+    pkg_add -n "$pkgfile" && doas pkg_add "$pkgfile" &&
+    pkg_info -I "$pkgname" && "/usr/local/bin/${pkgname%-0.19.1}" --version
+```
+
+### Smoke tests
+
+Run the workbook and headless MCP checks against the staged executable.
+The script uses a temporary home, saves an XLSX with a SUM formula, verifies
+the result after reopening, checks CSV and PDF export, and reads a saved
+workbook through a fresh MCP process.
+
+```sh
+stage="$(port show=WRKINST)/usr/local"
+perl files/smoke-test "$stage/bin/gridcraft-cli"
+```
+
+On the release X11 desktop, use the stage from its matching build, or set
+`stage=/usr/local` after installation. Keep the session's X authority file
+available when switching to a temporary home.
+
+```sh
+d=$(mktemp -d /tmp/ports-build/gridcraft-x11.XXXXXXXX)
+export XAUTHORITY="${XAUTHORITY:-$HOME/.Xauthority}"
+export HOME="$d" TMPDIR="$d"
+export XDG_CONFIG_HOME="$d/config" XDG_CACHE_HOME="$d/cache"
+export PATH="$stage/bin:$PATH"
+export XDG_DATA_DIRS="$stage/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+export RUST_LOG=warn,egui_wgpu=debug
+env -u WGPU_BACKEND gridcraft --sample sales 2>"$d/default.log"
+WGPU_BACKEND=vulkan gridcraft --sample sales 2>"$d/vulkan.log"
+grep -E 'wgpu adapter:|Software rasterizer detected|No suitable graphics adapter' \
+    "$d/default.log" "$d/vulkan.log"
+```
+
+The Vulkan log should report the Radeon adapter and `backend: Vulkan`.
+For each launch, check the sales grid, the “Revenue by Region” column chart
+and the “Share of Annual Total” pie chart. Change North's Q1 cell C5 from
+48200 to 48201. G5 should change from 217420 to 217421. Copy C5 to another
+X11 application, then paste its text into a blank cell. Use Save As to save
+`$d/sales.xlsx`. Close it and reopen it through File → Open. Verify the saved
+total and test opening two workbooks from the desktop entry.
+
+```sh
+gridcraft-cli cat "$d/sales.xlsx" --range G5
+gridcraft-cli run --sample budget --out "$d/budget.xlsx"
+gio launch "$stage/share/applications/ai.storyteller.gridcraft.desktop" \
+    "$d/sales.xlsx" "$d/budget.xlsx"
+xprop WM_CLASS
+```
+
+Click the GridCraft window for `xprop`. Both WM_CLASS strings should be
+`gridcraft`. Check that both workbooks opened and that the saved sales
+total displays as $217,421.

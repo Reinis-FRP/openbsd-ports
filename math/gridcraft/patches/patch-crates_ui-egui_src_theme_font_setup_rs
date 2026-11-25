@@ -1,0 +1,19 @@
+--- crates/ui-egui/src/theme/font_setup.rs.orig
++++ crates/ui-egui/src/theme/font_setup.rs
+@@ -287,7 +287,15 @@
+ /// Every file in `files` under every directory in `dirs`, directory first, in the same order a
+ /// nested loop over the directories would add them.
+ pub(super) fn in_dirs(dirs: &[&str], files: &[&str]) -> Vec<String> {
+-    dirs.iter().flat_map(|d| files.iter().map(move |f| format!("{d}/{f}"))).collect()
++    let mut paths: Vec<_> = dirs.iter().flat_map(|d| files.iter().map(move |f| format!("{d}/{f}"))).collect();
++    if cfg!(target_os = "openbsd") {
++        for file in files {
++            let name = file.rsplit('/').next().unwrap_or(file);
++            let dir = if name.ends_with(".otf") { "OTF" } else { "TTF" };
++            paths.push(format!("/usr/X11R6/lib/X11/fonts/{dir}/{name}"));
++        }
++    }
++    paths
+ }
+ 
+ /// Candidate font files per role, in preference order.

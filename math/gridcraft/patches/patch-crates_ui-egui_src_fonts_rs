@@ -1,0 +1,12 @@
+--- crates/ui-egui/src/fonts.rs.orig
++++ crates/ui-egui/src/fonts.rs
+@@ -84,6 +84,9 @@
+             }
+         } else {
+             dirs.extend(["/usr/share/fonts", "/usr/local/share/fonts", "/usr/share/fonts/TTF"].map(Into::into));
++            if cfg!(target_os = "openbsd") {
++                dirs.push("/usr/X11R6/lib/X11/fonts".into());
++            }
+             if let Some(h) = &home {
+                 dirs.push(h.join(".fonts"));
+                 dirs.push(h.join(".local/share/fonts"));

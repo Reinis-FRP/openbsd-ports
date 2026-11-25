@@ -1,0 +1,11 @@
+--- modcargo-crates/wgpu-core-deps-windows-linux-android-30.0.1/Cargo.toml.orig
++++ modcargo-crates/wgpu-core-deps-windows-linux-android-30.0.1/Cargo.toml
+@@ -39,7 +39,7 @@
+ name = "wgpu_core_deps_windows_linux_android"
+ path = "src/lib.rs"
+ 
+-[target.'cfg(any(windows, target_os = "linux", target_os = "android", target_os = "freebsd", target_os = "netbsd"))'.dependencies.wgpu-hal]
++[target.'cfg(any(windows, target_os = "linux", target_os = "android", target_os = "freebsd", target_os = "openbsd", target_os = "netbsd"))'.dependencies.wgpu-hal]
+ version = "30.0.0"
+ 
+ [lints.clippy]

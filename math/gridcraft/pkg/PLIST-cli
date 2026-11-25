@@ -1,0 +1,7 @@
+@bin bin/gridcraft-cli
+share/doc/gridcraft-cli/
+share/doc/gridcraft-cli/ATTRIBUTION.md
+share/doc/gridcraft-cli/LICENSE-APACHE
+share/doc/gridcraft-cli/LICENSE-MIT
+share/doc/gridcraft-cli/NOTICE
+share/doc/gridcraft-cli/NOTICE-pdf

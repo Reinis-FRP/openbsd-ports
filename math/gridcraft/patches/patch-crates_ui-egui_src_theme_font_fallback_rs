@@ -1,0 +1,10 @@
+--- crates/ui-egui/src/theme/font_fallback.rs.orig
++++ crates/ui-egui/src/theme/font_fallback.rs
+@@ -341,6 +341,7 @@
+     let mut v: Vec<(String, u32)> = vec![(format!("{win}\\seguisym.ttf"), 0), ("/System/Library/Fonts/Apple Symbols.ttf".into(), 0)];
+     for d in [
+         "/usr/share/fonts/truetype/dejavu",
++        "/usr/X11R6/lib/X11/fonts/TTF",
+         "/usr/share/fonts/dejavu-sans-fonts",
+         "/usr/share/fonts/TTF",
+         "/usr/share/fonts/dejavu",
