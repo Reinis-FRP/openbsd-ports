@@ -252,15 +252,41 @@ doas pkg_add llvm%22 rust rust-rustfmt rust-bindgen cargo-generate-vendor go nod
     double-conversion dav1d openh264 cups-libs nss libudev-openbsd libxml libxslt
 ```
 
-Build the overlay's electron-esbuild 0.28.2 and Berry 4.18.0 locally.
-The former installs a private esbuild executable and matching JavaScript
-module alongside any stock esbuild package. From the overlay root:
+### Signed desktop build order
+
+Package, sign and install **electron-esbuild 0.28.2**, then **Berry 4.18.0**.
+Electron uses both at build time. Next, package, sign and install **Electron
+43.8.10p0** so Code - OSS can use its runtime and native headers. Build
+**Code - OSS** last. You can skip any prerequisite whose required version is
+already installed.
+
+On a desktop using the standard ports directories, run the following from
+the overlay root with the key from [Install a package](#install-a-package).
 
 ```sh
 overlay=$(pwd -P)
-make -C "$overlay/devel/electron-esbuild" update-or-install &&
-    make -C "$overlay/devel/berry" update-or-install
+sign_install() {
+    pkgfile=$(make -C "$1" show=PKGFILE) &&
+        doas pkg_sign -s signify2 -s /etc/signify/my-pkg.sec \
+            -o "$(dirname "$pkgfile")" "$pkgfile" &&
+        signify -Vz -p /etc/signify/my-pkg.pub -x "$pkgfile" -m /dev/null &&
+        pkg_add -n "$pkgfile" && doas pkg_add "$pkgfile"
+}
+
+make -C "$overlay/devel/electron-esbuild" package &&
+    sign_install "$overlay/devel/electron-esbuild" &&
+    make -C "$overlay/devel/berry" package &&
+    sign_install "$overlay/devel/berry" &&
+    make -C "$overlay/www/electron" MAKE_JOBS=8 package &&
+    sign_install "$overlay/www/electron"
 ```
+
+If Electron stopped at `unsigned package` while installing a helper, its
+package archive already exists. Start at the `sign_install` line for that
+helper and continue the sequence. Electron resumes in its existing work
+directory. Once Electron is installed, continue with [Code - OSS](#editorsvscode).
+
+### Snapshot VM build and checks
 
 Use a matching package mirror and stock ports tree. The tested snapshot tree was
 `d9fc0a1bf36574e20fc55a7dd34c0459c1440b78` (Go 1.27.3). The default
@@ -373,12 +399,19 @@ pkg_info -qe 'unzip-*' || doas pkg_add unzip--
 doas pkg_add gmake node py3-yaml heimdal-libs desktop-file-utils git ripgrep
 ```
 
-Use the electron-esbuild 0.28.2 and Electron 43.8.10p0 packages built from the
-overlay above. For the installed-editor Xvfb test, also run
+On the desktop, complete the [signed desktop build order](#signed-desktop-build-order)
+through Electron, then use the same shell to package and install Code - OSS.
+
+```sh
+make -C "$overlay/editors/vscode" MAKE_JOBS=8 package &&
+    sign_install "$overlay/editors/vscode"
+```
+
+For the installed-editor Xvfb test, also run
 `doas pkg_add xdotool dbus` on a system with the OpenBSD X sets installed.
 
-From the overlay root, use the same ports tree and privsep configuration as
-for Electron. Give the editor its own scratch directory.
+For the snapshot VM build, use the same ports tree and privsep configuration
+as for Electron. Give the editor its own scratch directory.
 
 ```sh
 overlay=$(pwd -P)
