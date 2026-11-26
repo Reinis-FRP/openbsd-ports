@@ -1,0 +1,15 @@
+Index: build/linux/unbundle/zstd.gn
+--- build/linux/unbundle/zstd.gn.orig
++++ build/linux/unbundle/zstd.gn
+@@ -17,6 +17,11 @@
+   ]
+ }
+ 
++source_set("headers") {
++  public_configs = [ ":system_zstd" ]
++  public_deps = [ ":zstd_headers" ]
++}
++
+ source_set("compress") {
+   public_configs = [ ":system_zstd" ]
+   public_deps = [ ":zstd_headers" ]

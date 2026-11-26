@@ -1,0 +1,12 @@
+Index: electron/script/pgo/collect-profile.js
+--- electron/script/pgo/collect-profile.js.orig
++++ electron/script/pgo/collect-profile.js
+@@ -75,7 +75,7 @@ function log(...args) {
+ // network workload coverage degrades but collection still succeeds.
+ function installTrustedCA(caCertPath) {
+   try {
+-    if (process.platform === 'linux') {
++    if (process.platform === 'linux' || ['freebsd', 'openbsd'].includes(process.platform)) {
+       const nssDb = path.join(os.homedir(), '.pki', 'nssdb');
+       if (!fs.existsSync(nssDb)) {
+         fs.mkdirSync(nssDb, { recursive: true });

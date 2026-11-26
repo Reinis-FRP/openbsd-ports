@@ -1,0 +1,34 @@
+import json
+import os
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+src = Path(sys.argv[1]).resolve()
+# The release archive omits parts of these fixture trees. Keep every hunk
+# touching a shipped file, including the code in the same cherry-pick.
+trimmed = {
+    'src': ('third_party/blink/web_tests/', 'content/test/data/'),
+    'src/v8': ('test/',),
+    'src/third_party/dawn': ('test/tint/',),
+}
+for entry in json.loads((src / 'electron/patches/config.json').read_text()):
+    directory = src.parent / entry['patch_dir']
+    repo = src.parent / entry['repo']
+    env = dict(os.environ, GIT_CEILING_DIRECTORIES=str(repo.parent))
+    for name in (directory / '.patches').read_text().splitlines():
+        if not name:
+            continue
+        patch = directory / name
+        args = ['git', 'apply', '--whitespace=nowarn']
+        changes = re.split(rb"^diff --git ", patch.read_bytes(), flags=re.M)[1:]
+        for change in changes:
+            paths = re.match(rb"a/(.*?) b/(.*?)$", change, re.M)
+            if paths is None or b"\nnew file mode " in change:
+                continue
+            old, new = map(os.fsdecode, paths.groups())
+            if old.startswith(trimmed.get(entry["repo"], ())) and not (repo / old).exists():
+                args.extend(["--exclude=" + old, "--exclude=" + new])
+        print(entry['repo'], name, flush=True)
+        subprocess.run([*args, str(patch)], cwd=repo, env=env, check=True)

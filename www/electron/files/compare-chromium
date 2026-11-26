@@ -1,0 +1,46 @@
+# Compare OpenBSD patches with the Chromium tree after Electron's changes.
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+source, port, temp = map(Path, sys.argv[1:])
+patches = sorted((port / 'patches').glob('patch-*'))
+if not patches:
+    sys.exit(f'No Chromium patches under {port}')
+temp.mkdir(parents=True, exist_ok=True)
+output = Path(tempfile.mkdtemp(prefix='comparison.', dir=temp))
+groups = ('applied', 'rejected', 'missing', 'ignored')
+for group in groups:
+    (output / group).mkdir()
+
+# These four patches adapt the lite tarball to different system codec sources.
+system_codecs = {
+    'third_party/libaom/source/config/linux/arm64-cpu-detect/config/av1_rtcd.h',
+    'third_party/libvpx/libvpx_srcs.gni',
+    'third_party/libvpx/source/config/linux/arm64-highbd/vpx_dsp_rtcd.h',
+    'third_party/libvpx/source/config/linux/arm64/vpx_dsp_rtcd.h',
+}
+for patch in patches:
+    data = patch.read_bytes()
+    index = re.search(rb'^Index: (.+)$', data, re.MULTILINE)
+    if not index:
+        sys.exit(f'Missing Index header in {patch}')
+    target = index[1].decode()
+    if target in system_codecs:
+        group = 'ignored'
+    elif not (source / target).is_file() and b'@@ -0,0 ' not in data:
+        group = 'missing'
+    else:
+        result = subprocess.run(
+            ['/usr/bin/patch', '-C', '-sf', '-p0', '-d', str(source)],
+            input=data, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        group = 'applied' if result.returncode == 0 else 'rejected'
+    shutil.copyfile(patch, output / group / patch.name)
+    if group != 'applied':
+        print(group, target)
+print(output)
+for group in groups:
+    print(group, len(list((output / group).iterdir())))

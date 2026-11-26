@@ -1,0 +1,68 @@
+Fix unbundle.
+
+Index: third_party/electron_node/unofficial.gni
+--- third_party/electron_node/unofficial.gni.orig
++++ third_party/electron_node/unofficial.gni
+@@ -168,6 +168,7 @@ template("node_gn_build") {
+       "$node_v8_path:v8_tracing_config",
+       "//build/config/compiler:no_exit_time_destructors"
+     ]
++    libs = []
+     public_configs = [
+       ":node_external_config",
+       "deps/googletest:googletest_config",
+@@ -199,7 +200,6 @@ template("node_gn_build") {
+       "//third_party/brotli:dec",
+       "//third_party/brotli:enc",
+       "//third_party/zstd:decompress",
+-      "//third_party/zstd:headers",
+       "$node_simdutf_path",
+       "$node_v8_path:v8_libplatform",
+       "$node_v8_path:v8_tracing",
+@@ -220,7 +220,7 @@ template("node_gn_build") {
+     ] + gypi_values.node_sources
+ 
+     if (is_win) {
+-      libs = [ "psapi.lib" ]
++      libs += [ "psapi.lib" ]
+     }
+     if (is_mac) {
+       frameworks = [
+@@ -236,6 +236,9 @@ template("node_gn_build") {
+       configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
+       configs += [ "//build/config/gcc:symbol_visibility_default" ]
+     }
++    if (is_bsd) {
++      libs += [ "execinfo" ]
++    }
+     if (use_system_llhttp) {
+       libs += [ "llhttp" ]
+     } else {
+@@ -279,17 +282,17 @@ template("node_gn_build") {
+       sources += node_inspector.node_inspector_sources +
+                  node_inspector.node_inspector_generated_sources
+     }
+-    if (is_linux) {
+-      import("//build/config/linux/pkg_config.gni")
+-        if (use_system_cares) {
+-          pkg_config("cares") {
+-            packages = [ "libcares" ]
+-          }
++  }
++  if (is_linux) {
++    import("//build/config/linux/pkg_config.gni")
++      if (use_system_cares) {
++        pkg_config("cares") {
++          packages = [ "libcares" ]
+         }
+-      if (use_system_nghttp2) {
+-        pkg_config("nghttp2") {
+-          packages = [ "libnghttp2" ]
+-        }
++      }
++    if (use_system_nghttp2) {
++      pkg_config("nghttp2") {
++        packages = [ "libnghttp2" ]
+       }
+     }
+   }

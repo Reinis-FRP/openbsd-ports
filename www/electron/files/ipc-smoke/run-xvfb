@@ -1,0 +1,43 @@
+#!/bin/sh
+set -eu
+
+appdir=$(CDPATH= cd -P "$(dirname "$0")" && pwd)
+work=$(mktemp -d "${TMPDIR:-/tmp}/ipc.XXXXXXXX")
+printf 'Test directory %s\n' "$work"
+mkdir -m 700 "$work/home" "$work/run" "$work/tmp" "$work/app"
+cp "$appdir/main.js" "$appdir/preload.js" "$work/app/"
+export HOME="$work/home" XDG_RUNTIME_DIR="$work/run" TMPDIR="$work/tmp"
+export XAUTHORITY="$work/auth"
+umask 077
+touch "$XAUTHORITY"
+slot=79
+while [ -S "/tmp/.X11-unix/X$slot" ] || [ -e "/tmp/.X${slot}-lock" ]; do
+    slot=$((slot + 1))
+done
+export DISPLAY=":$slot"
+cookie=$(openssl rand -hex 16)
+printf 'add %s . %s\n' "$DISPLAY" "$cookie" | xauth -q -f "$XAUTHORITY"
+unset cookie
+
+Xvfb "$DISPLAY" -screen 0 1024x768x24 -nolisten tcp -auth "$XAUTHORITY" > "$work/xvfb.log" 2>&1 &
+server=$!
+trap 'kill "$server" 2>/dev/null || :; wait "$server" 2>/dev/null || :' EXIT
+trap 'exit 1' HUP INT TERM
+for attempt in 1 2 3 4 5 6 7 8 9 10; do
+    xdpyinfo > "$work/display.log" 2>&1 && break
+    kill -0 "$server"
+    sleep 1
+done
+xdpyinfo > "$work/display.log"
+unset ELECTRON_RUN_AS_NODE ELECTRON_DISABLE_SANDBOX ELECTRON_UNVEIL ELECTRON_APP_NAME
+cd "$work"
+timeout 45 electron --version > version.log 2>&1
+grep -x 'v43\.8\.10' version.log
+rc=0
+timeout 45 dbus-run-session -- electron "$work/app/main.js" > ipc.log 2>&1 || rc=$?
+if [ "$rc" -ne 0 ]; then
+    tail -30 ipc.log >&2
+    exit "$rc"
+fi
+grep -E '^\{"electron":"43\.8\.10","chromium":"150\.0\.7871\.250","node":"24\.22\.1","reply":"pong/[0-9a-f-]+"\}$' ipc.log
+printf 'IPC exit 0\n'

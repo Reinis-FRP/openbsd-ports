@@ -1,0 +1,13 @@
+On OpenBSD yarn is classic (v1) and berry is the latest (v4)
+
+Index: electron/script/yarn.js
+--- electron/script/yarn.js.orig
++++ electron/script/yarn.js
+@@ -1,6 +1,6 @@
+ const path = require('node:path');
+ 
+-exports.YARN_SCRIPT_PATH = path.resolve(__dirname, '..', '.yarn/releases/yarn-4.18.0.cjs');
++exports.YARN_SCRIPT_PATH = '${LOCALBASE}/bin/berry';
+ 
+ if (require.main === module) {
+   require(exports.YARN_SCRIPT_PATH);

@@ -1,0 +1,14 @@
+Index: chrome/browser/extensions/BUILD.gn
+--- chrome/browser/extensions/BUILD.gn.orig
++++ chrome/browser/extensions/BUILD.gn
+@@ -1524,6 +1524,10 @@ source_set("extensions") {
+       ]
+     }
+ 
++    if (is_bsd) {
++      sources -= [ "api/image_writer_private/removable_storage_provider_linux.cc" ]
++    }
++
+     if (enable_pdf) {
+       deps += [
+         "//chrome/browser/pdf",

@@ -1,0 +1,12 @@
+Index: electron/spec/fixtures/native-addon/uv-dlopen/index.js
+--- electron/spec/fixtures/native-addon/uv-dlopen/index.js.orig
++++ electron/spec/fixtures/native-addon/uv-dlopen/index.js
+@@ -4,7 +4,7 @@ const testLoadLibrary = require('./build/Release/test_
+ 
+ const lib = (() => {
+   switch (process.platform) {
+-    case 'linux':
++    case 'freebsd': case 'linux': case 'openbsd':
+       return path.resolve(__dirname, 'build/Release/foo.so');
+     case 'darwin':
+       return path.resolve(__dirname, 'build/Release/foo.dylib');

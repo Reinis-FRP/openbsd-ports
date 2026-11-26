@@ -1,0 +1,12 @@
+Index: electron/shell/browser/api/electron_api_power_monitor.h
+--- electron/shell/browser/api/electron_api_power_monitor.h.orig
++++ electron/shell/browser/api/electron_api_power_monitor.h
+@@ -44,7 +44,7 @@ class PowerMonitor final : public gin::Wrappable<Power
+   PowerMonitor& operator=(const PowerMonitor&) = delete;
+ 
+  private:
+-#if BUILDFLAG(IS_LINUX)
++#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_BSD)
+   void SetListeningForShutdown(bool);
+ #endif
+ 

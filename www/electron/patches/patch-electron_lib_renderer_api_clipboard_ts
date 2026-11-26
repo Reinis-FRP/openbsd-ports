@@ -1,0 +1,12 @@
+Index: electron/lib/renderer/api/clipboard.ts
+--- electron/lib/renderer/api/clipboard.ts.orig
++++ electron/lib/renderer/api/clipboard.ts
+@@ -27,7 +27,7 @@ const makeRemoteMethod = function (method: keyof Elect
+   };
+ };
+ 
+-if (process.platform === 'linux') {
++if (['freebsd', 'linux', 'openbsd'].includes(process.platform)) {
+   // On Linux we could not access clipboard in renderer process.
+   for (const method of Object.keys(originalClipboard) as (keyof Electron.Clipboard)[]) {
+     clipboard[method] = makeRemoteMethod(method);

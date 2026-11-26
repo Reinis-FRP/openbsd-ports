@@ -1,0 +1,14 @@
+import ast
+import sys
+from pathlib import Path
+
+tree = ast.parse(Path(sys.argv[1]).read_text())
+values = next(node.value for node in tree.body if isinstance(node, ast.Assign)
+              and any(isinstance(t, ast.Name) and t.id == 'vars' for t in node.targets))
+pins = {key.value: value.value for key, value in zip(values.keys, values.values)
+        if isinstance(key, ast.Constant) and isinstance(value, ast.Constant)}
+for variable, key in [('CHROMIUM_V', 'chromium'), ('NODE_V', 'node'),
+                      ('NAN_V', 'nan'), ('SQUIRREL_MAC_V', 'squirrel.mac'),
+                      ('REACTIVEOBJC_V', 'reactiveobjc'), ('MANTLE_V', 'mantle')]:
+    value = pins[key + '_version']
+    print(f'{variable}=\t{value.removeprefix("v") if key == "node" else value}')

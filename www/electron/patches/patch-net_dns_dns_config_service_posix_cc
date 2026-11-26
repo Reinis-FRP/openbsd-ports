@@ -1,0 +1,31 @@
+Index: net/dns/dns_config_service_posix.cc
+--- net/dns/dns_config_service_posix.cc.orig
++++ net/dns/dns_config_service_posix.cc
+@@ -36,6 +36,11 @@
+ #include "net/dns/dns_config_watcher_mac.h"
+ #endif
+ 
++#if BUILDFLAG(IS_BSD)
++#include "base/command_line.h"
++#include "sandbox/policy/switches.h"
++#endif
++
+ namespace net {
+ 
+ namespace internal {
+@@ -132,6 +137,15 @@ class DnsConfigServicePosix::Watcher : public DnsConfi
+ 
+   bool Watch() override {
+     CheckOnCorrectSequence();
++
++// pledge + unveil
++    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
++    // sandbox::policy::switches::kNoSandbox is undefined during component build
++    // we can't link //sandbox/policy into //net as policy cycle bak to net
++    // XXX keep in sync with src/sandbox/policy/switches.cc
++    if (!command_line->HasSwitch("no-sandbox"))
++      return false;
++
+     bool success = true;
+ #if !IS_MAS_BUILD()
+     if (!config_watcher_.Watch(base::BindRepeating(&Watcher::OnConfigChanged,

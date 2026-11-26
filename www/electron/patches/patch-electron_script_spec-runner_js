@@ -1,0 +1,33 @@
+work around folder hash issue, always re-run tests.
+work around fd limit, tests leeks fd, run each test file in isolation.
+
+Index: electron/script/spec-runner.js
+--- electron/script/spec-runner.js.orig
++++ electron/script/spec-runner.js
+@@ -584,7 +584,7 @@ function toVitestInvocation(exe, specDir, runnerArgs) 
+   };
+   let command = process.execPath;
+   let commandArgs = vitestArgs;
+-  if (process.platform === 'linux') {
++  if (process.platform === 'linux' || ['freebsd', 'openbsd'].includes(process.platform)) {
+     // The mock D-Bus services are started once around the whole run; every
+     // Electron worker inherits the bus addresses from the CLI's environment.
+     commandArgs = [path.resolve(__dirname, 'dbus_mock.py'), command, ...commandArgs];
+@@ -687,7 +687,7 @@ async function installSpecModules(dir) {
+     process.exit(1);
+   }
+ 
+-  if (process.platform === 'linux') {
++  if (process.platform === 'linux' || ['freebsd', 'openbsd'].includes(process.platform)) {
+     const { status: rebuildStatus } = childProcess.spawnSync('npm', ['rebuild', 'abstract-socket'], {
+       env,
+       cwd: dir,
+@@ -765,7 +765,7 @@ async function installSpecModules(dir) {
+ // the same GCC that rejects the headers, so nothing on that host can build
+ // the fixtures.
+ function getNativeAddonToolchainEnv() {
+-  if (args.electronVersion || process.platform !== 'linux') {
++  if (args.electronVersion || (process.platform !== 'linux' && !['freebsd', 'openbsd'].includes(process.platform))) {
+     return {};
+   }
+   const outDir = utils.getOutDir();

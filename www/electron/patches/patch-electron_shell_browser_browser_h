@@ -1,0 +1,16 @@
+Index: electron/shell/browser/browser.h
+--- electron/shell/browser/browser.h.orig
++++ electron/shell/browser/browser.h
+@@ -295,10 +295,10 @@ class Browser : private WindowListObserver {
+   PCWSTR GetAppUserModelID();
+ #endif  // BUILDFLAG(IS_WIN)
+ 
+-#if BUILDFLAG(IS_LINUX)
++#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_BSD)
+   // Whether Unity launcher is running.
+   bool IsUnityRunning();
+-#endif  // BUILDFLAG(IS_LINUX)
++#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_BSD)
+ 
+   // Tell the application to open a file.
+   bool OpenFile(const std::string& file_path);

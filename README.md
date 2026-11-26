@@ -12,6 +12,7 @@ Tested on OpenBSD 8.0-release/amd64.
 | [devel/solana-platform-tools](#develsolana-platform-tools) | `solana-platform-tools-1.57` | amd64 | OpenBSD-hosted Rust cross compiler and Solana SBF target libraries |
 | [devel/cargo-build-sbf](#develcargo-build-sbf) | `cargo-build-sbf-4.5.0` | amd64 | Cargo subcommands for building and testing Solana SBF programs |
 | [devel/anchor-cli](#develanchor-cli) | `anchor-cli-1.2.2` | amd64 | Anchor CLI for building, testing and deploying Solana programs |
+| [www/electron](#wwwelectron) | `electron-43.8.10p0` | amd64 | Electron runtime, tested on 8.0-current |
 
 ## Build a package
 
@@ -218,3 +219,103 @@ Both commands check the SBF program, IDL and TypeScript types. The first
 runs the generated LiteSVM instruction test. The second starts Agave with
 `anchor test --validator legacy`, deploys over loopback and checks that
 the counter advances from zero to one.
+
+## www/electron
+
+Electron 43.8.10 was built, packaged and tested on OpenBSD 8.0-current/amd64
+(`GENERIC.MP#163`, November 20, 2026). The installed package reported
+Chromium 150.0.7871.250 and Node 24.22.1. A sandboxed BrowserWindow completed
+a renderer-to-main IPC round trip under Xvfb and exited with status 0.
+
+The port derives from Fabien Romano’s Electron 41.10.6 port and retains its
+OpenBSD pledge and unveil integration. It streams the three FreeBSD Chromium
+archive fragments during extraction. The historical OpenBSD Chromium 150 port
+supplies the platform patches and the Cargo recipe for Rollup 4.60.4. The
+shared BSD patches also draw on the FreeBSD Electron 43.8.10 port.
+[Original port](https://github.com/opencrew-tech/openbsd-electron/tree/033b8dcdbba860fc0ea2d7c6bfd80a40b8cf3c04)
+· [OpenBSD Chromium baseline](https://github.com/openbsd/ports/tree/6edefd9db6245d818bea82e7b0e32e7c16f1de81/www/chromium)
+· [FreeBSD Electron sources and checksums](https://github.com/freebsd/freebsd-ports/tree/9d136dd8c7f497580f5db8dc54f3b90e0c4b937b/devel/electron43)
+
+Use a matching snapshot package mirror and stock ports tree. The tested tree was
+`d9fc0a1bf36574e20fc55a7dd34c0459c1440b78` (Go 1.27.3). Put the overlay
+**first** so the build selects its esbuild 0.28.2p0 with the JavaScript module,
+Berry 4.18.0 with the offline lockfile helper, and py-dbusmock. Both privsep
+accounts need read access to both checkouts. Use the standard privsep
+doas rules that preserve the environment for `_pbuild` and `_pfetch`.
+With the exports below, `doas -u _pbuild make -C "$overlay/www/electron"
+show=MODBERRY_GEN_SCRIPT` should print the helper path under the overlay.
+The snapshot VM used a local wrapper to preserve its build environment
+and scope unsigned dependency installs to its scratch package directory.
+
+Run from the overlay root. On this VM the dedicated FFS scratch mount had
+`nodev,nosuid`; Electron’s build tools also require `wxallowed` during the
+build. The original mount flags can be restored after packaging. With eight
+vCPUs and 15 GiB of RAM, the build finished at six parallel jobs. Scratch
+usage rose from 25.8 GiB after resizing to 66.3 GiB during packaging.
+
+```sh
+overlay=$(pwd -P)
+export PORTSDIR=/usr/ports    # path to the matching stock checkout
+export PORTSDIR_PATH="$overlay:$PORTSDIR"
+build=$(mktemp -d /tmp/ports-build/electron.XXXXXXXX)
+chmod 755 "$build"
+doas install -d -o _pfetch "$build/dist"
+doas install -d -o _pbuild "$build/obj" "$build/packages" "$build/plist"
+install -d -m 1777 "$build/t"
+export TMPDIR="$build/t" PKG_TMPDIR="$build/t"
+doas mount -u -o nodev,nosuid,wxallowed /tmp/ports-build
+
+port() {
+    runner=$1
+    shift
+    "$runner" -C "$overlay/www/electron" PORTSDIR="$PORTSDIR" PORTSDIR_PATH="$PORTSDIR_PATH" \
+        PORTS_PRIVSEP=Yes MAKE_JOBS=6 \
+        WRKOBJDIR="$build/obj" WRKOBJDIR_MFS="$build/obj" \
+        BULK_COOKIES_DIR="$build/obj/bulk" UPDATE_COOKIES_DIR="$build/obj/update" \
+        DISTDIR="$build/dist" PACKAGE_REPOSITORY="$build/packages" \
+        PLIST_REPOSITORY="$build/plist" "$@"
+}
+port make checksum && port make package
+port make show=PKGFILE
+doas mount -u -o nodev,nosuid,nowxallowed /tmp/ports-build
+```
+
+All 1,304 distfiles passed checksum. For updates, `port make versions`
+reads the tagged Electron DEPS. Run `port make chromium-patches` in a
+fresh object tree to compare against the pinned OpenBSD revision. For
+43.8.10, 1,587 patches applied directly, five needed merging, four were
+specific to the Chromium port’s codec sources, and no target files were
+missing.
+
+Run the library checks as the build account so its dependency cache is
+writable. The explicit make command keeps the checker’s recursive lookups
+on the selected stock tree even when it lives outside /usr/ports.
+
+```sh
+build_make() {
+    doas -u _pbuild env TMPDIR="$build/t" PORTSDIR_PATH="$PORTSDIR_PATH" make "$@"
+}
+check_make="make PORTSDIR=$PORTSDIR PORTS_PRIVSEP=No TMPDIR=$build/t"
+port build_make PORTS_PRIVSEP=No \
+    "_CHECK_LIB_DEPENDS=env PORTSDIR=$PORTSDIR MAKE='$check_make' $PORTSDIR/infrastructure/bin/check-lib-depends" \
+    port-lib-depends-check lib-depends-check
+for d in www/electron devel/berry devel/esbuild devel/py-dbusmock; do
+    (cd "$overlay/$d" && "$PORTSDIR/infrastructure/bin/portcheck" -p "$overlay") || exit 1
+done
+```
+
+Install the package using the [package installation instructions](#install-a-package).
+For a local test of the unsigned archive on the builder, scope trust to its
+package directory. The smoke test starts an authenticated Xvfb display with
+a temporary home and a D-Bus session, then runs the installed launcher with
+the normal OpenBSD sandbox settings. The preload checks that the renderer is
+sandboxed. Success prints the three versions, a `pong/<uuid>` reply with the
+renderer’s original nonce, and `IPC exit 0`. Logs stay under `$TMPDIR`.
+
+```sh
+pkgfile=$(port make show=PKGFILE)
+doas env TRUSTED_PKG_PATH="$build/packages/amd64/all/" PKG_TMPDIR="$build/t" TMPDIR="$build/t" pkg_add -n "$pkgfile" &&
+    doas env TRUSTED_PKG_PATH="$build/packages/amd64/all/" PKG_TMPDIR="$build/t" TMPDIR="$build/t" pkg_add "$pkgfile"
+pkg_check -n -qq -I -x
+sh "$overlay/www/electron/files/ipc-smoke/run-xvfb"
+```

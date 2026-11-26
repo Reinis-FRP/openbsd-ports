@@ -1,0 +1,12 @@
+Index: dbusmock/__main__.py
+--- dbusmock/__main__.py.orig
++++ dbusmock/__main__.py
+@@ -163,7 +163,7 @@ if __name__ == "__main__":
+     if platform.system() == "Darwin":
+         libglib = ctypes.cdll.LoadLibrary("libglib-2.0.dylib")
+     else:
+-        libglib = ctypes.cdll.LoadLibrary("libglib-2.0.so.0")
++        libglib = ctypes.cdll.LoadLibrary("libglib-2.0.so")
+ 
+     dbusmock.mockobject.objects[args.path] = main_object
+ 

@@ -1,0 +1,170 @@
+Index: electron/BUILD.gn
+--- electron/BUILD.gn.orig
++++ electron/BUILD.gn
+@@ -56,9 +56,12 @@
+ 
+ if (is_linux) {
+   import("//build/config/linux/pkg_config.gni")
+-  import("//electron/build/linux/strip_binary.gni")
+   import("//tools/generate_stubs/rules.gni")
+ 
++  if(!is_bsd) {
++    import("//electron/build/linux/strip_binary.gni")
++  }
++
+   pkg_config("gio_unix") {
+     packages = [ "gio-unix-2.0" ]
+   }
+@@ -562,6 +565,7 @@
+     "//services/device/public/cpp/geolocation",
+     "//services/device/public/cpp/hid",
+     "//services/device/public/mojom",
++    "//services/cert_verifier/public/mojom",
+     "//services/proxy_resolver:lib",
+     "//services/video_capture/public/mojom:constants",
+     "//services/viz/privileged/mojom/compositing",
+@@ -629,7 +633,7 @@
+     defines += [ "GDK_DISABLE_DEPRECATION_WARNINGS" ]
+   }
+ 
+-  if (!is_mas_build) {
++  if (!is_mas_build && !is_bsd) {
+     deps += [
+       "//components/crash/core/app",
+       "//components/crash/core/browser",
+@@ -736,6 +740,12 @@
+       cflags_objcc = [ "-fobjc-weak" ]
+     }
+   }
++  if (is_bsd) {
++    sources -= [
++      "shell/common/crash_keys.cc",
++      "shell/common/crash_keys.h",
++    ]
++  }
+   if (is_linux) {
+     libs = [ "xshmfence" ]
+     deps += [
+@@ -1548,7 +1558,7 @@
+     } else if (is_linux) {
+       sources = [
+         "shell/app/electron_main_linux.cc",
+-        "shell/app/environ_linux.cc",
++        # "shell/app/environ_linux.cc",
+         "shell/app/uv_stdio_fix.cc",
+         "shell/app/uv_stdio_fix.h",
+       ]
+@@ -1560,7 +1570,7 @@
+       ":electron_lib",
+       ":electron_win32_resources",
+       ":packed_resources",
+-      "//components/crash/core/app",
++      # "//components/crash/core/app",
+       "//content:sandbox_helper_win",
+       "//electron/buildflags",
+       "//third_party/electron_node:libnode",
+@@ -1587,7 +1597,7 @@
+       public_deps = [ "//tools/v8_context_snapshot" ]
+     }
+ 
+-    if (is_linux) {
++    if (is_linux && !is_bsd) {
+       data_deps += [ "//components/crash/core/app:chrome_crashpad_handler" ]
+     }
+ 
+@@ -1641,20 +1651,22 @@
+       ]
+     }
+     if (is_linux) {
+-      ldflags = [
+-        "-pie",
++      ldflags = [ "-pie" ]
+ 
+-        # Required for exporting all symbols of libuv.
+-        "-Wl,--whole-archive",
+-        "obj/third_party/electron_node/deps/uv/libuv.a",
+-        "-Wl,--no-whole-archive",
+-      ]
++      if (!is_component_build) {
++        ldflags += [
++          # Required for exporting all symbols of libuv.
++          "-Wl,--whole-archive",
++          "obj/third_party/electron_node/deps/uv/libuv.a",
++          "-Wl,--no-whole-archive",
++        ]
++      }
+ 
+       if (!is_component_build && is_component_ffmpeg) {
+         configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
+       }
+ 
+-      if (is_linux) {
++      if (is_linux && !is_bsd) {
+         deps += [ "//sandbox/linux:chrome_sandbox" ]
+       }
+     }
+@@ -1762,7 +1774,7 @@
+     ":electron_version_file",
+     ":licenses",
+   ]
+-  if (is_linux) {
++  if (is_linux && !is_bsd) {
+     if (is_official_build) {
+       data_deps += [
+         ":strip_chrome_crashpad_handler",
+@@ -1770,12 +1782,16 @@
+         ":strip_electron_binary",
+         ":strip_libEGL_shlib",
+         ":strip_libGLESv2_shlib",
+-        ":strip_libffmpeg_shlib",
+         ":strip_libvk_swiftshader_shlib",
+       ]
++      if (is_component_ffmpeg) {
++        data_deps += [":strip_libffmpeg_shlib",]
++      }
+     }
+ 
+-    data_deps += [ "//sandbox/linux:chrome_sandbox" ]
++    if (!is_bsd) {
++      data_deps += [ "//sandbox/linux:chrome_sandbox" ]
++    }
+   }
+   deps = data_deps
+   outputs = [ "$root_build_dir/dist.zip" ]
+@@ -1828,7 +1844,7 @@
+   if (is_mac && v8_snapshot_toolchain != default_toolchain) {
+     flatten = true
+   }
+-  if (is_linux && is_official_build) {
++  if (is_linux && is_official_build && !is_bsd) {
+     data_deps += [
+       ":strip_libEGL_shlib",
+       ":strip_libGLESv2_shlib",
+@@ -1988,7 +2004,7 @@
+   }
+ }
+ 
+-if (is_linux && is_official_build) {
++if (is_linux && is_official_build && !is_bsd) {
+   strip_binary("strip_electron_binary") {
+     binary_input = "$root_out_dir/$electron_project_name"
+     symbol_output = "$root_out_dir/debug/$electron_project_name.debug"
+@@ -2024,11 +2040,13 @@
+     deps = [ "//third_party/angle:libGLESv2" ]
+   }
+ 
+-  strip_binary("strip_libffmpeg_shlib") {
+-    binary_input = "$root_out_dir/libffmpeg.so"
+-    symbol_output = "$root_out_dir/debug/libffmpeg.so.debug"
+-    compress_debug_sections = true
+-    deps = [ "//third_party/ffmpeg" ]
++  if (is_component_ffmpeg) {
++    strip_binary("strip_libffmpeg_shlib") {
++      binary_input = "$root_out_dir/libffmpeg.so"
++      symbol_output = "$root_out_dir/debug/libffmpeg.so.debug"
++      compress_debug_sections = true
++      deps = [ "//third_party/ffmpeg" ]
++    }
+   }
+ 
+   strip_binary("strip_libvk_swiftshader_shlib") {
