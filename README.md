@@ -254,7 +254,7 @@ doas pkg_add llvm%22 rust rust-rustfmt rust-bindgen cargo-generate-vendor go nod
 
 ### Signed desktop build order
 
-Package, sign and install **electron-esbuild 0.28.2**, then **Berry 4.18.0**.
+Package, sign and install **electron-esbuild 0.28.2p0**, then **Berry 4.18.0**.
 Electron uses both at build time. Next, package, sign and install **Electron
 43.8.10p0** so Code - OSS can use its runtime and native headers. Build
 **Code - OSS** last. You can skip any prerequisite whose required version is
@@ -273,7 +273,7 @@ sign_install() {
         pkg_add -n "$pkgfile" && doas pkg_add "$pkgfile"
 }
 
-make -C "$overlay/devel/electron-esbuild" package &&
+make -C "$overlay/devel/electron-esbuild" build test package &&
     sign_install "$overlay/devel/electron-esbuild" &&
     make -C "$overlay/devel/berry" package &&
     sign_install "$overlay/devel/berry" &&

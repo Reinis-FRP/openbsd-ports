@@ -133,7 +133,7 @@ RUN_DEPENDS+=	devel/desktop-file-utils \
 BUILD_DEPENDS+=	archivers/bzip2 \
 		audio/pulseaudio \
 		devel/bison \
-		electron-esbuild-0.28.2:devel/electron-esbuild \
+		electron-esbuild-0.28.2p0:devel/electron-esbuild \
 		devel/git \
 		devel/gperf \
 		devel/ninja \

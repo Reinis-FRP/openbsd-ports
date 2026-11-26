@@ -1,0 +1,16 @@
+Node 24 rejects with TypeError when the delegated array iterator has no
+throw method. Keep the original assertion for esbuild 0.28.2 when it
+lowers the generator and implements throw itself.
+
+Index: scripts/end-to-end-tests.js
+--- scripts/end-to-end-tests.js.orig
++++ scripts/end-to-end-tests.js
+@@ -918,7 +918,7 @@
+           state = await it.next()
+           if (state.done !== false || state.value !== 'f.x') throw 'fail: f: next'
+           try { await it.throw('f: throw') } catch (err) { var error = err }
+-          if (error !== 'f: throw') throw 'fail: f: ' + error
++          if (${flags.length ? "error !== 'f: throw'" : "!(error instanceof TypeError)"}) throw 'fail: f: ' + error
+           state = await it.next()
+           if (state.done !== true || state.value !== void 0) throw 'fail: f: done'
+         }

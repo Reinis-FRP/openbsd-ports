@@ -1,0 +1,24 @@
+On OpenBSD, Go may bind an IPv4 socket for net.Listen("tcp", "[::]:port").
+Select tcp6 for an explicit IPv6 address and keep hostnames on tcp.
+
+Index: pkg/api/serve_other.go
+--- pkg/api/serve_other.go.orig
++++ pkg/api/serve_other.go
+@@ -831,14 +831,11 @@
+ 		host = serveOptions.Host
+ 		ip := net.ParseIP(host)
+ 
+-		// Only use "tcp4" if this is an IPv4 address, otherwise use "tcp"
+-		if ip == nil || ip.To4() == nil {
+-			network = "tcp"
+-		}
+-
+-		// Remember whether the host is a valid IP address or not
+ 		if ip == nil {
++			network = "tcp"
+ 			hostIsIP = false
++		} else if ip.To4() == nil {
++			network = "tcp6"
+ 		}
+ 	}
+ 

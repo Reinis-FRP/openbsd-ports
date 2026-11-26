@@ -4,6 +4,7 @@ COMMENT =	private esbuild binary and Node module for Electron builds
 
 V=0.28.2
 PKGNAME=	electron-esbuild-${V}
+REVISION=	0
 
 MODGO_BINDIR =		libexec/electron-esbuild
 MODGO_MODNAME =	github.com/evanw/esbuild
