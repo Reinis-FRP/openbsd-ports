@@ -1,0 +1,12 @@
+--- src/vs/base/node/ripgrep.ts.orig
++++ src/vs/base/node/ripgrep.ts
+@@ -6,8 +6,7 @@
+ import { Lazy } from '../common/lazy.js';
+ 
+ const _rgDiskPath = new Lazy(async () => {
+-	const m = await import('@vscode/ripgrep-universal');
+-	return m.rgPath.replace(/\bnode_modules\.asar\b/, 'node_modules.asar.unpacked');
++	return '${LOCALBASE}/bin/rg';
+ });
+ 
+ export function rgDiskPath(): Promise<string> {

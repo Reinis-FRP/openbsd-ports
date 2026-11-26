@@ -13,6 +13,7 @@ Tested on OpenBSD 8.0-release/amd64.
 | [devel/cargo-build-sbf](#develcargo-build-sbf) | `cargo-build-sbf-4.5.0` | amd64 | Cargo subcommands for building and testing Solana SBF programs |
 | [devel/anchor-cli](#develanchor-cli) | `anchor-cli-1.2.2` | amd64 | Anchor CLI for building, testing and deploying Solana programs |
 | [www/electron](#wwwelectron) | `electron-43.8.10p0` | amd64 | Electron runtime, tested on 8.0-current |
+| [editors/vscode](#editorsvscode) | `vscode-1.148.0` | amd64 | Code - OSS desktop editor |
 
 ## Build a package
 
@@ -319,3 +320,76 @@ doas env TRUSTED_PKG_PATH="$build/packages/amd64/all/" PKG_TMPDIR="$build/t" TMP
 pkg_check -n -qq -I -x
 sh "$overlay/www/electron/files/ipc-smoke/run-xvfb"
 ```
+
+## editors/vscode
+
+Code - OSS 1.148.0 uses the overlay's Electron 43.8.10 and its native headers.
+The desktop port derives from Fabien Romano's 1.134.0 launcher, Open VSX
+configuration, unveil profile, and BSD native module patches. The build uses
+the desktop and build-tool pnpm workspaces from Microsoft's tag. It uses the
+upstream pnpm 12.16.0 WebAssembly distribution with OpenBSD file-open flags.
+All 2,357 inputs, including the registry archives and three debugger VSIX
+files, are checksummed. pnpm installs from those archives offline. The editor
+uses system ripgrep and the kqueue backend of Parcel's file watcher.
+
+The built-in GitHub Copilot extension and Copilot CLI agent require a native
+Copilot runtime unavailable for OpenBSD. Foundry Local on-device chat
+dictation and the native OS-proxy diagnostic also lack OpenBSD binaries.
+Open VSX supports portable extensions on this port.
+[Microsoft sources](https://github.com/microsoft/vscode/tree/1.148.0)
+· [Fabien Romano's original ports](https://github.com/opencrew-tech/openbsd-electron/tree/033b8dcdbba860fc0ea2d7c6bfd80a40b8cf3c04)
+· [FreeBSD port](https://github.com/freebsd/freebsd-ports/tree/main/editors/vscode)
+
+Install the matching Electron package first. From the overlay root, use the
+same stock checkout, overlay-first search path and privsep environment as in
+the Electron instructions. Give the editor its own scratch directory.
+
+```sh
+overlay=$(pwd -P)
+export PORTSDIR=/tmp/ports-build/electron.hexOUBgx/current-ports
+export PORTSDIR_PATH="$overlay:$PORTSDIR"
+build=$(mktemp -d /tmp/ports-build/vsc.XXXXXXXX)
+chmod 755 "$build"
+doas install -d -o _pfetch "$build/dist"
+doas install -d -o _pbuild "$build/obj" "$build/packages" "$build/plist"
+install -d -m 1777 "$build/t"
+export TMPDIR="$build/t" PKG_TMPDIR="$build/t"
+# This VM uses Electron's privsep wrapper. Retarget only its scratch paths.
+prior=${PORTSDIR%/*}
+sed -e "s|$prior/t|$build/t|g" -e "s|$prior/packages|$build/packages|g" \
+    "$prior/as-user" > "$build/as-user"
+chmod 755 "$build/as-user"
+port() {
+    make -C "$overlay/editors/vscode" SUDO="$build/as-user" PORTSDIR="$PORTSDIR" \
+        PORTSDIR_PATH="$PORTSDIR_PATH" PORTS_PRIVSEP=Yes MAKE_JOBS=8 \
+        WRKOBJDIR="$build/obj" WRKOBJDIR_MFS="$build/obj" \
+        BULK_COOKIES_DIR="$build/obj/bulk" UPDATE_COOKIES_DIR="$build/obj/update" \
+        DISTDIR="$build/dist" PACKAGE_REPOSITORY="$build/packages" \
+        PLIST_REPOSITORY="$build/plist" "$@"
+}
+port checksum && port package
+pkgfile=$(port show=PKGFILE)
+doas env TRUSTED_PKG_PATH="$build/packages/amd64/all/" PKG_TMPDIR="$build/t" \
+    pkg_add "$pkgfile"
+sh "$overlay/editors/vscode/files/desktop-test/run-xvfb"
+```
+
+The test uses Xvfb, D-Bus, xdotool, Python and Node. It creates a temporary
+home, installs a local VSIX and exercises GUI editing, workspace search,
+external changes, Git, TypeScript navigation and two integrated terminals.
+Its output gives the test directory. To check gallery access independently,
+use a second disposable profile and inspect the signature result.
+
+```sh
+testhome=$(mktemp -d "$build/t/gallery.XXXXXXXX")
+HOME="$testhome" dbus-run-session -- vscode --user-data-dir "$testhome/profile" \
+    --extensions-dir "$testhome/ext" --verbose --install-extension redhat.vscode-yaml
+```
+
+Verified on OpenBSD 8.0-current/amd64 (GENERIC.MP #163) with eight jobs
+and 15 GiB of RAM. The installed package passed the Xvfb test with the
+shipped sandbox. Physical desktop and OpenBSD 8.0-release testing remain.
+
+To regenerate the registry manifest for a new tag, run
+`python3 files/seed-store.py --distfiles /path/to/extracted/vscode`
+from the port directory and review the output before updating `modules.inc`.

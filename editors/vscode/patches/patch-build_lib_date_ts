@@ -1,0 +1,10 @@
+--- build/lib/date.ts.orig
++++ build/lib/date.ts
+@@ -15,6 +15,7 @@
+  * timestamp (required for deterministic builds, e.g. macOS Universal).
+  */
+ export function getGitCommitDate(): string {
++	if (process.env.BUILD_SOURCE_DATE) { return process.env.BUILD_SOURCE_DATE; }
+ 	try {
+ 		return execSync('git log -1 --format=%cI HEAD', { cwd: root, encoding: 'utf8' }).trim();
+ 	} catch {

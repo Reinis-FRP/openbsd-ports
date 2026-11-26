@@ -1,0 +1,15 @@
+--- src/vs/platform/files/node/watcher/parcel/parcelWatcher.ts.orig
++++ src/vs/platform/files/node/watcher/parcel/parcelWatcher.ts
+@@ -153,10 +153,11 @@
+ 		'darwin': [
+ 			join(homedir(), 'Library', 'Containers') // Triggers access dialog from macOS 14 (https://github.com/microsoft/vscode/issues/208105)
+ 		],
++		'openbsd': [],
+ 		'linux': []
+ 	};
+ 
+-	private static readonly PARCEL_WATCHER_BACKEND = isWindows ? 'windows' : isLinux ? 'inotify' : 'fs-events';
++	private static readonly PARCEL_WATCHER_BACKEND = process.platform === 'openbsd' ? 'kqueue' : isWindows ? 'windows' : isLinux ? 'inotify' : 'fs-events';
+ 
+ 	private readonly _onDidError = this._register(new Emitter<IWatcherErrorEvent>());
+ 	readonly onDidError = this._onDidError.event;

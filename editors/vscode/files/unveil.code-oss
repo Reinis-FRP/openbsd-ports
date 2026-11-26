@@ -1,0 +1,32 @@
+# vscode can't easily be unveiled as there are too many use cases
+# at least preserves pledge and provides an almost generic setup
+
+# very few limitation
+/mnt					rwc
+~/					rwc
+
+# allow terminal
+/dev/null				rw
+/dev/ptm				rw
+
+# restrict exec to trusted path
+/bin					rx
+/sbin					rx
+/usr/bin				rx
+/usr/sbin				rx
+/usr/local/bin				rx
+/usr/local/sbin				rx
+/usr/local/libexec			rx
+
+# Kerberos loads the Heimdal GSS and krb5 libraries on demand.
+/usr/local/heimdal/lib			r
+
+# common src trees
+/usr/ports				rwc
+/usr/src				rwc
+/usr/www				rwc
+/usr/xenocara				rwc
+
+# vscode
+~/.vscode-oss				rwc
+~/workspaces				rwc

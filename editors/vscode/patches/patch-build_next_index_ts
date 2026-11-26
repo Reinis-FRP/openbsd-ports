@@ -1,0 +1,20 @@
+--- build/next/index.ts.orig
++++ build/next/index.ts
+@@ -392,7 +392,7 @@
+ 					return undefined;
+ 				}
+ 
+-				let contents = await fs.promises.readFile(args.path, 'utf-8');
++				let contents = fs.readFileSync(args.path, 'utf-8');
+ 				let modified = false;
+ 
+ 				// Inject product configuration
+@@ -572,7 +572,7 @@
+ 			await bundleEntryPoint(entryPoint);
+ 		}
+ 	} else {
+-		await Promise.all(allEntryPoints.map(bundleEntryPoint));
++		await mapWithConcurrency(allEntryPoints, Number(process.env.MAKE_JOBS) || 8, bundleEntryPoint);
+ 	}
+ 
+ 	// Bundle bootstrap files (with minimist inlined) directly from TypeScript source

@@ -1,0 +1,322 @@
+--- src/kqueue/KqueueBackend.cc.orig
++++ src/kqueue/KqueueBackend.cc
+@@ -52,7 +52,7 @@
+ 
+   while (true) {
+     int event_count = kevent(mKqueue, NULL, 0, events, 128, 0);
+-    if (event_count < 0 || events[0].flags == EV_ERROR) {
++    if (event_count < 0) {
+       throw std::runtime_error(std::string("kevent error: ") + strerror(errno));
+     }
+ 
+@@ -60,6 +60,11 @@
+     std::unordered_set<WatcherRef> watchers;
+ 
+     for (int i = 0; i < event_count; i++) {
++      if (events[i].flags & EV_ERROR) {
++        int err = (int)events[i].data;
++        throw std::runtime_error(std::string("kevent error: ") + strerror(err));
++      }
++
+       int flags = events[i].fflags;
+       int fd = events[i].ident;
+       if (fd == mPipe[0]) {
+@@ -67,38 +72,43 @@
+         goto done;
+       }
+ 
+-      auto it = mFdToEntry.find(fd);
+-      if (it == mFdToEntry.end()) {
+-        // If fd wasn't in our map, we may have already stopped watching it. Ignore the event.
++      // subscribe and unsubscribe also modify these maps under mMutex.
++      std::lock_guard<std::mutex> lock(mMutex);
++      auto it = mRegistrations.find(fd);
++      if (it == mRegistrations.end() || it->second.token != (uintptr_t)events[i].udata) {
+         continue;
+       }
+-
+-      DirEntry *entry = it->second;
+-
+-      if (flags & NOTE_WRITE && entry && entry->isDir) {
+-        // If a write occurred on a directory, we have to diff the contents of that
+-        // directory to determine what file was added/deleted.
+-        compareDir(fd, entry->path, watchers);
+-      } else {
+-        std::vector<KqueueSubscription *> subs = findSubscriptions(entry->path);
+-        for (auto it = subs.begin(); it != subs.end(); it++) {
+-          KqueueSubscription *sub = *it;
+-          watchers.insert(sub->watcher);
+-          if (flags & (NOTE_DELETE | NOTE_RENAME | NOTE_REVOKE)) {
+-            sub->watcher->mEvents.remove(sub->path);
+-            sub->tree->remove(sub->path);
+-            mFdToEntry.erase((int)(size_t)entry->state);
+-            mSubscriptions.erase(sub->path);
+-          } else if (flags & (NOTE_WRITE | NOTE_ATTRIB | NOTE_EXTEND)) {
+-            struct stat st;
+-            lstat(sub->path.c_str(), &st);
+-            if (entry->mtime != CONVERT_TIME(st.st_mtim)) {
+-              entry->mtime = CONVERT_TIME(st.st_mtim);
+-              sub->watcher->mEvents.update(sub->path);
+-            }
++      const std::string path = it->second.path;
++      struct stat watched, current;
++      if (fstat(fd, &watched) == -1) {
++        continue;
++      }
++      const bool exists = lstat(path.c_str(), &current) == 0;
++      if (flags & (NOTE_DELETE | NOTE_RENAME | NOTE_REVOKE)) {
++        // OpenBSD can report NOTE_DELETE even when the same inode remains.
++        if (!exists || watched.st_dev != current.st_dev || watched.st_ino != current.st_ino) {
++          removePath(path, S_ISDIR(watched.st_mode), watchers);
++          // Atomic saves can replace the path before its old vnode event arrives.
++          const auto parent = path.substr(0, path.find_last_of('/'));
++          auto parentSub = mSubscriptions.find(parent);
++          if (exists && parentSub != mSubscriptions.end()) {
++            compareDir(parentSub->second.fd, parent, watchers);
+           }
++          continue;
+         }
+       }
++      if (!exists) {
++        continue;
++      }
++      if ((flags & NOTE_WRITE) && S_ISDIR(watched.st_mode)) {
++        compareDir(fd, path, watchers);
++      } else if (flags & (NOTE_WRITE | NOTE_ATTRIB | NOTE_EXTEND)) {
++        for (auto sub : findSubscriptions(path)) {
++          sub->tree->update(path, CONVERT_TIME(current.st_mtim));
++          sub->watcher->mEvents.update(path);
++          watchers.insert(sub->watcher);
++        }
++      }
+     }
+ 
+     for (auto it = watchers.begin(); it != watchers.end(); it++) {
+@@ -109,6 +119,7 @@
+ done:
+   close(mPipe[0]);
+   close(mPipe[1]);
++  close(mKqueue);
+   mEndedSignal.notify();
+ }
+ 
+@@ -131,7 +142,7 @@
+ 
+ bool KqueueBackend::watchDir(WatcherRef watcher, std::string path, std::shared_ptr<DirTree> tree) {
+   if (watcher->isIgnored(path)) {
+-    return false;
++    return true;
+   }
+ 
+   DirEntry *entry = tree->find(path);
+@@ -142,15 +153,30 @@
+   KqueueSubscription sub = {
+     .watcher = watcher,
+     .path = path,
+-    .tree = tree
++    .tree = tree,
++    .fd = 0
+   };
+ 
+-  if (!entry->state) {
+-    int fd = open(path.c_str(), O_EVTONLY);
+-    if (fd <= 0) {
++  auto existing = mSubscriptions.find(path);
++  if (existing != mSubscriptions.end()) {
++    entry->state = (void *)(size_t)existing->second.fd;
++  } else {
++    struct stat st;
++    if (lstat(path.c_str(), &st) != 0) {
++      return errno == ENOENT || errno == ENOTDIR;
++    }
++
++    // Broken symlinks are observed through the parent directory diff.
++    if (!S_ISDIR(st.st_mode) && !S_ISREG(st.st_mode)) {
++      return true;
++    }
++
++    int fd = open(path.c_str(), O_EVTONLY | O_CLOEXEC | O_NONBLOCK | O_NOFOLLOW);
++    if (fd < 0) {
+       return false;
+     }
+ 
++    uintptr_t token = ++mNextToken;
+     struct kevent event;
+     EV_SET(
+       &event,
+@@ -159,7 +185,7 @@
+       EV_ADD | EV_CLEAR | EV_ENABLE,
+       NOTE_DELETE | NOTE_WRITE | NOTE_EXTEND | NOTE_ATTRIB | NOTE_RENAME | NOTE_REVOKE,
+       0,
+-      0
++      (void *)token
+     );
+ 
+     if (kevent(mKqueue, &event, 1, NULL, 0, 0)) {
+@@ -168,7 +194,7 @@
+     }
+ 
+     entry->state = (void *)(size_t)fd;
+-    mFdToEntry.emplace(fd, entry);
++    mRegistrations.emplace(fd, Registration{path, token});
+   }
+ 
+   sub.fd = (int)(size_t)entry->state;
+@@ -176,7 +202,7 @@
+   return true;
+ }
+ 
+-std::vector<KqueueSubscription *> KqueueBackend::findSubscriptions(std::string &path) {
++std::vector<KqueueSubscription *> KqueueBackend::findSubscriptions(const std::string &path) {
+   // Find the subscriptions affected by this path.
+   // Copy pointers to them into a vector so that modifying mSubscriptions doesn't invalidate the iterator.
+   auto range = mSubscriptions.equal_range(path);
+@@ -188,17 +214,17 @@
+   return subs;
+ }
+ 
+-bool KqueueBackend::compareDir(int fd, std::string &path, std::unordered_set<WatcherRef> &watchers) {
+-  // macOS doesn't support fdclosedir, so we have to duplicate the file descriptor
+-  // to ensure the closedir doesn't also stop watching.
+-  #if __APPLE__
+-    fd = dup(fd);
+-  #endif
+-
+-  DIR *dir = fdopendir(fd);
+-  if (dir == NULL) {
++bool KqueueBackend::compareDir(int fd, const std::string &path, std::unordered_set<WatcherRef> &watchers) {
++  fd = dup(fd);
++  if (fd < 0) {
+     return false;
+   }
++  std::unique_ptr<DIR, decltype(&closedir)> stream(fdopendir(fd), closedir);
++  DIR *dir = stream.get();
++  if (!dir) {
++    close(fd);
++    return false;
++  }
+ 
+   // fdopendir doesn't rewind to the beginning.
+   rewinddir(dir);
+@@ -225,7 +251,9 @@
+       std::shared_ptr<DirTree> tree = *it;
+       if (!tree->find(fullpath)) {
+         struct stat st;
+-        fstatat(fd, entry->d_name, &st, AT_SYMLINK_NOFOLLOW);
++        if (fstatat(fd, entry->d_name, &st, AT_SYMLINK_NOFOLLOW) == -1) {
++          continue;
++        }
+         tree->add(fullpath, CONVERT_TIME(st.st_mtim), S_ISDIR(st.st_mode));
+ 
+         // Notify all watchers with the same tree.
+@@ -246,48 +274,70 @@
+             }
+           }
+         }
++
++        // The directory may already contain entries by the time its watch is
++        // installed. Scan it after installing the watch so changes racing
++        // with the scan cause another NOTE_WRITE notification.
++        DirEntry *newEntry = tree->find(fullpath);
++        if (newEntry && newEntry->isDir && newEntry->state) {
++          int childFd = (int)(size_t)newEntry->state;
++          if (!compareDir(childFd, newEntry->path, watchers)) {
++            return false;
++          }
++        }
+       }
+     }
+   }
+ 
+-  for (auto it = trees.begin(); it != trees.end(); it++) {
+-    std::shared_ptr<DirTree> tree = *it;
+-    for (auto entry = tree->entries.begin(); entry != tree->entries.end();) {
+-
+-      if (
+-        entry->first.rfind(dirStart, 0) == 0 &&
+-        entry->first.find(DIR_SEP, dirStart.length()) == std::string::npos &&
+-        entries.count(entry->first) == 0
+-      ) {
+-        // Notify all watchers with the same tree.
+-        for (auto i = subs.begin(); i != subs.end(); i++) {
+-          if ((*i)->tree == tree) {
+-            KqueueSubscription *sub = *i;
+-            if (!sub->watcher->isIgnored(entry->first)) {
+-              sub->watcher->mEvents.remove(entry->first);
+-              watchers.emplace(sub->watcher);
+-            }
+-          }
+-        }
+-
+-        mFdToEntry.erase((int)(size_t)entry->second.state);
+-        mSubscriptions.erase(entry->first);
+-        entry = tree->entries.erase(entry);
+-      } else {
+-        entry++;
++  // Removing a directory can invalidate entries for all of its descendants.
++  // Finish traversing each tree before removing any entries or subscriptions.
++  std::unordered_map<std::string, bool> missing;
++  for (const auto &tree : trees) {
++    for (const auto &child : tree->entries) {
++      if (child.first.rfind(dirStart, 0) == 0 &&
++          child.first.find(DIR_SEP, dirStart.size()) == std::string::npos &&
++          entries.count(child.first) == 0) {
++        missing.emplace(child.first, child.second.isDir);
+       }
+     }
+   }
++  for (const auto &child : missing) {
++    removePath(child.first, child.second, watchers);
++    for (const auto &tree : trees) {
++      tree->remove(child.first);
++    }
++  }
+ 
+-  #if __APPLE__
+-    closedir(dir);
+-  #else
+-    fdclosedir(dir);
+-  #endif
+-
+   return true;
+ }
+ 
++void KqueueBackend::removePath(const std::string &path, bool directory, std::unordered_set<WatcherRef> &watchers) {
++  std::vector<std::string> paths{path};
++  if (directory) {
++    const std::string prefix = path + DIR_SEP;
++    for (const auto &registration : mRegistrations) {
++      if (registration.second.path.rfind(prefix, 0) == 0) {
++        paths.push_back(registration.second.path);
++      }
++    }
++  }
++  for (const auto &removed : paths) {
++    auto subs = findSubscriptions(removed);
++    if (subs.empty()) {
++      continue;
++    }
++    int fd = subs.front()->fd;
++    for (auto sub : subs) {
++      sub->watcher->mEvents.remove(removed);
++      watchers.insert(sub->watcher);
++      sub->tree->remove(removed);
++    }
++    mSubscriptions.erase(removed);
++    mRegistrations.erase(fd);
++    close(fd);
++  }
++}
++
+ void KqueueBackend::unsubscribe(WatcherRef watcher) {
+   // Find any subscriptions pointing to this watcher, and remove them.
+   for (auto it = mSubscriptions.begin(); it != mSubscriptions.end();) {
+@@ -295,7 +345,7 @@
+       if (mSubscriptions.count(it->first) == 1) {
+         // Closing the file descriptor automatically unwatches it in the kqueue.
+         close(it->second.fd);
+-        mFdToEntry.erase(it->second.fd);
++        mRegistrations.erase(it->second.fd);
+       }
+ 
+       it = mSubscriptions.erase(it);

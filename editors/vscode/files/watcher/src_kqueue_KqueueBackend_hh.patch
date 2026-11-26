@@ -1,0 +1,24 @@
+--- src/kqueue/KqueueBackend.hh.orig
++++ src/kqueue/KqueueBackend.hh
+@@ -24,12 +24,18 @@
+   int mKqueue;
+   int mPipe[2];
+   std::unordered_multimap<std::string, KqueueSubscription> mSubscriptions;
+-  std::unordered_map<int, DirEntry *> mFdToEntry;
++  struct Registration {
++    std::string path;
++    uintptr_t token;
++  };
++  std::unordered_map<int, Registration> mRegistrations;
++  uintptr_t mNextToken = 0;
+   Signal mEndedSignal;
+ 
+   bool watchDir(WatcherRef watcher, std::string path, std::shared_ptr<DirTree> tree);
+-  bool compareDir(int fd, std::string &dir, std::unordered_set<WatcherRef> &watchers);
+-  std::vector<KqueueSubscription *> findSubscriptions(std::string &path);
++  bool compareDir(int fd, const std::string &dir, std::unordered_set<WatcherRef> &watchers);
++  std::vector<KqueueSubscription *> findSubscriptions(const std::string &path);
++  void removePath(const std::string &path, bool directory, std::unordered_set<WatcherRef> &watchers);
+ };
+ 
+ #endif

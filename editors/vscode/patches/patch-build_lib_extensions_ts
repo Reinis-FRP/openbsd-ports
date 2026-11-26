@@ -1,0 +1,52 @@
+--- build/lib/extensions.ts.orig
++++ build/lib/extensions.ts
+@@ -87,14 +87,7 @@
+ 	let isBundled = false;
+ 
+ 	if (hasEsbuild) {
+-		const typeCheckRoots = getBuildRootsForExtension(extensionPath);
+-		input = esbuildScript?.typeCheckAfterBuild
+-			? fromLocalEsbuild(extensionPath, esbuildConfigFileName, esbuildScript.args, () => Promise.all(typeCheckRoots.map(root => typeCheckExtension(root, forWeb))))
+-			: merge(
+-				fromLocalEsbuild(extensionPath, esbuildConfigFileName, esbuildScript?.args ?? []),
+-				// Esbuild extensions need a separate type check step
+-				...typeCheckRoots.map(root => typeCheckExtensionStream(root, forWeb)),
+-			);
++		input = fromLocalEsbuild(extensionPath, esbuildConfigFileName, esbuildScript?.args ?? []);
+ 		isBundled = true;
+ 	} else {
+ 		input = fromLocalNormal(extensionPath);
+@@ -477,14 +470,16 @@
+ 			.filter(({ manifestPath }) => (forWeb ? isWebExtension(require(manifestPath)) : true))
+ 	);
+ 
+-	const localExtensionsStream = minifyExtensionResources(
+-		merge(
+-			...localExtensionsDescriptions.map(extension => {
+-				return fromLocal(extension.path, forWeb)
+-					.pipe(rename(p => p.dirname = `extensions/${extension.name}/${p.dirname}`));
+-			})
+-		)
+-	);
++	const jobs = Number(process.env.MAKE_JOBS || 1);
++	const localExtensionsStream = minifyExtensionResources(Readable.from((async function* () {
++		for (let i = 0; i < localExtensionsDescriptions.length; i += jobs) {
++			const batch = localExtensionsDescriptions.slice(i, i + jobs);
++			yield* merge(...batch.map(extension =>
++				fromLocal(extension.path, forWeb)
++					.pipe(rename(p => p.dirname = `extensions/${extension.name}/${p.dirname}`))
++			));
++		}
++	})()));
+ 
+ 	let result: Stream;
+ 	if (forWeb) {
+@@ -755,6 +750,8 @@
+ 		script: path.join(extensionsPath, script),
+ 		outputRoot: outputRoot ? path.join(root, outputRoot, path.dirname(script)) : undefined
+ 	})));
++
++	if (!isWatch) { return esbuildTask; }
+ 
+ 	const typeCheckTasks = esbuildMediaScripts.map(({ tsconfig }) => {
+ 		const tsconfigPath = path.join(extensionsPath, tsconfig);

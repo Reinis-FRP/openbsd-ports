@@ -1,0 +1,73 @@
+--- build/gulpfile.vscode.ts.orig
++++ build/gulpfile.vscode.ts
+@@ -9,7 +9,6 @@
+ import { through, merge } from './lib/streams.ts';
+ import vfs from 'vinyl-fs';
+ import type File from 'vinyl';
+-import electron from '@vscode/gulp-electron';
+ import * as util from './lib/util.ts';
+ import { getVersion } from './lib/getVersion.ts';
+ import { readISODate, writeISODate } from './lib/date.ts';
+@@ -252,17 +251,8 @@
+ 			.pipe(filter(depFilterPattern))
+ 			.pipe(util.cleanNodeModules(path.join(import.meta.dirname, '.moduleignore')))
+ 			.pipe(util.cleanNodeModules(path.join(import.meta.dirname, `.moduleignore.${process.platform}`)));
+-		ensureCopilotPlatformPackage(platform, arch);
+-		const copilotRuntimePrebuilds = gulp.src(getCopilotRuntimePrebuildFiles(platform, arch), { base: '.', dot: true, allowEmpty: true });
+-		ensureOSProxyResolverPlatformPackage(platform, arch);
+-		const osProxyResolverPlatformPackage = gulp.src(getOSProxyResolverPlatformFiles(platform, arch), { base: '.', dot: true, allowEmpty: true });
+-		// `cleanedDeps` has already dropped dot files; keep those of the platform packages, such as SDK plugin manifests.
+-		const deps = merge(cleanedDeps, copilotRuntimePrebuilds, osProxyResolverPlatformPackage)
+-			.pipe(filter(getCopilotExcludeFilter(platform, arch), { dot: true }))
+-			.pipe(filter(getCopilotTgrepExcludeFilter(platform, arch), { dot: true }))
+-			.pipe(filter(getRipgrepExcludeFilter(platform, arch), { dot: true }))
+-			.pipe(filter(getFoundryLocalExcludeFilter(), { dot: true }))
+-			.pipe(filter(getOSProxyResolverExcludeFilter(platform, arch), { dot: true }))
++		const deps = cleanedDeps
++			.pipe(filter(['**', '!**/@vscode/ripgrep-universal/bin/**', '!**/prebuilds/**']))
+ 			.pipe(jsFilter)
+ 			.pipe(util.rewriteSourceMappingURL(sourceMappingURLBase))
+ 			.pipe(jsFilter.restore)
+@@ -360,18 +350,10 @@
+ 			all = merge(all, shortcut, policyDest);
+ 		}
+ 
+-		const electronConfig = {
+-			...config,
+-			platform,
+-			arch: arch === 'armhf' ? 'arm' : arch,
+-			ffmpegChromium: false
+-		};
+-
+ 		let result: NodeJS.ReadWriteStream = all
+ 			.pipe(util.skipDirectories())
+ 			.pipe(util.fixWin32DirectoryPermissions())
+ 			.pipe(filter(['**', '!**/.github/**'], { dot: true })) // https://github.com/microsoft/vscode/issues/116523
+-			.pipe(electron(electronConfig))
+ 			.pipe(filter([
+ 				'**',
+ 				'!LICENSE',
+@@ -585,6 +567,7 @@
+ const buildRoot = path.dirname(root);
+ 
+ const BUILD_TARGETS = [
++	{ platform: 'openbsd', arch: 'x64' },
+ 	{ platform: 'win32', arch: 'x64' },
+ 	{ platform: 'win32', arch: 'arm64' },
+ 	{ platform: 'darwin', arch: 'x64', opts: { stats: true } },
+@@ -607,7 +590,6 @@
+ 			compileNativeExtensionsBuildTask,
+ 			util.rimraf(path.join(buildRoot, destinationFolderName)),
+ 			packageTask(platform, arch, sourceFolderName, destinationFolderName, opts),
+-			prepareCopilotRipgrepShimTask(platform, arch, destinationFolderName)
+ 		];
+ 
+ 		if (platform === 'win32') {
+@@ -634,7 +616,6 @@
+ 			copyCodiconsTask,
+ 			cleanExtensionsBuildTask,
+ 			compileNonNativeExtensionsBuildTask,
+-			compileCopilotExtensionBuildTask,
+ 			compileExtensionMediaBuildTask,
+ 			writeISODate('out-build'),
+ 			esbuildBundleTask,

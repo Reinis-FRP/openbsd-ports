@@ -1,0 +1,81 @@
+#!/bin/sh
+set -eu
+testdir=$1
+work=$2
+repo=$HOME/workspaces/smoke
+profile=$HOME/profile
+extdir=$HOME/extensions
+mkdir -p "$repo" "$profile/User" "$extdir"
+git init -q "$repo"
+printf '%s\n' initial > "$repo/sample.txt"
+printf '%s\n' 'const sampleValue = { portableMember: 148 };' 'sampleValue.portableMember;' > "$repo/symbols.ts"
+git -C "$repo" add sample.txt symbols.ts
+commit() {
+    git -C "$repo" -c user.name=Smoke -c user.email=smoke@localhost commit -qm "$1"
+}
+commit initial
+printf '%s\n' '{"workbench.startupEditor":"none","workbench.welcomePage.experimentalOnboarding":false,"workbench.welcomePage.walkthroughs.openOnInstall":false,"extensions.autoCheckUpdates":false,"extensions.autoUpdate":false,"telemetry.telemetryLevel":"off","security.workspace.trust.enabled":false,"update.mode":"none"}' > "$profile/User/settings.json"
+python3 "$testdir/make-vsix.py" "$work/smoke.vsix"
+vscode --user-data-dir "$profile" --extensions-dir "$extdir" --install-extension "$work/smoke.vsix"
+vscode --user-data-dir "$profile" --extensions-dir "$extdir" --remote-debugging-port=0 \
+    --wait --verbose --new-window "$repo" "$repo/sample.txt" > "$work/editor.log" 2>&1 &
+editor=$!
+trap 'kill "$editor" 2>/dev/null || :' EXIT
+wait_text() {
+    file=$1
+    token=$2
+    for tick in $(jot 120); do
+        if [ -s "$HOME/extension.error" ]; then sed -n '1,15p' "$HOME/extension.error"; return 1; fi
+        if [ -f "$file" ] && grep -Fq -- "$token" "$file"; then return 0; fi
+        sleep 1
+    done
+    echo "Timed out waiting for $token in $file" >&2
+    return 1
+}
+wait_text "$HOME/extension.ready" code-oss-extension-result-148
+wait_text "$HOME/typescript.result" symbols.ts
+wait_text "$HOME/kerberos.result" initialized
+window=$(xdotool search --onlyvisible --name 'sample.txt' | tail -1)
+xdotool windowfocus --sync "$window"
+xdotool key ctrl+End
+xdotool type 'gui-acceptance-token'
+xdotool key ctrl+s
+wait_text "$repo/sample.txt" gui-acceptance-token
+xdotool key ctrl+shift+f
+sleep 1
+xdotool type gui-acceptance-token
+xdotool key Return
+node "$testdir/view-result.mjs" "$profile" search sample.txt gui-acceptance-token
+wait_text "$HOME/git.state" sample.txt
+git -C "$repo" add sample.txt
+commit gui-save
+wait_text "$HOME/git.state" '[]'
+printf '%s\n' external-acceptance-token >> "$repo/sample.txt"
+wait_text "$HOME/external.seen" external-acceptance-token
+wait_text "$HOME/git.state" sample.txt
+xdotool key ctrl+shift+g
+sleep 1
+node "$testdir/view-result.mjs" "$profile" scm sample.txt
+xdotool key F1
+sleep 1
+xdotool type "OpenBSD: Test Two Terminals"
+sleep 1
+xdotool key Return
+for terminal in first second; do
+    wait_text "$HOME/$terminal.out" /dev/tty
+    grep -Fxq "$terminal" "$HOME/$terminal.out"
+done
+first=$(tail -1 "$HOME/first.out")
+second=$(tail -1 "$HOME/second.out")
+[ "$first" != "$second" ]
+printf 'Extension command returned %s\nTerminals used %s and %s\n' \
+    "$(head -1 "$HOME/extension.ready")" "$first" "$second"
+printf 'TypeScript definition %s; Kerberos GSS client %s\n' \
+    "$(head -1 "$HOME/typescript.result")" "$(head -1 "$HOME/kerberos.result")"
+if grep -Fi "restarting watcher after unexpected error" "$work/editor.log"; then
+    echo "The file watcher restarted during the test" >&2
+    exit 1
+fi
+xdotool key ctrl+shift+w
+wait "$editor"
+trap - EXIT

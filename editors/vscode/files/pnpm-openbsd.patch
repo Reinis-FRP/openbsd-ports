@@ -1,0 +1,18 @@
+--- dist/host/filesystem.mjs.orig
++++ dist/host/filesystem.mjs
+@@ -103,6 +103,15 @@
+       return count
+     },
+     openSync (file, flags, mode) {
++      if (typeof flags === "number" && process.platform === "openbsd") {
++        let native = flags & 3
++        for (const [bit, name] of [[64, "O_CREAT"], [128, "O_EXCL"], [512, "O_TRUNC"],
++          [1024, "O_APPEND"], [2048, "O_NONBLOCK"], [65536, "O_DIRECTORY"],
++          [131072, "O_NOFOLLOW"], [1052672, "O_SYNC"]]) {
++          if (flags & bit) native |= fs.constants[name]
++        }
++        flags = native
++      }
+       if (state.opening && !state.opening.follow) flags |= fs.constants.O_NOFOLLOW
+       const database = sqliteFiles.get(file)
+       const sqliteMode = database ? fs.statSync(database).mode & 0o777 : undefined

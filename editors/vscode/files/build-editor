@@ -1,0 +1,17 @@
+#!/bin/sh
+set -eu
+jobs=$1
+localbase=$2
+ulimit -d "$(ulimit -Hd)"
+ulimit -n "$(ulimit -Hn)"
+
+# fs-copyfile uses fs.copyFile on OpenBSD. All these modules have
+# native runtime entry points and must be built with Electron headers.
+for module in node-pty @parcel/watcher native-keymap @vscode/native-watchdog \
+    @vscode/spdlog @vscode/sqlite3 kerberos; do
+    (cd "node_modules/$module" &&
+        node "$localbase/lib/node_modules/node-gyp/bin/node-gyp.js" configure build \
+            --nodedir="$npm_config_nodedir" --jobs="$jobs" --make=gmake)
+done
+cp build/.moduleignore.linux build/.moduleignore.openbsd
+node --max-old-space-size=8192 node_modules/gulp/bin/gulp.js vscode-openbsd-x64-min

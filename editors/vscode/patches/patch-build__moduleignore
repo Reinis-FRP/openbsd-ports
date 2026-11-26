@@ -1,0 +1,11 @@
+--- build/.moduleignore.orig
++++ build/.moduleignore
+@@ -99,7 +99,7 @@
+ kerberos/build/**
+ kerberos/src/**
+ kerberos/node_modules/**
+-!kerberos/**/*.node
++!kerberos/build/Release/*.node
+ 
+ cpu-features/**
+ 

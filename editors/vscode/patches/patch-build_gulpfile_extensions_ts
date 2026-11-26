@@ -1,0 +1,18 @@
+--- build/gulpfile.extensions.ts.orig
++++ build/gulpfile.extensions.ts
+@@ -263,7 +263,6 @@
+  * @note this does not clean the directory ahead of it. See {@link cleanExtensionsBuildTask} for that.
+  */
+ export const compileNonNativeExtensionsBuildTask = task.define('compile-non-native-extensions-build', task.series(
+-	bundleMarketplaceExtensionsBuildTask,
+ 	task.define('bundle-non-native-extensions-build', () => ext.packageNonNativeLocalExtensionsStream(false).pipe(gulp.dest('.build')))
+ ));
+ task.task(compileNonNativeExtensionsBuildTask);
+@@ -293,7 +292,6 @@
+  */
+ export const compileAllExtensionsBuildTask = task.define('compile-extensions-build', task.series(
+ 	cleanExtensionsBuildTask,
+-	bundleMarketplaceExtensionsBuildTask,
+ 	task.define('bundle-extensions-build', () => ext.packageAllLocalExtensionsStream(false).pipe(gulp.dest('.build'))),
+ ));
+ task.task(compileAllExtensionsBuildTask);

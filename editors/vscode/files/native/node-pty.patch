@@ -1,0 +1,15 @@
+--- node_modules/node-pty/src/unix/pty.cc.orig
++++ node_modules/node-pty/src/unix/pty.cc
+@@ -474,8 +474,11 @@
+       }
+ 
+       // Close inherited FDs to prevent leaking pty master FDs to child
++#if defined(__OpenBSD__)
++      closefrom(3);
++#else
+       pty_close_inherited_fds();
+-
++#endif
+       {
+         char **old = environ;
+         environ = env;
