@@ -133,7 +133,7 @@ RUN_DEPENDS+=	devel/desktop-file-utils \
 BUILD_DEPENDS+=	archivers/bzip2 \
 		audio/pulseaudio \
 		devel/bison \
-		esbuild-0.28.2p0:devel/esbuild \
+		electron-esbuild-0.28.2:devel/electron-esbuild \
 		devel/git \
 		devel/gperf \
 		devel/ninja \
@@ -411,11 +411,11 @@ post-patch:
 		${WRKSRC}/third_party/node/openbsd/node-openbsd/bin/node
 	# hotfix esbuild modules into third_party/devtools-frontend
 	rm -rf ${DEVFRONT_T}/node_modules/esbuild
-	ln -sf ${MODBERRY_INSTALL_DIST}/esbuild/node_modules/esbuild \
+	ln -sf ${MODBERRY_INSTALL_DIST}/electron-esbuild/node_modules/esbuild \
 		${DEVFRONT_T}/node_modules/esbuild
 	# hotfix esbuild bin
 	mkdir -p ${DEVFRONT_T}/third_party/esbuild
-	ln -sf ${LOCALBASE}/bin/esbuild \
+	ln -sf ${LOCALBASE}/libexec/electron-esbuild/esbuild \
 		${DEVFRONT_T}/third_party/esbuild/esbuild
 	# replace system path & variables in patch using SUBST_CMD
 .for f in \

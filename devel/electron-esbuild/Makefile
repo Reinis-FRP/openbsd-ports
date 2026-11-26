@@ -1,8 +1,11 @@
-COMMENT =	fast bundler for the web
+# Based on the OpenBSD devel/esbuild port maintained by Igor Zornik
+# and Fabien Romano's packaging of the esbuild Node module.
+COMMENT =	private esbuild binary and Node module for Electron builds
 
 V=0.28.2
-REVISION=0
+PKGNAME=	electron-esbuild-${V}
 
+MODGO_BINDIR =		libexec/electron-esbuild
 MODGO_MODNAME =	github.com/evanw/esbuild
 MODGO_VERSION =	v${V}
 
@@ -10,8 +13,6 @@ DISTNAME =	esbuild-${MODGO_VERSION}
 CATEGORIES =	devel
 
 HOMEPAGE =	https://esbuild.github.io/
-
-MAINTAINER =	Igor Zornik <mocheryl@mocheryl.org>
 
 # MIT
 PERMIT_PACKAGE =	Yes
@@ -23,6 +24,7 @@ MODULES =	lang/go
 WRKDIST =	${WRKSRC}
 
 BUILD_DEPENDS+=	lang/node
+RUN_DEPENDS+=	lang/node
 
 SUBST_VARS+=	WRKSRC
 
@@ -37,7 +39,7 @@ ESBUILD_ARGS=	--bundle \
 		--external:esbuild \
 		--platform=node \
 		--log-level=warning
-ESBUILD_DIST=	node/esbuild/node_modules
+ESBUILD_DIST=	node/electron-esbuild/node_modules
 
 pre-build:
 	${SUBST_CMD} ${WRKSRC}/lib/npm/node-platform.ts

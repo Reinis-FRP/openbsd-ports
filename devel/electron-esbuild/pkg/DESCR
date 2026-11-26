@@ -1,0 +1,4 @@
+esbuild is a very fast bundler for Javascript, Typescript, JSX and CSS.
+
+This package installs a private native executable and its matching Node.js
+module for building Electron and Code - OSS.

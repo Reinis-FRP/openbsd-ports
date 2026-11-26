@@ -6,7 +6,7 @@ localbase=$2
 # Keep the JavaScript host paired with the installed esbuild service.
 for module in node_modules/.pnpm/esbuild@*/node_modules/esbuild \
     build/node_modules/.pnpm/esbuild@*/node_modules/esbuild; do
-    install -m 644 "$localbase/node/esbuild/node_modules/esbuild/lib/main.js" \
+    install -m 644 "$localbase/node/electron-esbuild/node_modules/esbuild/lib/main.js" \
         "$module/lib/main.js.new"
     mv "$module/lib/main.js.new" "$module/lib/main.js"
 done

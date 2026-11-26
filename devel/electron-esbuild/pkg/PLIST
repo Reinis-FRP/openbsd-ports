@@ -1,0 +1,14 @@
+libexec/electron-esbuild/
+@bin libexec/electron-esbuild/esbuild
+node/
+node/electron-esbuild/
+node/electron-esbuild/node_modules/
+node/electron-esbuild/node_modules/esbuild/
+node/electron-esbuild/node_modules/esbuild/LICENSE.md
+node/electron-esbuild/node_modules/esbuild/README.md
+node/electron-esbuild/node_modules/esbuild/bin/
+node/electron-esbuild/node_modules/esbuild/bin/esbuild
+node/electron-esbuild/node_modules/esbuild/lib/
+node/electron-esbuild/node_modules/esbuild/lib/main.d.ts
+node/electron-esbuild/node_modules/esbuild/lib/main.js
+node/electron-esbuild/node_modules/esbuild/package.json

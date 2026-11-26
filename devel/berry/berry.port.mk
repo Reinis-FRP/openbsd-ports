@@ -96,8 +96,8 @@ MODBERRY_MODULES+=\
 		ast-grep/node_modules/@ast-grep/napi \
 	electron-builder www/electron-builder \
 		electron-builder/node_modules/electron-builder \
-	esbuild devel/esbuild \
-		esbuild/node_modules/esbuild \
+	esbuild devel/electron-esbuild \
+		electron-esbuild/node_modules/esbuild \
 	graceful-fs devel/node-graceful-fs \
 		graceful-fs/node_modules/graceful-fs \
 	oxc-minify devel/oxc-apps \

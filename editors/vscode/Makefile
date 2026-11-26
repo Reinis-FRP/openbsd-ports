@@ -37,7 +37,7 @@ MODELECTRON_UNVEIL =	Yes
 MODELECTRON_BUILD =	No
 MODELECTRON_INSTALL =	No
 
-BUILD_DEPENDS +=	archivers/unzip devel/esbuild devel/gmake \
+BUILD_DEPENDS +=	archivers/unzip devel/electron-esbuild devel/gmake \
 			lang/node security/heimdal,-libs textproc/py-yaml
 RUN_DEPENDS +=		devel/desktop-file-utils devel/git \
 			security/heimdal,-libs textproc/ripgrep
@@ -46,7 +46,7 @@ WANTLIB +=		${COMPILER_LIBCXX} m util X11 xkbfile
 
 MAKE_ENV +=		BUILD_SOURCEVERSION=661626d0e72f97806550790a98fb87116c9db825 \
 			BUILD_SOURCE_DATE=2026-11-24T10:26:34Z \
-			CI=true ESBUILD_BINARY_PATH=${LOCALBASE}/bin/esbuild \
+			CI=true ESBUILD_BINARY_PATH=${LOCALBASE}/libexec/electron-esbuild/esbuild \
 			MAKE_JOBS=${MAKE_JOBS} GOMAXPROCS=${MAKE_JOBS} \
 			PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
 			pnpm_config_store_dir=${WRKDIR}/store \

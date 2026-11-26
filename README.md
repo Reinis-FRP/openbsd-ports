@@ -237,10 +237,36 @@ shared BSD patches also draw on the FreeBSD Electron 43.8.10 port.
 · [OpenBSD Chromium baseline](https://github.com/openbsd/ports/tree/6edefd9db6245d818bea82e7b0e32e7c16f1de81/www/chromium)
 · [FreeBSD Electron sources and checksums](https://github.com/freebsd/freebsd-ports/tree/9d136dd8c7f497580f5db8dc54f3b90e0c4b937b/devel/electron43)
 
-Use a matching snapshot package mirror and stock ports tree. The tested tree was
-`d9fc0a1bf36574e20fc55a7dd34c0459c1440b78` (Go 1.27.3). Put the overlay
-**first** so the build selects its esbuild 0.28.2p0 with the JavaScript module,
-Berry 4.18.0 with the offline lockfile helper, and py-dbusmock. Both privsep
+Preinstall the stock build tools and libraries from the package mirror for
+your OpenBSD release and architecture. This includes Go for the overlay's
+devel/electron-esbuild port. Python 3 comes with py3-xcbgen.
+
+```sh
+pkg_info -qe 'unzip-*' || doas pkg_add unzip--
+doas pkg_add llvm%22 rust rust-rustfmt rust-bindgen cargo-generate-vendor go node \
+    gmake ninja bison gperf nasm git bash bzip2 xz flock pciutils \
+    py3-xcbgen qtbase qt6-qtbase pulseaudio nghttp2 libcares png \
+    desktop-file-utils xdg-utils libnotify noto-fonts libexif \
+    gtk+3 gtk+3-cups gtk4-update-icon-cache at-spi2-core libsecret libxkbcommon \
+    snappy flac opus crc32c epoll-shim pango jpeg lcms2 libwebp openjp2 tiff \
+    double-conversion dav1d openh264 cups-libs nss libudev-openbsd libxml libxslt
+```
+
+Build the overlay's electron-esbuild 0.28.2 and Berry 4.18.0 locally.
+The former installs a private esbuild executable and matching JavaScript
+module alongside any stock esbuild package. From the overlay root:
+
+```sh
+overlay=$(pwd -P)
+make -C "$overlay/devel/electron-esbuild" update-or-install &&
+    make -C "$overlay/devel/berry" update-or-install
+```
+
+Use a matching package mirror and stock ports tree. The tested snapshot tree was
+`d9fc0a1bf36574e20fc55a7dd34c0459c1440b78` (Go 1.27.3). The default
+ports search path finds the local ports and Berry helper in
+`/usr/ports/mystuff`. For a separate overlay checkout, append its path as
+described in [Build a package](#build-a-package). Both privsep
 accounts need read access to both checkouts. Use the standard privsep
 doas rules that preserve the environment for `_pbuild` and `_pfetch`.
 With the exports below, `doas -u _pbuild make -C "$overlay/www/electron"
@@ -256,8 +282,7 @@ usage rose from 25.8 GiB after resizing to 66.3 GiB during packaging.
 
 ```sh
 overlay=$(pwd -P)
-export PORTSDIR=/usr/ports    # path to the matching stock checkout
-export PORTSDIR_PATH="$overlay:$PORTSDIR"
+export PORTSDIR="${PORTSDIR:-/usr/ports}"    # matching stock checkout
 build=$(mktemp -d /tmp/ports-build/electron.XXXXXXXX)
 chmod 755 "$build"
 doas install -d -o _pfetch "$build/dist"
@@ -269,7 +294,7 @@ doas mount -u -o nodev,nosuid,wxallowed /tmp/ports-build
 port() {
     runner=$1
     shift
-    "$runner" -C "$overlay/www/electron" PORTSDIR="$PORTSDIR" PORTSDIR_PATH="$PORTSDIR_PATH" \
+    "$runner" -C "$overlay/www/electron" PORTSDIR="$PORTSDIR" \
         PORTS_PRIVSEP=Yes MAKE_JOBS=6 \
         WRKOBJDIR="$build/obj" WRKOBJDIR_MFS="$build/obj" \
         BULK_COOKIES_DIR="$build/obj/bulk" UPDATE_COOKIES_DIR="$build/obj/update" \
@@ -294,13 +319,13 @@ on the selected stock tree even when it lives outside /usr/ports.
 
 ```sh
 build_make() {
-    doas -u _pbuild env TMPDIR="$build/t" PORTSDIR_PATH="$PORTSDIR_PATH" make "$@"
+    doas -u _pbuild env TMPDIR="$build/t" make "$@"
 }
 check_make="make PORTSDIR=$PORTSDIR PORTS_PRIVSEP=No TMPDIR=$build/t"
 port build_make PORTS_PRIVSEP=No \
     "_CHECK_LIB_DEPENDS=env PORTSDIR=$PORTSDIR MAKE='$check_make' $PORTSDIR/infrastructure/bin/check-lib-depends" \
     port-lib-depends-check lib-depends-check
-for d in www/electron devel/berry devel/esbuild devel/py-dbusmock; do
+for d in www/electron devel/berry devel/electron-esbuild devel/py-dbusmock; do
     (cd "$overlay/$d" && "$PORTSDIR/infrastructure/bin/portcheck" -p "$overlay") || exit 1
 done
 ```
@@ -340,28 +365,33 @@ Open VSX supports portable extensions on this port.
 · [Fabien Romano's original ports](https://github.com/opencrew-tech/openbsd-electron/tree/033b8dcdbba860fc0ea2d7c6bfd80a40b8cf3c04)
 · [FreeBSD port](https://github.com/freebsd/freebsd-ports/tree/main/editors/vscode)
 
-Install the matching Electron package first. From the overlay root, use the
-same stock checkout, overlay-first search path and privsep environment as in
-the Electron instructions. Give the editor its own scratch directory.
+Preinstall the stock dependencies for Code - OSS with the following commands.
+Python 3 comes with py3-yaml. The port fetches its pinned pnpm as a distfile.
+
+```sh
+pkg_info -qe 'unzip-*' || doas pkg_add unzip--
+doas pkg_add gmake node py3-yaml heimdal-libs desktop-file-utils git ripgrep
+```
+
+Use the electron-esbuild 0.28.2 and Electron 43.8.10p0 packages built from the
+overlay above. For the installed-editor Xvfb test, also run
+`doas pkg_add xdotool dbus` on a system with the OpenBSD X sets installed.
+
+From the overlay root, use the same ports tree and privsep configuration as
+for Electron. Give the editor its own scratch directory.
 
 ```sh
 overlay=$(pwd -P)
-export PORTSDIR=/tmp/ports-build/electron.hexOUBgx/current-ports
-export PORTSDIR_PATH="$overlay:$PORTSDIR"
+export PORTSDIR="${PORTSDIR:-/usr/ports}"    # matching stock checkout
 build=$(mktemp -d /tmp/ports-build/vsc.XXXXXXXX)
 chmod 755 "$build"
 doas install -d -o _pfetch "$build/dist"
 doas install -d -o _pbuild "$build/obj" "$build/packages" "$build/plist"
 install -d -m 1777 "$build/t"
 export TMPDIR="$build/t" PKG_TMPDIR="$build/t"
-# This VM uses Electron's privsep wrapper. Retarget only its scratch paths.
-prior=${PORTSDIR%/*}
-sed -e "s|$prior/t|$build/t|g" -e "s|$prior/packages|$build/packages|g" \
-    "$prior/as-user" > "$build/as-user"
-chmod 755 "$build/as-user"
 port() {
-    make -C "$overlay/editors/vscode" SUDO="$build/as-user" PORTSDIR="$PORTSDIR" \
-        PORTSDIR_PATH="$PORTSDIR_PATH" PORTS_PRIVSEP=Yes MAKE_JOBS=8 \
+    make -C "$overlay/editors/vscode" PORTSDIR="$PORTSDIR" \
+        PORTS_PRIVSEP=Yes MAKE_JOBS=8 \
         WRKOBJDIR="$build/obj" WRKOBJDIR_MFS="$build/obj" \
         BULK_COOKIES_DIR="$build/obj/bulk" UPDATE_COOKIES_DIR="$build/obj/update" \
         DISTDIR="$build/dist" PACKAGE_REPOSITORY="$build/packages" \
