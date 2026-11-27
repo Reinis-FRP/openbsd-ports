@@ -12,7 +12,7 @@ Tested on OpenBSD 8.0-release/amd64.
 | [devel/solana-platform-tools](#develsolana-platform-tools) | `solana-platform-tools-1.57` | amd64 | OpenBSD-hosted Rust cross compiler and Solana SBF target libraries |
 | [devel/cargo-build-sbf](#develcargo-build-sbf) | `cargo-build-sbf-4.5.0` | amd64 | Cargo subcommands for building and testing Solana SBF programs |
 | [devel/anchor-cli](#develanchor-cli) | `anchor-cli-1.2.2` | amd64 | Anchor CLI for building, testing and deploying Solana programs |
-| [editors/wordcraft](#editorswordcraft) | `wordcraft-0.18.1`, `wordcraft-cli-0.18.1p0` | amd64 | Desktop word processor, document conversion and headless MCP server |
+| [editors/wordcraft](#editorswordcraft) | `wordcraft-0.19.1`, `wordcraft-cli-0.19.1` | amd64 (release build pending) | Desktop word processor, document conversion and headless MCP server |
 | [math/gridcraft](#mathgridcraft) | `gridcraft-0.19.1`, `gridcraft-cli-0.19.1` | amd64 | Desktop spreadsheet, workbook conversion and headless MCP server |
 | [print/pdfcraft](#printpdfcraft) | `pdfcraft-0.22.0`, `pdfcraft-cli-0.22.0`, `pdfcraft-data-0.22.0` | amd64 (8.0-current tested) | Desktop PDF editor, headless editing and OCR, and shared model data |
 | [productivity/deckcraft](#productivitydeckcraft) | `deckcraft-0.19.1`, `deckcraft-cli-0.19.1` | amd64 (8.0-current tested) | Desktop presentation editor, headless rendering and MCP |
@@ -227,49 +227,74 @@ the counter advances from zero to one.
 
 ### Build considerations
 
-The port builds two packages from WordCraft v0.18.1
-(`079f478bd85df7bcc567e3bafa7d7219096f9c3c`). Install `wordcraft`
+The port builds two packages from WordCraft v0.19.1
+(`5d658dc033f3139926839bffd6ae0eef558c210c`). Install `wordcraft`
 for the desktop editor or `wordcraft-cli` for the command-line tools and
 headless MCP server. The packages can be installed together. Both use the
 release lockfile and checksummed sources, fonts and language data.
 
-On X11, the desktop editor supports Vulkan and Mesa software OpenGL.
-The CLI and the patched build-tree GUI have been exercised on
-OpenBSD 8.0-release/amd64, the latter on X11 with a Radeon RX 7900 XT.
+On OpenBSD 8.0-current/amd64 (GENERIC.MP#163, Rust 1.99.1), ports fetched
+and verified all 684 distfiles, extracted the workspace, applied all six
+patches and ran configure. All 676 registry archives matched the tagged
+Cargo.lock checksums. Full `cargo metadata --frozen --offline --format-version 1`
+with the generated Cargo configuration and an isolated Cargo home resolved
+752 packages, including 44 from the single craft-libs revision. The lockfile
+remained byte-identical to the tag. Cargo reported three unused upstream egui
+patches. The install inputs matched both PLISTs, the patched desktop
+entry passed `desktop-file-validate`, and ports derived both package names.
+`portcheck` and `git diff --check` passed.
 
-You can preinstall the build tools and desktop package dependencies on a
-clean builder.
+The first v0.19.1 build, tests, packages and X11 runs are pending on
+8.0-release/amd64, including compilation of the native craft-font-store
+dependency cap-primitives 4.0.3. The earlier release-desktop CLI and X11 GUI
+results, including automatic Vulkan on the Radeon RX 7900 XT, apply to v0.18.1.
+
+Use a matching release ports tree and binary packages. On a single-user
+builder with a writable mount at `/tmp/ports-build`, run the following
+blocks in the same shell. The build uses up to eight jobs.
 
 ```sh
+cd /usr/ports/mystuff/editors/wordcraft
 doas pkg_add rust cargo-generate-vendor libxkbcommon wayland vulkan-loader \
     desktop-file-utils gtk4-update-icon-cache
-```
 
-Verify the distfiles, then start a clean, frozen build with fetching disabled.
-
-```sh
-cd "$overlay/editors/wordcraft"
-make checksum && make clean
-make FETCH_CMD=/usr/bin/false MAKE_JOBS=8 build test package
-env SUBPACKAGE=-main make show=PKGFILE
-env SUBPACKAGE=-cli make show=PKGFILE
+build=$(mktemp -d /tmp/ports-build/wc.XXXXXXXX)
+mkdir "$build/t"
+export TMPDIR="$build/t" PKG_TMPDIR="$build/t"
+port() {
+    make PORTS_PRIVSEP=No SUDO= MAKE_JOBS=8 WRKOBJDIR="$build/obj" \
+        WRKOBJDIR_MFS="$build/obj" DISTDIR="$build/dist" \
+        PACKAGE_REPOSITORY="$build/packages" PLIST_REPOSITORY="$build/plist" "$@"
+}
+(
+    set -e
+    port checksum
+    port clean
+    port FETCH_CMD=/usr/bin/false build test fake package
+    for sub in -main -cli; do
+        SUBPACKAGE="$sub" port FETCH_CMD=/usr/bin/false \
+            port-lib-depends-check lib-depends-check
+        archive=$(SUBPACKAGE="$sub" port show=PKGFILE)
+        ls -l "$archive"
+    done
+)
 ```
 
 ### Install the signed CLI package
 
 After `make package`, run these commands in `editors/wordcraft` on the builder
 with the signing key from [Install a package](#install-a-package). Selecting
-`-cli` gives the path to `wordcraft-cli-0.18.1p0.tgz`.
+`-cli` gives the path to `wordcraft-cli-0.19.1.tgz`.
 
 ```sh
-pkgfile=$(env SUBPACKAGE=-cli make show=PKGFILE)
+pkgfile=$(SUBPACKAGE=-cli port show=PKGFILE)
 doas pkg_sign -s signify2 -s /etc/signify/my-pkg.sec -o "$(dirname "$pkgfile")" "$pkgfile"
 ```
 
 On the same machine, keep `pkgfile` as set above. On another 8.0-release/amd64
 host, copy the signed archive from the matching release builder, provision
 `/etc/signify/my-pkg.pub` through a trusted channel, then run
-`pkgfile="$PWD/wordcraft-cli-0.18.1p0.tgz"` in the download directory.
+`pkgfile="$PWD/wordcraft-cli-0.19.1.tgz"` in the download directory.
 The following commands verify the signature, preview the installation and
 install the CLI with its headless MCP server.
 
@@ -280,16 +305,15 @@ signify -Vz -p /etc/signify/my-pkg.pub -x "$pkgfile" -m /dev/null &&
     /usr/local/bin/wordcraft-cli --version
 ```
 
-This also upgrades an existing `wordcraft-cli-0.18.1`. The version command
-prints `wordcraft-cli 0.18.1`. `pkg_info -I wordcraft-cli` shows the installed
-package revision `0.18.1p0`.
+The version command prints `wordcraft-cli 0.19.1`. Run `pkg_info -I wordcraft-cli`
+to see the installed package version.
 
 ### Smoke test
 
 Run the test as a regular user against the staged executable.
 
 ```sh
-perl files/smoke-test "$(make show=WRKINST)/usr/local/bin/wordcraft-cli"
+perl files/smoke-test "$(port show=WRKINST)/usr/local/bin/wordcraft-cli"
 ```
 
 The test converts text to DOCX, checks its text and counts, and exports a
@@ -301,7 +325,7 @@ On an X11 desktop with a Vulkan driver, launch the staged sample with the
 default backend, close it, then repeat with Vulkan selected explicitly.
 
 ```sh
-stage="$(make show=WRKINST)/usr/local"
+stage="$(port show=WRKINST)/usr/local"
 env -u WGPU_BACKEND "$stage/bin/wordcraft" --sample
 WGPU_BACKEND=vulkan "$stage/bin/wordcraft" --sample
 ```
@@ -313,7 +337,7 @@ To exercise the desktop entry and clipboard, open a disposable document from
 the same staging directory.
 
 ```sh
-d=$(mktemp -d)
+d=$(mktemp -d "$build/clipboard.XXXXXXXX")
 printf '%s' 'Original three words' > "$d/input.txt"
 "$stage/bin/wordcraft-cli" convert "$d/input.txt" "$d/check.docx"
 export PATH="$stage/bin:$PATH"
@@ -325,6 +349,21 @@ Copy the paragraph into another application, replace it there with
 `Edited clipboard text`, and paste it back over the original paragraph.
 Save, close and repeat the `gio launch` command. The reopened paragraph
 and `wordcraft-cli text "$d/check.docx"` should both read `Edited clipboard text`.
+
+For the release compatibility check, set `fixture` to the absolute path of
+a v0.18.1 DOCX containing formatted text and an image. In the first window,
+add `Release round trip`, save and quit. In the second, verify the edit,
+formatting and image, export `check.pdf` beside the copy, then quit. Open
+the exported PDF and check that the formatting and image also survived export.
+
+```sh
+d=$(mktemp -d "$build/docx.XXXXXXXX")
+cp "$fixture" "$d/check.docx"
+"$stage/bin/wordcraft" "$d/check.docx"
+"$stage/bin/wordcraft" "$d/check.docx"
+"$stage/bin/wordcraft-cli" text "$d/check.docx" | grep -F 'Release round trip'
+file "$d/check.pdf"
+```
 
 ## math/gridcraft
 

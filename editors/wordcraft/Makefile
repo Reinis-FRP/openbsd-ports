@@ -2,13 +2,12 @@ ONLY_FOR_ARCHS =	amd64
 
 COMMENT-main =		desktop word processor with DOCX and PDF support
 COMMENT-cli =		command-line document editor and headless MCP server
-DIST_TUPLE =		github storytold wordcraft v0.18.1 . \
+DIST_TUPLE =		github storytold wordcraft v0.19.1 . \
 			github storytold craft-fonts \
 			b076417b5880bd4154bd22f00695b1d28c6bea83 ../fonts \
 			github storytold craft-i18n \
-			1e515422afdda2f317af430c1f9d68a5f83935b4 ../i18n
+			e56d26244bbac099bfd42e23fb12f78a4be418a7 ../i18n
 MULTI_PACKAGES =	-main -cli
-REVISION-cli =		0
 CATEGORIES =		editors
 
 # MIT or Apache-2.0; embedded fonts and proofing data have separate notices.
@@ -25,23 +24,23 @@ RUN_DEPENDS-main =	devel/desktop-file-utils \
 
 # Keep each Git source at its own locked revision, even within one repository.
 GIT_SOURCES = \
-	craft-libs 01315d9c92b5b0e69082d35ca56099461a1efd45 proof \
-	craft-libs 6e03f65bf45181db77ba6229716e6624db9eb25b pdf \
-	craft-libs 762a06a4c6b48b522b7d4de84a87917ef90265e6 font-store \
-	craft-libs 92d392cff132eaf53e13afff77f38b5c11b73aa0 ui \
-	craft-libs a3e0b5a9440d18f19422a9dca13516747b7d3181 print \
-	craft-libs fd5e2feff6ea25bed371a99cc732b3968d621505 web \
+	craft-libs 93dac78c93a7f1fd66e2022edeb089233b1dc45a craft-libs \
 	egui 6d518fc799681571963842f95b55a6b68431b15a egui \
 	winit a517b3846ee8457d84ee4975110bfda6797c44dc winit \
-	winprint.rs 417ac3c4d14d3da5485a99c7d5ce8f05664ec312 gdi \
-	winprint.rs 5f80b9baf6b58937c401656634e42d33f00ddf49 winprint
+	winprint.rs 64e7afd4d1483512385012c340ecaaaf0f3beb7f gdi \
+	winprint.rs 8ae097ef941b432b0e7671b1ec3a506800e65e57 winprint
 
-GIT_CRATES.proof =	crates/proof
-GIT_CRATES.pdf =	crates/pdf crates/update vendor/krilla
-GIT_CRATES.font-store =	crates/atomic crates/font-catalog crates/font-store
-GIT_CRATES.ui =		crates/fonts-build crates/i18n crates/ui crates/window
-GIT_CRATES.print =	crates/print
-GIT_CRATES.web =	crates/web-api crates/web-host
+GIT_CRATES.craft-libs =	crates/atomic crates/cfb crates/codepage crates/dds \
+			crates/doc-binary crates/docx crates/drawingml crates/flow \
+			crates/font-catalog crates/font-store crates/fonts-build \
+			crates/html crates/i18n crates/image-codecs crates/jpeg \
+			crates/latex crates/markdown crates/math crates/mcp-server \
+			crates/metadata crates/metafile crates/mime crates/odf \
+			crates/ods crates/offcrypto crates/opc crates/pdf \
+			crates/print crates/proof crates/rtf crates/sheet \
+			crates/ssip crates/tiff crates/ui crates/update \
+			crates/web-api crates/web-host crates/window crates/wordmodel \
+			crates/xls crates/xlsx crates/xml crates/zip vendor/krilla
 GIT_CRATES.egui =	crates/ecolor crates/eframe crates/egui \
 			crates/egui-wgpu crates/egui-winit crates/egui_demo_lib \
 			crates/egui_extras crates/egui_glow crates/egui_inspection \
@@ -60,7 +59,7 @@ MODCARGO_BUILD_ARGS =	--frozen -p wordcraft-cli --bin wordcraft-cli
 MODCARGO_TEST_ARGS =	--frozen -p wordcraft-cli
 MODCARGO_ENV +=		CRAFT_FONTS_DIR=${WRKDIR}/fonts CRAFT_FONTS_REQUIRED=1 \
 			CRAFT_I18N_DIR=${WRKDIR}/i18n CRAFT_I18N_REQUIRED=1 \
-			WORDCRAFT_BUILD_SHA=079f478bd85df7bcc567e3bafa7d7219096f9c3c
+			WORDCRAFT_BUILD_SHA=5d658dc033f3139926839bffd6ae0eef558c210c
 
 DOCDIR =		${PREFIX}/share/doc/wordcraft-cli
 
@@ -97,9 +96,10 @@ do-install:
 	${INSTALL_DATA} ${WRKDIR}/i18n/language-data/${locale}/LICENCE-SCOWL.txt \
 	    ${DOCDIR}/language-data/LICENCE-SCOWL-${locale}.txt
 .endfor
-	cd ${WRKDIR}/pdf && ${INSTALL_DATA} ATTRIBUTION.md NOTICE \
+	cd ${WRKDIR}/craft-libs && ${INSTALL_DATA} ATTRIBUTION.md NOTICE \
 	    ${DOCDIR}/pdf-writer/
-	${INSTALL_DATA} ${WRKDIR}/pdf/licenses/pdf-writer/* ${DOCDIR}/pdf-writer/
+	${INSTALL_DATA} ${WRKDIR}/craft-libs/licenses/pdf-writer/* \
+	    ${DOCDIR}/pdf-writer/
 
 	# Each package carries the notices for the assets embedded in its binary.
 	${INSTALL_DATA_DIR} ${PREFIX}/share/doc/wordcraft/egui-fonts

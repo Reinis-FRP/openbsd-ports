@@ -1,6 +1,6 @@
 --- crates/fonts/src/fontdb/names.rs.orig
 +++ crates/fonts/src/fontdb/names.rs
-@@ -235,6 +235,8 @@
+@@ -294,6 +294,8 @@
              dirs.push(std::path::PathBuf::from(l).join("Microsoft\\Windows\\Fonts"));
          }
      } else {
