@@ -483,3 +483,30 @@ shipped sandbox. Physical desktop and OpenBSD 8.0-release testing remain.
 To regenerate the registry manifest for a new tag, run
 `python3 files/seed-store.py --distfiles /path/to/extracted/vscode`
 from the port directory and review the output before updating `modules.inc`.
+
+### Rust Analyzer and Anchor procedural macros
+
+On the desktop, the Open VSX Rust Analyzer extension uses the native server
+from `doas pkg_add rust-analyzer`. Set `rust-analyzer.server.path` to
+`/usr/local/bin/rust-analyzer` in Code - OSS. Raising the soft data limit
+to 8 GiB stopped the server from aborting during indexing. To use that
+limit for one session, quit Code - OSS and run this in the project directory.
+
+```sh
+(ulimit -Sd 8388608 && exec /usr/local/bin/vscode .)
+```
+
+With `rust-analyzer-20260713` and `rust-1.98.1`, Anchor’s `#[program]`
+still reports “cannot find proc-macro server in sysroot `/usr/local`”.
+The stock `lang/rust` port builds Cargo, Clippy, rustdoc and rustfmt. Its
+packages and `devel/rust-analyzer` omit `rust-analyzer-proc-macro-srv`.
+The desktop already had `rust-src` installed. The missing helper affects
+editor macro expansion. Anchor builds use the compiler’s own macro support.
+
+We propose enabling `rust-analyzer-proc-macro-srv` in the
+host `lang/rust` bootstrap tool list and packaging the matching executable as
+`/usr/local/libexec/rust-analyzer-proc-macro-srv`. This fix still needs a
+build and a desktop check. After installing it, restart Rust Analyzer,
+place the cursor on `#[program]` in an Anchor workspace and run
+**rust-analyzer: Expand macro recursively**. The command should display
+the generated Rust code.
