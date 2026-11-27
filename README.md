@@ -289,6 +289,30 @@ package archive already exists. Start at the `sign_install` line for that
 helper and continue the sequence. Electron resumes in its existing work
 directory. Once Electron is installed, continue with [Code - OSS](#editorsvscode).
 
+### Signed dependencies for Electron's upstream tests
+
+Before running `make test` on a fresh desktop builder, install the signed
+stock packages from the matching OpenBSD mirror. This avoids building and
+signing the Python packaging tools one at a time during dependency resolution.
+
+```sh
+doas pkg_add py3-flit_core py3-installer py3-pyproject_hooks py3-build \
+    py3-setuptools py3-setuptools_scm py3-wheel \
+    py3-dbus py3-gobject3 glib2
+```
+
+Then build the overlay's `py3-dbusmock` package and sign and install it
+with the helper from [Signed desktop build order](#signed-desktop-build-order) in the same shell.
+
+```sh
+port="$overlay/devel/py-dbusmock"
+make -C "$port" package && sign_install "$port"
+```
+
+If `make test` already stopped at `unsigned package` for `py3-dbusmock`,
+run `sign_install "$overlay/devel/py-dbusmock"` to use the existing archive,
+then retry the Electron test run.
+
 ### Snapshot VM build and checks
 
 Use a matching package mirror and stock ports tree. The tested snapshot tree was
