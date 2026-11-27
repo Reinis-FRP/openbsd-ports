@@ -12,6 +12,7 @@ Tested on OpenBSD 8.0-release/amd64.
 | [devel/solana-platform-tools](#develsolana-platform-tools) | `solana-platform-tools-1.57` | amd64 | OpenBSD-hosted Rust cross compiler and Solana SBF target libraries |
 | [devel/cargo-build-sbf](#develcargo-build-sbf) | `cargo-build-sbf-4.5.0` | amd64 | Cargo subcommands for building and testing Solana SBF programs |
 | [devel/anchor-cli](#develanchor-cli) | `anchor-cli-1.2.2` | amd64 | Anchor CLI for building, testing and deploying Solana programs |
+| [devel/codex](#develcodex) | `codex-0.172.0` | amd64, aarch64 | OpenAI terminal coding agent |
 
 ## Build a package
 
@@ -218,3 +219,19 @@ Both commands check the SBF program, IDL and TypeScript types. The first
 runs the generated LiteSVM instruction test. The second starts Agave with
 `anchor test --validator legacy`, deploys over loopback and checks that
 the counter advances from zero to one.
+
+## devel/codex
+
+Codex builds the Rust CLI and its V8-based code-mode host from source.
+The build uses packaged Rust. Compatibility with Rust 1.98.1 on OpenBSD
+8.0-release is unverified.
+
+Run from the overlay to preinstall dependencies and build the package.
+
+```sh
+cd "$overlay/devel/codex"
+llvm_port=/usr/ports/devel/llvm/$(make show=MODCLANG_VERSION)
+doas pkg_add rust cargo-generate-vendor cmake-core git gn ninja protobuf \
+    sqlite3 oniguruma dbus python%3 bash ripgrep "$(make -C "$llvm_port" show=FULLPKGNAME)"
+make package
+```
