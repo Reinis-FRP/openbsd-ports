@@ -228,6 +228,9 @@ Electron 43.8.10 was built, packaged and tested on OpenBSD 8.0-current/amd64
 Chromium 150.0.7871.250 and Node 24.22.1. A sandboxed BrowserWindow completed
 a renderer-to-main IPC round trip under Xvfb and exited with status 0.
 
+The desktop package also passed the IPC smoke test. The upstream regression
+failures are recorded in the [November 27 desktop test report](docs/electron/2026-11-27/README.md).
+
 The port derives from Fabien Romano’s Electron 41.10.6 port and retains its
 OpenBSD pledge and unveil integration. It streams the three FreeBSD Chromium
 archive fragments during extraction. The historical OpenBSD Chromium 150 port

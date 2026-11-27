@@ -1,0 +1,1991 @@
+✓  parallel  api-service-workers.spec.ts (4 tests) 415ms
+stderr | crash.spec.ts:85 > crash cases > the "node-options-parsing" case should not crash
+[40167:1127/093517.332878:ERROR:electron/shell/common/node_bindings.cc:495] The NODE_OPTION --enable-fips is not supported in Electron
+[40167:1127/093517.332893:ERROR:electron/shell/common/node_bindings.cc:495] The NODE_OPTION --enable-fips is not supported in Electron
+[32753:1127/093517.511249:ERROR:sandbox/policy/openbsd/sandbox_openbsd.cc:260] failed to get XDG_RUNTIME_DIR
+[32753:1127/093517.516809:ERROR:electron/shell/common/node_bindings.cc:495] The NODE_OPTION --enable-fips is not supported in Electron
+[32753:1127/093517.516816:ERROR:electron/shell/common/node_bindings.cc:495] The NODE_OPTION --enable-fips is not supported in Electron
+node:internal/modules/cjs/loader:1575
+  throw err;
+  ^
+
+Error: Cannot find module '/usr/obj/ports/electron-43.8.10/src/electron/spec/fixtures/crash-cases/node-options-parsing/preload.js'
+Require stack:
+- internal/preload
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1571:15)
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1125:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1149:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1176:12)
+    at node:internal/modules/cjs/loader:1348:5
+    at Module._load (node:electron/js2c/node_init:2:18263)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:268:19)
+    at Module.require (node:internal/modules/cjs/loader:1681:12)
+    at node:internal/modules/cjs/loader:2231:12
+    at loadPreloadModules (node:internal/process/pre_execution:739:5) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [ 'internal/preload' ]
+}
+
+Node.js v24.22.1
+
+
+stderr | crash.spec.ts:85 > crash cases > the "node-options-parsing" case should not crash
+[34370:1127/093517.670393:ERROR:electron/shell/common/node_bindings.cc:495] The NODE_OPTION --enable-fips is not supported in Electron
+[34370:1127/093517.670407:ERROR:electron/shell/common/node_bindings.cc:495] The NODE_OPTION --enable-fips is not supported in Electron
+[73225:1127/093517.851523:ERROR:sandbox/policy/openbsd/sandbox_openbsd.cc:260] failed to get XDG_RUNTIME_DIR
+[73225:1127/093517.856874:ERROR:electron/shell/common/node_bindings.cc:495] The NODE_OPTION --enable-fips is not supported in Electron
+[73225:1127/093517.856880:ERROR:electron/shell/common/node_bindings.cc:495] The NODE_OPTION --enable-fips is not supported in Electron
+node:internal/modules/cjs/loader:1575
+  throw err;
+  ^
+
+Error: Cannot find module '/usr/obj/ports/electron-43.8.10/src/electron/spec/fixtures/crash-cases/node-options-parsing/preload.js'
+Require stack:
+- internal/preload
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1571:15)
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1125:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1149:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1176:12)
+    at node:internal/modules/cjs/loader:1348:5
+    at Module._load (node:electron/js2c/node_init:2:18263)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:268:19)
+    at Module.require (node:internal/modules/cjs/loader:1681:12)
+    at node:internal/modules/cjs/loader:2231:12
+    at loadPreloadModules (node:internal/process/pre_execution:739:5) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [ 'internal/preload' ]
+}
+
+Node.js v24.22.1
+
+
+stderr | crash.spec.ts:85 > crash cases > the "node-options-parsing" case should not crash
+[41577:1127/093517.997808:ERROR:electron/shell/common/node_bindings.cc:495] The NODE_OPTION --enable-fips is not supported in Electron
+[41577:1127/093517.997822:ERROR:electron/shell/common/node_bindings.cc:495] The NODE_OPTION --enable-fips is not supported in Electron
+[81122:1127/093518.162654:ERROR:sandbox/policy/openbsd/sandbox_openbsd.cc:260] failed to get XDG_RUNTIME_DIR
+[81122:1127/093518.167834:ERROR:electron/shell/common/node_bindings.cc:495] The NODE_OPTION --enable-fips is not supported in Electron
+[81122:1127/093518.167840:ERROR:electron/shell/common/node_bindings.cc:495] The NODE_OPTION --enable-fips is not supported in Electron
+node:internal/modules/cjs/loader:1575
+  throw err;
+  ^
+
+Error: Cannot find module '/usr/obj/ports/electron-43.8.10/src/electron/spec/fixtures/crash-cases/node-options-parsing/preload.js'
+Require stack:
+- internal/preload
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1571:15)
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1125:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1149:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1176:12)
+    at node:internal/modules/cjs/loader:1348:5
+    at Module._load (node:electron/js2c/node_init:2:18263)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:268:19)
+    at Module.require (node:internal/modules/cjs/loader:1681:12)
+    at node:internal/modules/cjs/loader:2231:12
+    at loadPreloadModules (node:internal/process/pre_execution:739:5) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [ 'internal/preload' ]
+}
+
+Node.js v24.22.1
+
+
+stderr | crash.spec.ts:85 > crash cases > the "node-options-parsing" case should not crash
+[23613:1127/093518.305434:ERROR:electron/shell/common/node_bindings.cc:495] The NODE_OPTION --enable-fips is not supported in Electron
+[23613:1127/093518.305448:ERROR:electron/shell/common/node_bindings.cc:495] The NODE_OPTION --enable-fips is not supported in Electron
+[89387:1127/093518.469927:ERROR:sandbox/policy/openbsd/sandbox_openbsd.cc:260] failed to get XDG_RUNTIME_DIR
+[89387:1127/093518.475373:ERROR:electron/shell/common/node_bindings.cc:495] The NODE_OPTION --enable-fips is not supported in Electron
+[89387:1127/093518.475380:ERROR:electron/shell/common/node_bindings.cc:495] The NODE_OPTION --enable-fips is not supported in Electron
+node:internal/modules/cjs/loader:1575
+  throw err;
+  ^
+
+Error: Cannot find module '/usr/obj/ports/electron-43.8.10/src/electron/spec/fixtures/crash-cases/node-options-parsing/preload.js'
+Require stack:
+- internal/preload
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1571:15)
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1125:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1149:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1176:12)
+    at node:internal/modules/cjs/loader:1348:5
+    at Module._load (node:electron/js2c/node_init:2:18263)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:268:19)
+    at Module.require (node:internal/modules/cjs/loader:1681:12)
+    at node:internal/modules/cjs/loader:2231:12
+    at loadPreloadModules (node:internal/process/pre_execution:739:5) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [ 'internal/preload' ]
+}
+
+Node.js v24.22.1
+
+
+ ❯  parallel  crash.spec.ts (36 tests | 1 failed) 54617ms
+   ❯ crash cases (36)
+     ✓ the "api-browser-destroy" case should not crash 278ms
+     ✓ the "content-tracing-before-ready" case should not crash 350ms
+     ✓ the "debugger-send-command-wrong-type" case should not crash 338ms
+     ✓ the "dialog-on-invalid-url" case should not crash 359ms
+     ✓ the "dispose-observer-created-at-exit" case should not crash 289ms
+     ✓ the "early-in-memory-session-create" case should not crash 300ms
+     ✓ the "extension-background-page-media" case should not crash 410ms
+     ✓ the "frameless-windows-close" case should not crash 102ms
+     ✓ the "fs-promises-renderer-crash" case should not crash 487ms
+     ✓ the "in-memory-session-double-free" case should not crash 412ms
+     ✓ the "js-execute-iframe" case should not crash 459ms
+     ✓ the "native-window-open-exit" case should not crash 411ms
+     ✓ the "net-fetch-with-webrequest-extension" case should not crash 330ms
+     × the "node-options-parsing" case should not crash 1295ms (retry x3)
+     ✓ the "notification-close" case should not crash 194ms
+     ✓ the "promise-destroy-crash" case should not crash 796ms
+     ✓ the "quit-on-crashed-event" case should not crash 17928ms
+     ✓ the "safe-storage" case should not crash 304ms
+     ✓ the "setimmediate-renderer-crash" case should not crash 401ms
+     ✓ the "setimmediate-window-open-crash" case should not crash 462ms
+     ✓ the "transparent-window-get-background-color" case should not crash 327ms
+     ✓ the "utility-process-app-ready" case should not crash 103ms
+     ✓ the "utility-process-post-message-on-exit" case should not crash 314ms
+     ✓ the "webauthn-select-account-listener-throws" case should not crash 375ms
+     ✓ the "webcontents-create-leak-exit" case should not crash 282ms
+     ✓ the "webcontents-destroy-shared-process" case should not crash 19360ms
+     ✓ the "webcontentsview-create-leak-exit" case should not crash 316ms
+     ✓ the "webrequest-redirect-cors-preflight" case should not crash 364ms
+     ✓ the "webui-host-non-webui-scheme" case should not crash 497ms
+     ✓ the "webview-attach-destroyed" case should not crash 382ms
+     ✓ the "webview-contents-error-on-creation" case should not crash 269ms
+     ✓ the "webview-destroy-in-event" case should not crash 2510ms
+     ✓ the "webview-move-between-windows" case should not crash 2324ms
+     ✓ the "webview-remove-on-wc-close" case should not crash 512ms
+     ✓ the "worker-multiple-destroy" case should not crash 499ms
+     ✓ the "wrappable-gc-weak-callback-emit" case should not crash 274ms
+ ✓  parallel  vitest-runner.spec.ts (4 tests) 113ms
+ ✓  parallel  api-image-view.spec.ts (7 tests) 145ms
+ ✓  parallel  parse-features-string.spec.ts (6 tests) 5ms
+ ↓  parallel  autofill.spec.ts (2 tests | 2 skipped)
+ ✓  parallel  api-web-utils.spec.ts (2 tests) 397ms
+ ✓  parallel  process-binding.spec.ts (6 tests) 511ms
+ ↓  parallel  desktop-name.spec.ts (1 test | 1 skipped)
+ ✓  parallel  types.spec.ts (1 test) 3ms
+ ✓  parallel  api-power-save-blocker.spec.ts (1 test) 2ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL   parallel  api-protocol.spec.ts:1366 > protocol module > protocol.registerSchemesAsPrivileged stream
+Error: EACCES: permission denied, open '/usr/obj/ports/electron-43.8.10/src/electron/spec/fixtures/video.webm'
+ ❯ api-protocol.spec.ts:1380:7
+    1378|         encoder.add(imageDataUrl);
+    1379|       }
+    1380|       await new Promise((resolve, reject) => {
+       |       ^
+    1381|         encoder.compile((output: Uint8Array) => {
+    1382|           fs.promises.writeFile(videoPath, output).then(resolve, rejec…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/396]⎯
+
+ FAIL   parallel  api-protocol.spec.ts:1366 > protocol module > protocol.registerSchemesAsPrivileged stream
+Error: ENOENT: no such file or directory, unlink '/usr/obj/ports/electron-43.8.10/src/electron/spec/fixtures/video.webm'
+ ❯ api-protocol.spec.ts:1388:7
+    1386|
+    1387|     afterAll(async () => {
+    1388|       await fs.promises.unlink(videoPath);
+       |       ^
+    1389|     });
+    1390|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/396]⎯
+
+ FAIL   parallel  cert-revocation.spec.ts [ cert-revocation.spec.ts ]
+Error: No such binding was linked: electron_common_testing
+ ❯ cert-revocation.spec.ts:25:27
+     23|
+     24| ifdescribe(isTestingBindingAvailable())('certificate revocation', () =…
+     25|   const testing = process._linkedBinding('electron_common_testing');
+       |                           ^
+     26|   let server: https.Server;
+     27|   let port: number;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/396]⎯
+
+ FAIL   serial  api-power-monitor.spec.ts:128 > powerMonitor > when powerMonitor module is loaded with dbus mock > when a listener is added to shutdown event
+AssertionError: expected [] to have a length of 2 but got +0
+
+- Expected
++ Received
+
+- 2
++ 0
+
+ ❯ api-power-monitor.spec.ts:132:25
+    130|           const calls = await getCalls();
+    131|           expect(calls).toBeInstanceOf(Array);
+    132|           expect(calls).toHaveLength(2);
+       |                         ^
+    133|           dbusMockPowerMonitor.once('shutdown', () => {});
+    134|         });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/396]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 96 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL   parallel  api-app.spec.ts:163 > app module > app.getPreferredSystemLanguages() > should not be empty
+ FAIL   parallel  api-app.spec.ts:163 > app module > app.getPreferredSystemLanguages() > should not be empty
+ FAIL   parallel  api-app.spec.ts:163 > app module > app.getPreferredSystemLanguages() > should not be empty
+ FAIL   parallel  api-app.spec.ts:163 > app module > app.getPreferredSystemLanguages() > should not be empty
+AssertionError: expected +0 not to be +0 // Object.is equality
+ ❯ api-app.spec.ts:164:60
+    162|   describe('app.getPreferredSystemLanguages()', () => {
+    163|     ifit(process.platform !== 'linux')('should not be empty', () => {
+    164|       expect(app.getPreferredSystemLanguages().length).not.toBe(0);
+       |                                                            ^
+    165|     });
+    166|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/396]⎯
+
+ FAIL   parallel  api-app.spec.ts:655 > app module > app.{add|get|clear}RecentDocument(s) > can add a recent document
+ FAIL   parallel  api-app.spec.ts:655 > app module > app.{add|get|clear}RecentDocument(s) > can add a recent document
+ FAIL   parallel  api-app.spec.ts:655 > app module > app.{add|get|clear}RecentDocument(s) > can add a recent document
+ FAIL   parallel  api-app.spec.ts:655 > app module > app.{add|get|clear}RecentDocument(s) > can add a recent document
+ FAIL   parallel  api-app.spec.ts:661 > app module > app.{add|get|clear}RecentDocument(s) > can clear recent documents
+ FAIL   parallel  api-app.spec.ts:661 > app module > app.{add|get|clear}RecentDocument(s) > can clear recent documents
+ FAIL   parallel  api-app.spec.ts:661 > app module > app.{add|get|clear}RecentDocument(s) > can clear recent documents
+ FAIL   parallel  api-app.spec.ts:661 > app module > app.{add|get|clear}RecentDocument(s) > can clear recent documents
+Error: EACCES: permission denied, open '/usr/obj/ports/electron-43.8.10/src/electron/spec/fixtures/foo.txt'
+ ❯ api-app.spec.ts:651:12
+    649|     beforeEach(() => {
+    650|       for (const file of tempFiles) {
+    651|         fs.writeFileSync(file, 'Lorem Ipsum');
+       |            ^
+    652|       }
+    653|     });
+ ❯ vitest/runner.ts:50:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/396]⎯
+
+ FAIL   parallel  api-app.spec.ts:655 > app module > app.{add|get|clear}RecentDocument(s) > can add a recent document
+ FAIL   parallel  api-app.spec.ts:655 > app module > app.{add|get|clear}RecentDocument(s) > can add a recent document
+ FAIL   parallel  api-app.spec.ts:655 > app module > app.{add|get|clear}RecentDocument(s) > can add a recent document
+ FAIL   parallel  api-app.spec.ts:655 > app module > app.{add|get|clear}RecentDocument(s) > can add a recent document
+ FAIL   parallel  api-app.spec.ts:661 > app module > app.{add|get|clear}RecentDocument(s) > can clear recent documents
+ FAIL   parallel  api-app.spec.ts:661 > app module > app.{add|get|clear}RecentDocument(s) > can clear recent documents
+ FAIL   parallel  api-app.spec.ts:661 > app module > app.{add|get|clear}RecentDocument(s) > can clear recent documents
+ FAIL   parallel  api-app.spec.ts:661 > app module > app.{add|get|clear}RecentDocument(s) > can clear recent documents
+Error: ENOENT: no such file or directory, unlink '/usr/obj/ports/electron-43.8.10/src/electron/spec/fixtures/foo.txt'
+ ❯ api-app.spec.ts:645:12
+    643|       app.clearRecentDocuments();
+    644|       for (const file of tempFiles) {
+    645|         fs.unlinkSync(file);
+       |            ^
+    646|       }
+    647|     });
+ ❯ vitest/runner.ts:50:15
+ ❯ vitest/runner.ts:60:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/396]⎯
+
+ FAIL   parallel  api-app.spec.ts:895 > app module > app.badgeCount > on supported platform > with properties > sets a badge count
+ FAIL   parallel  api-app.spec.ts:895 > app module > app.badgeCount > on supported platform > with properties > sets a badge count
+ FAIL   parallel  api-app.spec.ts:895 > app module > app.badgeCount > on supported platform > with properties > sets a badge count
+ FAIL   parallel  api-app.spec.ts:895 > app module > app.badgeCount > on supported platform > with properties > sets a badge count
+AssertionError: expected +0 to be 42 // Object.is equality
+
+- Expected
++ Received
+
+- 42
++ 0
+
+ ❯ api-app.spec.ts:897:34
+    895|         it('sets a badge count', () => {
+    896|           app.badgeCount = expectedBadgeCount;
+    897|           expect(app.badgeCount).toBe(expectedBadgeCount);
+       |                                  ^
+    898|         });
+    899|       });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/396]⎯
+
+ FAIL   parallel  api-app.spec.ts:902 > app module > app.badgeCount > on supported platform > with functions > sets a numerical badge count
+ FAIL   parallel  api-app.spec.ts:902 > app module > app.badgeCount > on supported platform > with functions > sets a numerical badge count
+ FAIL   parallel  api-app.spec.ts:902 > app module > app.badgeCount > on supported platform > with functions > sets a numerical badge count
+ FAIL   parallel  api-app.spec.ts:902 > app module > app.badgeCount > on supported platform > with functions > sets a numerical badge count
+AssertionError: expected +0 to be 42 // Object.is equality
+
+- Expected
++ Received
+
+- 42
++ 0
+
+ ❯ api-app.spec.ts:904:39
+    902|         it('sets a numerical badge count', () => {
+    903|           app.setBadgeCount(expectedBadgeCount);
+    904|           expect(app.getBadgeCount()).toBe(expectedBadgeCount);
+       |                                       ^
+    905|         });
+    906|         it('sets an non numeric (dot) badge count', () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/396]⎯
+
+ FAIL   parallel  api-app.spec.ts:969 > app module > app.get/setLoginItemSettings API > sets and returns the app as a login item
+ FAIL   parallel  api-app.spec.ts:969 > app module > app.get/setLoginItemSettings API > sets and returns the app as a login item
+ FAIL   parallel  api-app.spec.ts:969 > app module > app.get/setLoginItemSettings API > sets and returns the app as a login item
+ FAIL   parallel  api-app.spec.ts:969 > app module > app.get/setLoginItemSettings API > sets and returns the app as a login item
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ api-app.spec.ts:973:36
+    971|
+    972|       const settings = app.getLoginItemSettings();
+    973|       expect(settings.openAtLogin).toBe(true);
+       |                                    ^
+    974|       expect(settings.openAsHidden).toBe(false);
+    975|       expect(settings.wasOpenedAtLogin).toBe(false);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/396]⎯
+
+ FAIL   parallel  api-app.spec.ts:1022 > app module > app.get/setLoginItemSettings API > adds a login item that loads in hidden mode
+ FAIL   parallel  api-app.spec.ts:1022 > app module > app.get/setLoginItemSettings API > adds a login item that loads in hidden mode
+ FAIL   parallel  api-app.spec.ts:1022 > app module > app.get/setLoginItemSettings API > adds a login item that loads in hidden mode
+ FAIL   parallel  api-app.spec.ts:1022 > app module > app.get/setLoginItemSettings API > adds a login item that loads in hidden mode
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ api-app.spec.ts:1026:36
+    1024|
+    1025|       const settings = app.getLoginItemSettings();
+    1026|       expect(settings.openAtLogin).toBe(true);
+       |                                    ^
+    1027|
+    1028|       const hasOpenAsHidden = process.platform === 'darwin' && !isVent…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/396]⎯
+
+ FAIL   parallel  api-app.spec.ts:1057 > app module > app.get/setLoginItemSettings API > correctly sets and unsets the LoginItem
+ FAIL   parallel  api-app.spec.ts:1057 > app module > app.get/setLoginItemSettings API > correctly sets and unsets the LoginItem
+ FAIL   parallel  api-app.spec.ts:1057 > app module > app.get/setLoginItemSettings API > correctly sets and unsets the LoginItem
+ FAIL   parallel  api-app.spec.ts:1057 > app module > app.get/setLoginItemSettings API > correctly sets and unsets the LoginItem
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ api-app.spec.ts:1061:54
+    1059|
+    1060|       app.setLoginItemSettings({ openAtLogin: true });
+    1061|       expect(app.getLoginItemSettings().openAtLogin).toBe(true);
+       |                                                      ^
+    1062|
+    1063|       app.setLoginItemSettings({ openAtLogin: false });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/396]⎯
+
+ FAIL   parallel  api-app.spec.ts:1504 > app module > getPath(name) > returns paths that exist
+ FAIL   parallel  api-app.spec.ts:1504 > app module > getPath(name) > returns paths that exist
+ FAIL   parallel  api-app.spec.ts:1504 > app module > getPath(name) > returns paths that exist
+ FAIL   parallel  api-app.spec.ts:1504 > app module > getPath(name) > returns paths that exist
+AssertionError: expected [ true, false, true ] to deeply equal [ true, true, true ]
+
+- Expected
++ Received
+
+  [
+    true,
+-   true,
++   false,
+    true,
+  ]
+
+ ❯ api-app.spec.ts:1510:21
+    1508|         fs.existsSync(app.getPath('temp'))
+    1509|       ];
+    1510|       expect(paths).toEqual([true, true, true]);
+       |                     ^
+    1511|     });
+    1512|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/396]⎯
+
+ FAIL   parallel  api-app.spec.ts:2101 > app module > getAppMetrics() API > returns memory and cpu stats of all running electron processes
+ FAIL   parallel  api-app.spec.ts:2101 > app module > getAppMetrics() API > returns memory and cpu stats of all running electron processes
+ FAIL   parallel  api-app.spec.ts:2101 > app module > getAppMetrics() API > returns memory and cpu stats of all running electron processes
+ FAIL   parallel  api-app.spec.ts:2101 > app module > getAppMetrics() API > returns memory and cpu stats of all running electron processes
+AssertionError: expected 0 to be greater than 0
+ ❯ api-app.spec.ts:2120:45
+    2118|
+    2119|         expect(entry.memory).toHaveProperty('workingSetSize');
+    2120|         expect(entry.memory.workingSetSize).toBeGreaterThan(0);
+       |                                             ^
+    2121|         expect(entry.memory).toHaveProperty('peakWorkingSetSize');
+    2122|         expect(entry.memory.peakWorkingSetSize).toBeGreaterThan(0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/396]⎯
+
+ FAIL   parallel  api-app.spec.ts:2231 > app module > getGPUInfo() API > succeeds with basic GPUInfo
+ FAIL   parallel  api-app.spec.ts:2231 > app module > getGPUInfo() API > succeeds with basic GPUInfo
+ FAIL   parallel  api-app.spec.ts:2231 > app module > getGPUInfo() API > succeeds with basic GPUInfo
+ FAIL   parallel  api-app.spec.ts:2231 > app module > getGPUInfo() API > succeeds with basic GPUInfo
+AssertionError: expected -1 to be not less than 0
+ ❯ verifyBasicGPUInfo api-app.spec.ts:2228:35
+    2226|       expect(device).toHaveProperty('deviceId');
+    2227|       expect(device.deviceId).toBeTypeOf('number');
+    2228|       expect(device.deviceId).not.toBeLessThan(0);
+       |                                   ^
+    2229|     };
+    2230|
+ ❯ api-app.spec.ts:2233:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/396]⎯
+
+ FAIL   parallel  api-app.spec.ts:2644 > app module > configureHostResolver > affects dns lookup behavior
+ FAIL   parallel  api-app.spec.ts:2644 > app module > configureHostResolver > affects dns lookup behavior
+ FAIL   parallel  api-app.spec.ts:2644 > app module > configureHostResolver > affects dns lookup behavior
+ FAIL   parallel  api-app.spec.ts:2644 > app module > configureHostResolver > affects dns lookup behavior
+AssertionError: promise rejected "Error: net::ERR_NAME_NOT_RESOLVED" instead of resolving
+ ❯ api-app.spec.ts:2710:39
+    2708|         secureDnsServers: [`https://127.0.0.1:${dohPort}/dns-query`]
+    2709|       });
+    2710|       await expect(request(knownHost)).resolves.toMatchObject({ status…
+       |                                       ^
+    2711|       // 2. change the host resolver configuration to something that w…
+    2712|       // always fail
+
+Caused by: Error: net::ERR_NAME_NOT_RESOLVED
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/396]⎯
+
+ FAIL   parallel  api-browser-window.spec.ts:195 > BrowserWindow module > BrowserWindow.close() > should emit unload handler
+ FAIL   parallel  api-browser-window.spec.ts:195 > BrowserWindow module > BrowserWindow.close() > should emit unload handler
+ FAIL   parallel  api-browser-window.spec.ts:195 > BrowserWindow module > BrowserWindow.close() > should emit unload handler
+ FAIL   parallel  api-browser-window.spec.ts:195 > BrowserWindow module > BrowserWindow.close() > should emit unload handler
+Error: EACCES: permission denied, unlink '/usr/obj/ports/electron-43.8.10/src/electron/spec/fixtures/api/unload'
+ ❯ api-browser-window.spec.ts:202:10
+    200|       const test = path.join(fixtures, 'api', 'unload');
+    201|       const content = fs.readFileSync(test);
+    202|       fs.unlinkSync(test);
+       |          ^
+    203|       expect(String(content)).toBe('unload');
+    204|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/396]⎯
+
+ FAIL   parallel  api-browser-window.spec.ts:319 > BrowserWindow module > window.close() > should emit unload event
+ FAIL   parallel  api-browser-window.spec.ts:319 > BrowserWindow module > window.close() > should emit unload event
+ FAIL   parallel  api-browser-window.spec.ts:319 > BrowserWindow module > window.close() > should emit unload event
+ FAIL   parallel  api-browser-window.spec.ts:319 > BrowserWindow module > window.close() > should emit unload event
+Error: EACCES: permission denied, unlink '/usr/obj/ports/electron-43.8.10/src/electron/spec/fixtures/api/close'
+ ❯ api-browser-window.spec.ts:324:10
+    322|       const test = path.join(fixtures, 'api', 'close');
+    323|       const content = fs.readFileSync(test).toString();
+    324|       fs.unlinkSync(test);
+       |          ^
+    325|       expect(content).toBe('close');
+    326|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/396]⎯
+
+ FAIL   parallel  api-browser-window.spec.ts:4055 > BrowserWindow module > "webPreferences" option > "preload" option > delivery of the preload list > runs session and window preloads in order for every navigation (sandbox: false)
+ FAIL   parallel  api-browser-window.spec.ts:4055 > BrowserWindow module > "webPreferences" option > "preload" option > delivery of the preload list > runs session and window preloads in order for every navigation (sandbox: false)
+ FAIL   parallel  api-browser-window.spec.ts:4055 > BrowserWindow module > "webPreferences" option > "preload" option > delivery of the preload list > runs session and window preloads in order for every navigation (sandbox: false)
+ FAIL   parallel  api-browser-window.spec.ts:4055 > BrowserWindow module > "webPreferences" option > "preload" option > delivery of the preload list > runs session and window preloads in order for every navigation (sandbox: false)
+ FAIL   parallel  api-browser-window.spec.ts:4055 > BrowserWindow module > "webPreferences" option > "preload" option > delivery of the preload list > runs session and window preloads in order for every navigation (sandbox: true)
+ FAIL   parallel  api-browser-window.spec.ts:4055 > BrowserWindow module > "webPreferences" option > "preload" option > delivery of the preload list > runs session and window preloads in order for every navigation (sandbox: true)
+ FAIL   parallel  api-browser-window.spec.ts:4055 > BrowserWindow module > "webPreferences" option > "preload" option > delivery of the preload list > runs session and window preloads in order for every navigation (sandbox: true)
+ FAIL   parallel  api-browser-window.spec.ts:4055 > BrowserWindow module > "webPreferences" option > "preload" option > delivery of the preload list > runs session and window preloads in order for every navigation (sandbox: true)
+Error: EACCES: permission denied, open '/usr/obj/ports/electron-43.8.10/src/electron/spec/fixtures/module/preload-order-a.js'
+ ❯ api-browser-window.spec.ts:4058:18
+    4056|             const tag = (name: string) => path.join(fixtures, 'module'…
+    4057|             for (const name of ['a', 'b']) {
+    4058|               fs.writeFileSync(tag(name), `require('electron').ipcRend…
+       |                  ^
+    4059|               defer(() => fs.rmSync(tag(name), { force: true }));
+    4060|             }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/396]⎯
+
+ FAIL   parallel  api-browser-window.spec.ts:5047 > BrowserWindow module > "webPreferences" option > "sandbox" option > validates process APIs access in sandboxed renderer
+AssertionError: creation time: expected 1795757541521.512 to be null
+
+- Expected:
+null
+
++ Received:
+1795757541521.512
+
+ ❯ api-browser-window.spec.ts:5088:54
+    5086|
+    5087|         if ((process.platform === 'linux' || ['freebsd', 'openbsd'].in…
+    5088|           expect(test.creationTime, 'creation time').toBeNull();
+       |                                                      ^
+    5089|           expect(test.systemMemoryInfo, 'system memory info').toBeNull…
+    5090|         } else {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/396]⎯
+
+ FAIL   parallel  api-browser-window.spec.ts:5047 > BrowserWindow module > "webPreferences" option > "sandbox" option > validates process APIs access in sandboxed renderer
+AssertionError: creation time: expected 1795757541627.435 to be null
+
+- Expected:
+null
+
++ Received:
+1795757541627.435
+
+ ❯ api-browser-window.spec.ts:5088:54
+    5086|
+    5087|         if ((process.platform === 'linux' || ['freebsd', 'openbsd'].in…
+    5088|           expect(test.creationTime, 'creation time').toBeNull();
+       |                                                      ^
+    5089|           expect(test.systemMemoryInfo, 'system memory info').toBeNull…
+    5090|         } else {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/396]⎯
+
+ FAIL   parallel  api-browser-window.spec.ts:5047 > BrowserWindow module > "webPreferences" option > "sandbox" option > validates process APIs access in sandboxed renderer
+AssertionError: creation time: expected 1795757541738.211 to be null
+
+- Expected:
+null
+
++ Received:
+1795757541738.211
+
+ ❯ api-browser-window.spec.ts:5088:54
+    5086|
+    5087|         if ((process.platform === 'linux' || ['freebsd', 'openbsd'].in…
+    5088|           expect(test.creationTime, 'creation time').toBeNull();
+       |                                                      ^
+    5089|           expect(test.systemMemoryInfo, 'system memory info').toBeNull…
+    5090|         } else {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/396]⎯
+
+ FAIL   parallel  api-browser-window.spec.ts:5047 > BrowserWindow module > "webPreferences" option > "sandbox" option > validates process APIs access in sandboxed renderer
+AssertionError: creation time: expected 1795757541845.287 to be null
+
+- Expected:
+null
+
++ Received:
+1795757541845.287
+
+ ❯ api-browser-window.spec.ts:5088:54
+    5086|
+    5087|         if ((process.platform === 'linux' || ['freebsd', 'openbsd'].in…
+    5088|           expect(test.creationTime, 'creation time').toBeNull();
+       |                                                      ^
+    5089|           expect(test.systemMemoryInfo, 'system memory info').toBeNull…
+    5090|         } else {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/396]⎯
+
+ FAIL   parallel  api-browser-window.spec.ts:5807 > BrowserWindow module > savePage method > should save page to disk with HTMLOnly
+ FAIL   parallel  api-browser-window.spec.ts:5807 > BrowserWindow module > savePage method > should save page to disk with HTMLOnly
+ FAIL   parallel  api-browser-window.spec.ts:5807 > BrowserWindow module > savePage method > should save page to disk with HTMLOnly
+ FAIL   parallel  api-browser-window.spec.ts:5807 > BrowserWindow module > savePage method > should save page to disk with HTMLOnly
+AssertionError: html path: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ api-browser-window.spec.ts:5812:60
+    5810|       await w.webContents.savePage(savePageHtmlPath, 'HTMLOnly');
+    5811|
+    5812|       expect(fs.existsSync(savePageHtmlPath), 'html path').toBe(true);
+       |                                                            ^
+    5813|       expect(fs.existsSync(savePageJsPath), 'js path').toBe(false);
+    5814|       expect(fs.existsSync(savePageCssPath), 'css path').toBe(false);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/396]⎯
+
+ FAIL   parallel  api-browser-window.spec.ts:5838 > BrowserWindow module > savePage method > should save page to disk with HTMLComplete
+ FAIL   parallel  api-browser-window.spec.ts:5838 > BrowserWindow module > savePage method > should save page to disk with HTMLComplete
+ FAIL   parallel  api-browser-window.spec.ts:5838 > BrowserWindow module > savePage method > should save page to disk with HTMLComplete
+ FAIL   parallel  api-browser-window.spec.ts:5838 > BrowserWindow module > savePage method > should save page to disk with HTMLComplete
+AssertionError: html path: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ api-browser-window.spec.ts:5843:60
+    5841|       await w.webContents.savePage(savePageHtmlPath, 'HTMLComplete');
+    5842|
+    5843|       expect(fs.existsSync(savePageHtmlPath), 'html path').toBe(true);
+       |                                                            ^
+    5844|       expect(fs.existsSync(savePageJsPath), 'js path').toBe(true);
+    5845|       expect(fs.existsSync(savePageCssPath), 'css path').toBe(true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/396]⎯
+
+ FAIL   parallel  api-content-tracing.spec.ts:286 > contentTracing > enableHeapProfiling > includes heap dumps for browser process when called with { mode: "browser" }
+ FAIL   parallel  api-content-tracing.spec.ts:286 > contentTracing > enableHeapProfiling > includes heap dumps for browser process when called with { mode: "browser" }
+ FAIL   parallel  api-content-tracing.spec.ts:286 > contentTracing > enableHeapProfiling > includes heap dumps for browser process when called with { mode: "browser" }
+ FAIL   parallel  api-content-tracing.spec.ts:286 > contentTracing > enableHeapProfiling > includes heap dumps for browser process when called with { mode: "browser" }
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ api-content-tracing.spec.ts:292:43
+    290|           await checkForHeapDumps({ mode: 'browser' });
+    291|
+    292|         expect(hasBrowserProcessHeapDump).toBe(true);
+       |                                           ^
+    293|         expect(hasRendererProcessHeapDump).toBe(false);
+    294|         expect(hasUtilityProcessHeapDump).toBe(false);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/396]⎯
+
+ FAIL   parallel  api-content-tracing.spec.ts:298 > contentTracing > enableHeapProfiling > includes heap dumps for renderer processes when called with { mode: "all-renderers" }
+ FAIL   parallel  api-content-tracing.spec.ts:298 > contentTracing > enableHeapProfiling > includes heap dumps for renderer processes when called with { mode: "all-renderers" }
+ FAIL   parallel  api-content-tracing.spec.ts:298 > contentTracing > enableHeapProfiling > includes heap dumps for renderer processes when called with { mode: "all-renderers" }
+ FAIL   parallel  api-content-tracing.spec.ts:298 > contentTracing > enableHeapProfiling > includes heap dumps for renderer processes when called with { mode: "all-renderers" }
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ api-content-tracing.spec.ts:305:44
+    303|
+    304|         expect(hasBrowserProcessHeapDump).toBe(false);
+    305|         expect(hasRendererProcessHeapDump).toBe(true);
+       |                                            ^
+    306|         expect(hasUtilityProcessHeapDump).toBe(false);
+    307|       }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/396]⎯
+
+ FAIL   parallel  api-content-tracing.spec.ts:310 > contentTracing > enableHeapProfiling > includes heap dumps for utility processes when called with { mode: "all-utilities" }
+ FAIL   parallel  api-content-tracing.spec.ts:310 > contentTracing > enableHeapProfiling > includes heap dumps for utility processes when called with { mode: "all-utilities" }
+ FAIL   parallel  api-content-tracing.spec.ts:310 > contentTracing > enableHeapProfiling > includes heap dumps for utility processes when called with { mode: "all-utilities" }
+ FAIL   parallel  api-content-tracing.spec.ts:310 > contentTracing > enableHeapProfiling > includes heap dumps for utility processes when called with { mode: "all-utilities" }
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ api-content-tracing.spec.ts:318:43
+    316|         expect(hasBrowserProcessHeapDump).toBe(false);
+    317|         expect(hasRendererProcessHeapDump).toBe(false);
+    318|         expect(hasUtilityProcessHeapDump).toBe(true);
+       |                                           ^
+    319|       }
+    320|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/396]⎯
+
+ FAIL   parallel  api-content-tracing.spec.ts:322 > contentTracing > enableHeapProfiling > includes heap dumps for browser, renderer, and utility processes when called with { mode: "all" }
+ FAIL   parallel  api-content-tracing.spec.ts:322 > contentTracing > enableHeapProfiling > includes heap dumps for browser, renderer, and utility processes when called with { mode: "all" }
+ FAIL   parallel  api-content-tracing.spec.ts:322 > contentTracing > enableHeapProfiling > includes heap dumps for browser, renderer, and utility processes when called with { mode: "all" }
+ FAIL   parallel  api-content-tracing.spec.ts:322 > contentTracing > enableHeapProfiling > includes heap dumps for browser, renderer, and utility processes when called with { mode: "all" }
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ api-content-tracing.spec.ts:328:43
+    326|           await checkForHeapDumps({ mode: 'all' });
+    327|
+    328|         expect(hasBrowserProcessHeapDump).toBe(true);
+       |                                           ^
+    329|         expect(hasRendererProcessHeapDump).toBe(true);
+    330|         expect(hasUtilityProcessHeapDump).toBe(true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/396]⎯
+
+ FAIL   parallel  api-content-tracing.spec.ts:334 > contentTracing > enableHeapProfiling > includes heap dumps for browser, renderer, and utility processes when called without options
+ FAIL   parallel  api-content-tracing.spec.ts:334 > contentTracing > enableHeapProfiling > includes heap dumps for browser, renderer, and utility processes when called without options
+ FAIL   parallel  api-content-tracing.spec.ts:334 > contentTracing > enableHeapProfiling > includes heap dumps for browser, renderer, and utility processes when called without options
+ FAIL   parallel  api-content-tracing.spec.ts:334 > contentTracing > enableHeapProfiling > includes heap dumps for browser, renderer, and utility processes when called without options
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ api-content-tracing.spec.ts:340:43
+    338|           await checkForHeapDumps();
+    339|
+    340|         expect(hasBrowserProcessHeapDump).toBe(true);
+       |                                           ^
+    341|         expect(hasRendererProcessHeapDump).toBe(true);
+    342|         expect(hasUtilityProcessHeapDump).toBe(true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/396]⎯
+
+ FAIL   parallel  api-content-tracing.spec.ts:346 > contentTracing > enableHeapProfiling > accepts valid options
+ FAIL   parallel  api-content-tracing.spec.ts:346 > contentTracing > enableHeapProfiling > accepts valid options
+ FAIL   parallel  api-content-tracing.spec.ts:346 > contentTracing > enableHeapProfiling > accepts valid options
+ FAIL   parallel  api-content-tracing.spec.ts:346 > contentTracing > enableHeapProfiling > accepts valid options
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ api-content-tracing.spec.ts:354:41
+    352|         });
+    353|
+    354|       expect(hasBrowserProcessHeapDump).toBe(true);
+       |                                         ^
+    355|       expect(hasRendererProcessHeapDump).toBe(true);
+    356|       expect(hasUtilityProcessHeapDump).toBe(true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/396]⎯
+
+ FAIL   parallel  api-content-tracing.spec.ts:359 > contentTracing > enableHeapProfiling > does not crash when invalid options are passed
+ FAIL   parallel  api-content-tracing.spec.ts:359 > contentTracing > enableHeapProfiling > does not crash when invalid options are passed
+ FAIL   parallel  api-content-tracing.spec.ts:359 > contentTracing > enableHeapProfiling > does not crash when invalid options are passed
+ FAIL   parallel  api-content-tracing.spec.ts:359 > contentTracing > enableHeapProfiling > does not crash when invalid options are passed
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ api-content-tracing.spec.ts:369:41
+    367|         });
+    368|
+    369|       expect(hasBrowserProcessHeapDump).toBe(true);
+       |                                         ^
+    370|       expect(hasRendererProcessHeapDump).toBe(true);
+    371|       expect(hasUtilityProcessHeapDump).toBe(true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/396]⎯
+
+ FAIL   parallel  api-content-tracing.spec.ts:374 > contentTracing > enableHeapProfiling > does not crash when options of invalid types are passed
+ FAIL   parallel  api-content-tracing.spec.ts:374 > contentTracing > enableHeapProfiling > does not crash when options of invalid types are passed
+ FAIL   parallel  api-content-tracing.spec.ts:374 > contentTracing > enableHeapProfiling > does not crash when options of invalid types are passed
+ FAIL   parallel  api-content-tracing.spec.ts:374 > contentTracing > enableHeapProfiling > does not crash when options of invalid types are passed
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ api-content-tracing.spec.ts:385:41
+    383|         });
+    384|
+    385|       expect(hasBrowserProcessHeapDump).toBe(true);
+       |                                         ^
+    386|       expect(hasRendererProcessHeapDump).toBe(true);
+    387|       expect(hasUtilityProcessHeapDump).toBe(true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/396]⎯
+
+ FAIL   parallel  api-content-tracing.spec.ts:431 > contentTracing > captured events > include V8 samples from the main process
+ FAIL   parallel  api-content-tracing.spec.ts:431 > contentTracing > captured events > include V8 samples from the main process
+ FAIL   parallel  api-content-tracing.spec.ts:431 > contentTracing > captured events > include V8 samples from the main process
+ FAIL   parallel  api-content-tracing.spec.ts:431 > contentTracing > captured events > include V8 samples from the main process
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ api-content-tracing.spec.ts:453:9
+    451|           (x: any) => x.cat === 'disabled-by-default-v8.cpu_profiler' …
+    452|         )
+    453|       ).toBe(true);
+       |         ^
+    454|     });
+    455|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/396]⎯
+
+ FAIL   parallel  api-corner-smoothing.spec.ts:149 > -electron-corner-smoothing > system-ui keyword > matches the reference for platform = openbsd
+ FAIL   parallel  api-corner-smoothing.spec.ts:149 > -electron-corner-smoothing > system-ui keyword > matches the reference for platform = openbsd
+ FAIL   parallel  api-corner-smoothing.spec.ts:149 > -electron-corner-smoothing > system-ui keyword > matches the reference for platform = openbsd
+ FAIL   parallel  api-corner-smoothing.spec.ts:149 > -electron-corner-smoothing > system-ui keyword > matches the reference for platform = openbsd
+AssertionError: Failed to read expected reference image: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ pageCaptureTestRecipe api-corner-smoothing.spec.ts:93:76
+     91|
+     92|   const expectedImg = nativeImage.createFromPath(expectedImgPath);
+     93|   expect(expectedImg.isEmpty(), 'Failed to read expected reference ima…
+       |                                                                            ^
+     94|
+     95|   // The window paints while it is hidden and the page is still loadin…
+ ❯ api-corner-smoothing.spec.ts:150:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:147 > crashReporter module > should send minidump > when renderer crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:147 > crashReporter module > should send minidump > when renderer crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:147 > crashReporter module > should send minidump > when renderer crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:147 > crashReporter module > should send minidump > when renderer crashes
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-crash-reporter.spec.ts:147:5
+    145| ifdescribe(!isLinuxOnArm && !process.mas && !process.env.DISABLE_CRASH…
+    146|   describe('should send minidump', () => {
+    147|     it('when renderer crashes', async () => {
+       |     ^
+    148|       const { port, waitForCrash } = await startServer();
+    149|       runCrashApp('renderer', port);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:155 > crashReporter module > should send minidump > when sandboxed renderer crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:155 > crashReporter module > should send minidump > when sandboxed renderer crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:155 > crashReporter module > should send minidump > when sandboxed renderer crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:155 > crashReporter module > should send minidump > when sandboxed renderer crashes
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-crash-reporter.spec.ts:155:5
+    153|     });
+    154|
+    155|     it('when sandboxed renderer crashes', async () => {
+       |     ^
+    156|       const { port, waitForCrash } = await startServer();
+    157|       runCrashApp('sandboxed-renderer', port);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:166 > crashReporter module > should send minidump > when main process crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:166 > crashReporter module > should send minidump > when main process crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:166 > crashReporter module > should send minidump > when main process crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:166 > crashReporter module > should send minidump > when main process crashes
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-crash-reporter.spec.ts:166:24
+    164|     // broken (//components/crash prints "Failed to generate minidump"…
+    165|     // out why.
+    166|     ifit(!isLinuxOnArm)('when main process crashes', async () => {
+       |                        ^
+    167|       const { port, waitForCrash } = await startServer();
+    168|       runCrashApp('main', port);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[38/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:174 > crashReporter module > should send minidump > when a node process crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:174 > crashReporter module > should send minidump > when a node process crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:174 > crashReporter module > should send minidump > when a node process crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:174 > crashReporter module > should send minidump > when a node process crashes
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-crash-reporter.spec.ts:174:24
+    172|     });
+    173|
+    174|     ifit(!isLinuxOnArm)('when a node process crashes', async () => {
+       |                        ^
+    175|       const { port, waitForCrash } = await startServer();
+    176|       runCrashApp('node', port);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:183 > crashReporter module > should send minidump > when a node process inside a node process crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:183 > crashReporter module > should send minidump > when a node process inside a node process crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:183 > crashReporter module > should send minidump > when a node process inside a node process crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:183 > crashReporter module > should send minidump > when a node process inside a node process crashes
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-crash-reporter.spec.ts:183:24
+    181|     });
+    182|
+    183|     ifit(!isLinuxOnArm)('when a node process inside a node process cra…
+       |                        ^
+    184|       const { port, waitForCrash } = await startServer();
+    185|       runCrashApp('node-fork', port);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[40/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:194 > crashReporter module > should send minidump > ensure linux child process args are not modified
+ FAIL   parallel  api-crash-reporter.spec.ts:194 > crashReporter module > should send minidump > ensure linux child process args are not modified
+ FAIL   parallel  api-crash-reporter.spec.ts:194 > crashReporter module > should send minidump > ensure linux child process args are not modified
+ FAIL   parallel  api-crash-reporter.spec.ts:194 > crashReporter module > should send minidump > ensure linux child process args are not modified
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-crash-reporter.spec.ts:194:92
+    192|     // Ensures that passing in crashpadHandlerPID flag for Linx child …
+    193|     // does not affect child process args.
+    194|     ifit(process.platform === 'linux' || ['freebsd', 'openbsd'].includ…
+       |                                                                                            ^
+    195|       const { port, waitForCrash } = await startServer();
+    196|       let exitCode: number | null = null;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[41/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:213 > crashReporter module > should send minidump > with guid > when main crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:213 > crashReporter module > should send minidump > with guid > when main crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:213 > crashReporter module > should send minidump > with guid > when main crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:213 > crashReporter module > should send minidump > with guid > when main crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:213 > crashReporter module > should send minidump > with guid > when renderer crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:213 > crashReporter module > should send minidump > with guid > when renderer crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:213 > crashReporter module > should send minidump > with guid > when renderer crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:213 > crashReporter module > should send minidump > with guid > when renderer crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:213 > crashReporter module > should send minidump > with guid > when sandboxed-renderer crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:213 > crashReporter module > should send minidump > with guid > when sandboxed-renderer crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:213 > crashReporter module > should send minidump > with guid > when sandboxed-renderer crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:213 > crashReporter module > should send minidump > with guid > when sandboxed-renderer crashes
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-crash-reporter.spec.ts:213:9
+    211|     describe('with guid', () => {
+    212|       for (const processType of ['main', 'renderer', 'sandboxed-render…
+    213|         it(`when ${processType} crashes`, async () => {
+       |         ^
+    214|           const { port, waitForCrash } = await startServer();
+    215|           runCrashApp(processType, port);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[42/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:221 > crashReporter module > should send minidump > with guid > is a consistent id
+ FAIL   parallel  api-crash-reporter.spec.ts:221 > crashReporter module > should send minidump > with guid > is a consistent id
+ FAIL   parallel  api-crash-reporter.spec.ts:221 > crashReporter module > should send minidump > with guid > is a consistent id
+ FAIL   parallel  api-crash-reporter.spec.ts:221 > crashReporter module > should send minidump > with guid > is a consistent id
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-crash-reporter.spec.ts:221:7
+    219|       }
+    220|
+    221|       it('is a consistent id', async () => {
+       |       ^
+    222|         let crash1Guid;
+    223|         let crash2Guid;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[43/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:241 > crashReporter module > should send minidump > with extra parameters > when renderer crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:241 > crashReporter module > should send minidump > with extra parameters > when renderer crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:241 > crashReporter module > should send minidump > with extra parameters > when renderer crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:241 > crashReporter module > should send minidump > with extra parameters > when renderer crashes
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-crash-reporter.spec.ts:241:7
+    239|
+    240|     describe('with extra parameters', () => {
+    241|       it('when renderer crashes', async () => {
+       |       ^
+    242|         const { port, waitForCrash } = await startServer();
+    243|         runCrashApp('renderer', port, ['--set-extra-parameters-in-rend…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[44/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:251 > crashReporter module > should send minidump > with extra parameters > when sandboxed renderer crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:251 > crashReporter module > should send minidump > with extra parameters > when sandboxed renderer crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:251 > crashReporter module > should send minidump > with extra parameters > when sandboxed renderer crashes
+ FAIL   parallel  api-crash-reporter.spec.ts:251 > crashReporter module > should send minidump > with extra parameters > when sandboxed renderer crashes
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-crash-reporter.spec.ts:251:7
+    249|       });
+    250|
+    251|       it('when sandboxed renderer crashes', async () => {
+       |       ^
+    252|         const { port, waitForCrash } = await startServer();
+    253|         runCrashApp('sandboxed-renderer', port, ['--set-extra-paramete…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[45/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:264 > crashReporter module > should send minidump > with extra parameters > does not corrupt the crashpad annotation list after deque reallocation
+ FAIL   parallel  api-crash-reporter.spec.ts:264 > crashReporter module > should send minidump > with extra parameters > does not corrupt the crashpad annotation list after deque reallocation
+ FAIL   parallel  api-crash-reporter.spec.ts:264 > crashReporter module > should send minidump > with extra parameters > does not corrupt the crashpad annotation list after deque reallocation
+ FAIL   parallel  api-crash-reporter.spec.ts:264 > crashReporter module > should send minidump > with extra parameters > does not corrupt the crashpad annotation list after deque reallocation
+Error: crashpad handler hung walking corrupted annotation list; crash upload did not arrive within 30s
+ ❯ Timeout._onTimeout api-crash-reporter.spec.ts:275:19
+    273|               () =>
+    274|                 reject(
+    275|                   new Error(
+       |                   ^
+    276|                     'crashpad handler hung walking corrupted annotatio…
+    277|                   )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[46/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:293 > crashReporter module > should send minidump > with extra parameters > contains v8 crash keys when a v8 crash occurs
+ FAIL   parallel  api-crash-reporter.spec.ts:293 > crashReporter module > should send minidump > with extra parameters > contains v8 crash keys when a v8 crash occurs
+ FAIL   parallel  api-crash-reporter.spec.ts:293 > crashReporter module > should send minidump > with extra parameters > contains v8 crash keys when a v8 crash occurs
+ FAIL   parallel  api-crash-reporter.spec.ts:293 > crashReporter module > should send minidump > with extra parameters > contains v8 crash keys when a v8 crash occurs
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-crash-reporter.spec.ts:293:7
+    291|       });
+    292|
+    293|       it('contains v8 crash keys when a v8 crash occurs', async () => {
+       |       ^
+    294|         const { remotely } = await startRemoteControlApp();
+    295|         const { port, waitForCrash } = await startServer();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[47/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:330 > crashReporter module > should send minidump > OOM crash keys > reports OOM stack trace and heap statistics when renderer runs out of memory
+ FAIL   parallel  api-crash-reporter.spec.ts:330 > crashReporter module > should send minidump > OOM crash keys > reports OOM stack trace and heap statistics when renderer runs out of memory
+ FAIL   parallel  api-crash-reporter.spec.ts:330 > crashReporter module > should send minidump > OOM crash keys > reports OOM stack trace and heap statistics when renderer runs out of memory
+ FAIL   parallel  api-crash-reporter.spec.ts:330 > crashReporter module > should send minidump > OOM crash keys > reports OOM stack trace and heap statistics when renderer runs out of memory
+Error: Test timed out in 120000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-crash-reporter.spec.ts:330:7
+    328|
+    329|     describe('OOM crash keys', () => {
+    330|       it(
+       |       ^
+    331|         'reports OOM stack trace and heap statistics when renderer run…
+    332|         { timeout: 120000 },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[48/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:345 > crashReporter module > should send minidump > OOM crash keys > captures the calling function on JSON.stringify OOM
+ FAIL   parallel  api-crash-reporter.spec.ts:345 > crashReporter module > should send minidump > OOM crash keys > captures the calling function on JSON.stringify OOM
+ FAIL   parallel  api-crash-reporter.spec.ts:345 > crashReporter module > should send minidump > OOM crash keys > captures the calling function on JSON.stringify OOM
+ FAIL   parallel  api-crash-reporter.spec.ts:345 > crashReporter module > should send minidump > OOM crash keys > captures the calling function on JSON.stringify OOM
+Error: Test timed out in 120000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-crash-reporter.spec.ts:345:7
+    343|       );
+    344|
+    345|       it('captures the calling function on JSON.stringify OOM', { time…
+       |       ^
+    346|         const { port, waitForCrash } = await startServer();
+    347|         runCrashApp('renderer-oom-json', port, ['--js-flags=--max-old-…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[49/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:354 > crashReporter module > should send minidump > OOM crash keys > captures OOM crash keys inside a web worker
+ FAIL   parallel  api-crash-reporter.spec.ts:354 > crashReporter module > should send minidump > OOM crash keys > captures OOM crash keys inside a web worker
+ FAIL   parallel  api-crash-reporter.spec.ts:354 > crashReporter module > should send minidump > OOM crash keys > captures OOM crash keys inside a web worker
+ FAIL   parallel  api-crash-reporter.spec.ts:354 > crashReporter module > should send minidump > OOM crash keys > captures OOM crash keys inside a web worker
+Error: Test timed out in 120000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-crash-reporter.spec.ts:354:7
+    352|       });
+    353|
+    354|       it('captures OOM crash keys inside a web worker', { timeout: 120…
+       |       ^
+    355|         const { port, waitForCrash } = await startServer();
+    356|         runCrashApp('renderer-oom-worker', port, ['--js-flags=--max-ol…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[50/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:380 > crashReporter module > extra parameter limits > should truncate extra values longer than 5 * 4096 characters
+ FAIL   parallel  api-crash-reporter.spec.ts:380 > crashReporter module > extra parameter limits > should truncate extra values longer than 5 * 4096 characters
+ FAIL   parallel  api-crash-reporter.spec.ts:380 > crashReporter module > extra parameter limits > should truncate extra values longer than 5 * 4096 characters
+ FAIL   parallel  api-crash-reporter.spec.ts:380 > crashReporter module > extra parameter limits > should truncate extra values longer than 5 * 4096 characters
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-crash-reporter.spec.ts:380:5
+    378|     }
+    379|
+    380|     it('should truncate extra values longer than 5 * 4096 characters',…
+       |     ^
+    381|       const { port, waitForCrash } = await startServer();
+    382|       const { remotely } = await startRemoteControlApp();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[51/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:396 > crashReporter module > extra parameter limits > should omit extra keys with names longer than the maximum
+ FAIL   parallel  api-crash-reporter.spec.ts:396 > crashReporter module > extra parameter limits > should omit extra keys with names longer than the maximum
+ FAIL   parallel  api-crash-reporter.spec.ts:396 > crashReporter module > extra parameter limits > should omit extra keys with names longer than the maximum
+ FAIL   parallel  api-crash-reporter.spec.ts:396 > crashReporter module > extra parameter limits > should omit extra keys with names longer than the maximum
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-crash-reporter.spec.ts:396:5
+    394|     });
+    395|
+    396|     it('should omit extra keys with names longer than the maximum', as…
+       |     ^
+    397|       const kKeyLengthMax = 39;
+    398|       const { port, waitForCrash } = await startServer();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[52/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:429 > crashReporter module > globalExtra > should be sent with main process dumps
+ FAIL   parallel  api-crash-reporter.spec.ts:429 > crashReporter module > globalExtra > should be sent with main process dumps
+ FAIL   parallel  api-crash-reporter.spec.ts:429 > crashReporter module > globalExtra > should be sent with main process dumps
+ FAIL   parallel  api-crash-reporter.spec.ts:429 > crashReporter module > globalExtra > should be sent with main process dumps
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-crash-reporter.spec.ts:429:24
+    427|
+    428|   describe('globalExtra', () => {
+    429|     ifit(!isLinuxOnArm)('should be sent with main process dumps', asyn…
+       |                        ^
+    430|       const { port, waitForCrash } = await startServer();
+    431|       runCrashApp('main', port, ['--add-global-param=globalParam:globa…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[53/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:436 > crashReporter module > globalExtra > should be sent with renderer process dumps
+ FAIL   parallel  api-crash-reporter.spec.ts:436 > crashReporter module > globalExtra > should be sent with renderer process dumps
+ FAIL   parallel  api-crash-reporter.spec.ts:436 > crashReporter module > globalExtra > should be sent with renderer process dumps
+ FAIL   parallel  api-crash-reporter.spec.ts:436 > crashReporter module > globalExtra > should be sent with renderer process dumps
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-crash-reporter.spec.ts:436:5
+    434|     });
+    435|
+    436|     it('should be sent with renderer process dumps', async () => {
+       |     ^
+    437|       const { port, waitForCrash } = await startServer();
+    438|       runCrashApp('renderer', port, ['--add-global-param=globalParam:g…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[54/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:443 > crashReporter module > globalExtra > should be sent with sandboxed renderer process dumps
+ FAIL   parallel  api-crash-reporter.spec.ts:443 > crashReporter module > globalExtra > should be sent with sandboxed renderer process dumps
+ FAIL   parallel  api-crash-reporter.spec.ts:443 > crashReporter module > globalExtra > should be sent with sandboxed renderer process dumps
+ FAIL   parallel  api-crash-reporter.spec.ts:443 > crashReporter module > globalExtra > should be sent with sandboxed renderer process dumps
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-crash-reporter.spec.ts:443:5
+    441|     });
+    442|
+    443|     it('should be sent with sandboxed renderer process dumps', async (…
+       |     ^
+    444|       const { port, waitForCrash } = await startServer();
+    445|       runCrashApp('sandboxed-renderer', port, ['--add-global-param=glo…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[55/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:450 > crashReporter module > globalExtra > should not be overridden by extra in main process
+ FAIL   parallel  api-crash-reporter.spec.ts:450 > crashReporter module > globalExtra > should not be overridden by extra in main process
+ FAIL   parallel  api-crash-reporter.spec.ts:450 > crashReporter module > globalExtra > should not be overridden by extra in main process
+ FAIL   parallel  api-crash-reporter.spec.ts:450 > crashReporter module > globalExtra > should not be overridden by extra in main process
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-crash-reporter.spec.ts:450:24
+    448|     });
+    449|
+    450|     ifit(!isLinuxOnArm)('should not be overridden by extra in main pro…
+       |                        ^
+    451|       const { port, waitForCrash } = await startServer();
+    452|       runCrashApp('main', port, ['--add-global-param=mainProcessSpecif…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[56/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:457 > crashReporter module > globalExtra > should not be overridden by extra in renderer process
+ FAIL   parallel  api-crash-reporter.spec.ts:457 > crashReporter module > globalExtra > should not be overridden by extra in renderer process
+ FAIL   parallel  api-crash-reporter.spec.ts:457 > crashReporter module > globalExtra > should not be overridden by extra in renderer process
+ FAIL   parallel  api-crash-reporter.spec.ts:457 > crashReporter module > globalExtra > should not be overridden by extra in renderer process
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-crash-reporter.spec.ts:457:24
+    455|     });
+    456|
+    457|     ifit(!isLinuxOnArm)('should not be overridden by extra in renderer…
+       |                        ^
+    458|       const { port, waitForCrash } = await startServer();
+    459|       runCrashApp('main', port, ['--add-global-param=rendererSpecific:…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[57/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:488 > crashReporter module > getLastCrashReport > returns the last uploaded report
+ FAIL   parallel  api-crash-reporter.spec.ts:488 > crashReporter module > getLastCrashReport > returns the last uploaded report
+ FAIL   parallel  api-crash-reporter.spec.ts:488 > crashReporter module > getLastCrashReport > returns the last uploaded report
+ FAIL   parallel  api-crash-reporter.spec.ts:488 > crashReporter module > getLastCrashReport > returns the last uploaded report
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-crash-reporter.spec.ts:488:5
+    486|   // TODO(nornagon): re-enable on woa
+    487|   ifdescribe(!isWindowsOnArm)('getLastCrashReport', () => {
+    488|     it('returns the last uploaded report', async () => {
+       |     ^
+    489|       const { remotely } = await startRemoteControlApp();
+    490|       const { port, waitForCrash } = await startServer();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[58/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:534 > crashReporter module > getParameters > returns all of the current parameters
+ FAIL   parallel  api-crash-reporter.spec.ts:534 > crashReporter module > getParameters > returns all of the current parameters
+ FAIL   parallel  api-crash-reporter.spec.ts:534 > crashReporter module > getParameters > returns all of the current parameters
+ FAIL   parallel  api-crash-reporter.spec.ts:534 > crashReporter module > getParameters > returns all of the current parameters
+AssertionError: expected {} to have property "extra1" with value 'hi'
+
+- Expected:
+"hi"
+
++ Received:
+undefined
+
+ ❯ api-crash-reporter.spec.ts:543:26
+    541|       });
+    542|       const parameters = await remotely(() => require('electron').cras…
+    543|       expect(parameters).toHaveProperty('extra1', 'hi');
+       |                          ^
+    544|     });
+    545|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[59/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:546 > crashReporter module > getParameters > reflects added and removed parameters
+ FAIL   parallel  api-crash-reporter.spec.ts:546 > crashReporter module > getParameters > reflects added and removed parameters
+ FAIL   parallel  api-crash-reporter.spec.ts:546 > crashReporter module > getParameters > reflects added and removed parameters
+ FAIL   parallel  api-crash-reporter.spec.ts:546 > crashReporter module > getParameters > reflects added and removed parameters
+AssertionError: expected {} to have property "hello" with value 'world'
+
+- Expected:
+"world"
+
++ Received:
+undefined
+
+ ❯ api-crash-reporter.spec.ts:554:28
+    552|       {
+    553|         const parameters = await remotely(() => require('electron').cr…
+    554|         expect(parameters).toHaveProperty('hello', 'world');
+       |                            ^
+    555|       }
+    556|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[60/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:567 > crashReporter module > getParameters > can be called in the renderer
+ FAIL   parallel  api-crash-reporter.spec.ts:567 > crashReporter module > getParameters > can be called in the renderer
+ FAIL   parallel  api-crash-reporter.spec.ts:567 > crashReporter module > getParameters > can be called in the renderer
+ FAIL   parallel  api-crash-reporter.spec.ts:567 > crashReporter module > getParameters > can be called in the renderer
+AssertionError: expected {} to deeply equal { hello: 'world' }
+
+- Expected
++ Received
+
+- {
+-   "hello": "world",
+- }
++ {}
+
+ ❯ api-crash-reporter.spec.ts:580:34
+    578|         return bw.webContents.executeJavaScript("require('electron').c…
+    579|       });
+    580|       expect(rendererParameters).toEqual({ hello: 'world' });
+       |                                  ^
+    581|     });
+    582|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[61/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:583 > crashReporter module > getParameters > can be called in a node child process
+ FAIL   parallel  api-crash-reporter.spec.ts:583 > crashReporter module > getParameters > can be called in a node child process
+ FAIL   parallel  api-crash-reporter.spec.ts:583 > crashReporter module > getParameters > can be called in a node child process
+ FAIL   parallel  api-crash-reporter.spec.ts:583 > crashReporter module > getParameters > can be called in a node child process
+AssertionError: expected {} to deeply equal { hello: 'world' }
+
+- Expected
++ Received
+
+- {
+-   "hello": "world",
+- }
++ {}
+
+ ❯ api-crash-reporter.spec.ts:603:34
+    601|       );
+    602|       const output = await slurp(child.stdout!);
+    603|       expect(JSON.parse(output)).toEqual({ hello: 'world' });
+       |                                  ^
+    604|     });
+    605|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[62/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:661 > crashReporter module > crash dumps directory > when main crashes > stores crashes in the crash dump directory when uploadToServer: false
+ FAIL   parallel  api-crash-reporter.spec.ts:661 > crashReporter module > crash dumps directory > when main crashes > stores crashes in the crash dump directory when uploadToServer: false
+ FAIL   parallel  api-crash-reporter.spec.ts:661 > crashReporter module > crash dumps directory > when main crashes > stores crashes in the crash dump directory when uploadToServer: false
+ FAIL   parallel  api-crash-reporter.spec.ts:661 > crashReporter module > crash dumps directory > when main crashes > stores crashes in the crash dump directory when uploadToServer: false
+ FAIL   parallel  api-crash-reporter.spec.ts:661 > crashReporter module > crash dumps directory > when renderer crashes > stores crashes in the crash dump directory when uploadToServer: false
+ FAIL   parallel  api-crash-reporter.spec.ts:661 > crashReporter module > crash dumps directory > when renderer crashes > stores crashes in the crash dump directory when uploadToServer: false
+ FAIL   parallel  api-crash-reporter.spec.ts:661 > crashReporter module > crash dumps directory > when renderer crashes > stores crashes in the crash dump directory when uploadToServer: false
+ FAIL   parallel  api-crash-reporter.spec.ts:661 > crashReporter module > crash dumps directory > when renderer crashes > stores crashes in the crash dump directory when uploadToServer: false
+ FAIL   parallel  api-crash-reporter.spec.ts:661 > crashReporter module > crash dumps directory > when sandboxed-renderer crashes > stores crashes in the crash dump directory when uploadToServer: false
+ FAIL   parallel  api-crash-reporter.spec.ts:661 > crashReporter module > crash dumps directory > when sandboxed-renderer crashes > stores crashes in the crash dump directory when uploadToServer: false
+ FAIL   parallel  api-crash-reporter.spec.ts:661 > crashReporter module > crash dumps directory > when sandboxed-renderer crashes > stores crashes in the crash dump directory when uploadToServer: false
+ FAIL   parallel  api-crash-reporter.spec.ts:661 > crashReporter module > crash dumps directory > when sandboxed-renderer crashes > stores crashes in the crash dump directory when uploadToServer: false
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-crash-reporter.spec.ts:661:9
+    659|     for (const crashingProcess of processList) {
+    660|       describe(`when ${crashingProcess} crashes`, () => {
+    661|         it('stores crashes in the crash dump directory when uploadToSe…
+       |         ^
+    662|           const { remotely } = await startRemoteControlApp();
+    663|           const crashesDir = await remotely(() => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[63/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:685 > crashReporter module > crash dumps directory > when main crashes > respects an overridden crash dump directory
+ FAIL   parallel  api-crash-reporter.spec.ts:685 > crashReporter module > crash dumps directory > when main crashes > respects an overridden crash dump directory
+ FAIL   parallel  api-crash-reporter.spec.ts:685 > crashReporter module > crash dumps directory > when main crashes > respects an overridden crash dump directory
+ FAIL   parallel  api-crash-reporter.spec.ts:685 > crashReporter module > crash dumps directory > when main crashes > respects an overridden crash dump directory
+ FAIL   parallel  api-crash-reporter.spec.ts:685 > crashReporter module > crash dumps directory > when renderer crashes > respects an overridden crash dump directory
+ FAIL   parallel  api-crash-reporter.spec.ts:685 > crashReporter module > crash dumps directory > when renderer crashes > respects an overridden crash dump directory
+ FAIL   parallel  api-crash-reporter.spec.ts:685 > crashReporter module > crash dumps directory > when renderer crashes > respects an overridden crash dump directory
+ FAIL   parallel  api-crash-reporter.spec.ts:685 > crashReporter module > crash dumps directory > when renderer crashes > respects an overridden crash dump directory
+ FAIL   parallel  api-crash-reporter.spec.ts:685 > crashReporter module > crash dumps directory > when sandboxed-renderer crashes > respects an overridden crash dump directory
+ FAIL   parallel  api-crash-reporter.spec.ts:685 > crashReporter module > crash dumps directory > when sandboxed-renderer crashes > respects an overridden crash dump directory
+ FAIL   parallel  api-crash-reporter.spec.ts:685 > crashReporter module > crash dumps directory > when sandboxed-renderer crashes > respects an overridden crash dump directory
+ FAIL   parallel  api-crash-reporter.spec.ts:685 > crashReporter module > crash dumps directory > when sandboxed-renderer crashes > respects an overridden crash dump directory
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-crash-reporter.spec.ts:685:9
+    683|         });
+    684|
+    685|         it('respects an overridden crash dump directory', async () => {
+       |         ^
+    686|           const { remotely } = await startRemoteControlApp();
+    687|           const crashesDir = path.join(app.getPath('temp'), uuid.v4());
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[64/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:746 > crashReporter module > getUploadToServer() > returns true when uploadToServer is set to true (by default)
+ FAIL   parallel  api-crash-reporter.spec.ts:746 > crashReporter module > getUploadToServer() > returns true when uploadToServer is set to true (by default)
+ FAIL   parallel  api-crash-reporter.spec.ts:746 > crashReporter module > getUploadToServer() > returns true when uploadToServer is set to true (by default)
+ FAIL   parallel  api-crash-reporter.spec.ts:746 > crashReporter module > getUploadToServer() > returns true when uploadToServer is set to true (by default)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ api-crash-reporter.spec.ts:753:30
+    751|       });
+    752|       const uploadToServer = await remotely(() => require('electron').…
+    753|       expect(uploadToServer).toBe(true);
+       |                              ^
+    754|     });
+    755|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[65/396]⎯
+
+ FAIL   parallel  api-crash-reporter.spec.ts:765 > crashReporter module > getUploadToServer() > is updated by setUploadToServer
+ FAIL   parallel  api-crash-reporter.spec.ts:765 > crashReporter module > getUploadToServer() > is updated by setUploadToServer
+ FAIL   parallel  api-crash-reporter.spec.ts:765 > crashReporter module > getUploadToServer() > is updated by setUploadToServer
+ FAIL   parallel  api-crash-reporter.spec.ts:765 > crashReporter module > getUploadToServer() > is updated by setUploadToServer
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ api-crash-reporter.spec.ts:777:91
+    775|         require('electron').crashReporter.setUploadToServer(true);
+    776|       });
+    777|       expect(await remotely(() => require('electron').crashReporter.ge…
+       |                                                                                           ^
+    778|     });
+    779|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[66/396]⎯
+
+ FAIL   parallel  api-media-handler.spec.ts:67 > setDisplayMediaRequestHandler > honors the restrictOwnAudio constraint when granted loopback audio
+ FAIL   parallel  api-media-handler.spec.ts:67 > setDisplayMediaRequestHandler > honors the restrictOwnAudio constraint when granted loopback audio
+ FAIL   parallel  api-media-handler.spec.ts:67 > setDisplayMediaRequestHandler > honors the restrictOwnAudio constraint when granted loopback audio
+ FAIL   parallel  api-media-handler.spec.ts:67 > setDisplayMediaRequestHandler > honors the restrictOwnAudio constraint when granted loopback audio
+AssertionError: expected 'loopback' to be 'loopbackWithoutChrome' // Object.is equality
+
+Expected: "loopbackWithoutChrome"
+Received: "loopback"
+
+ ❯ api-media-handler.spec.ts:106:29
+    104|       expect(ok, message).toBe(true);
+    105|       expect(audioTrackCount).toBe(1);
+    106|       expect(audioDeviceId).toBe('loopbackWithoutChrome');
+       |                             ^
+    107|       expect(restrictOwnAudioSetting).toBe(true);
+    108|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[67/396]⎯
+
+ FAIL   parallel  api-process.spec.ts:60 > process module > renderer process > process.getSystemMemoryInfo() > returns system memory info object
+ FAIL   parallel  api-process.spec.ts:60 > process module > renderer process > process.getSystemMemoryInfo() > returns system memory info object
+ FAIL   parallel  api-process.spec.ts:60 > process module > renderer process > process.getSystemMemoryInfo() > returns system memory info object
+ FAIL   parallel  api-process.spec.ts:60 > process module > renderer process > process.getSystemMemoryInfo() > returns system memory info object
+ FAIL   parallel  node.spec.ts:227 > node feature > child_process in renderer > child_process.exec > allows executing a setuid binary from non-sandboxed renderer
+ FAIL   parallel  node.spec.ts:227 > node feature > child_process in renderer > child_process.exec > allows executing a setuid binary from non-sandboxed renderer
+ FAIL   parallel  node.spec.ts:227 > node feature > child_process in renderer > child_process.exec > allows executing a setuid binary from non-sandboxed renderer
+ FAIL   parallel  node.spec.ts:227 > node feature > child_process in renderer > child_process.exec > allows executing a setuid binary from non-sandboxed renderer
+Error: Script failed to execute, this normally means an error was thrown. Check the renderer console for the error.
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[68/396]⎯
+
+ FAIL   parallel  api-process.spec.ts:60 > process module > main process > process.getSystemMemoryInfo() > returns system memory info object
+ FAIL   parallel  api-process.spec.ts:60 > process module > main process > process.getSystemMemoryInfo() > returns system memory info object
+ FAIL   parallel  api-process.spec.ts:60 > process module > main process > process.getSystemMemoryInfo() > returns system memory info object
+ FAIL   parallel  api-process.spec.ts:60 > process module > main process > process.getSystemMemoryInfo() > returns system memory info object
+Error: Unable to retrieve system memory information
+ ❯ api-process.spec.ts:61:61
+     59|     describe('process.getSystemMemoryInfo()', () => {
+     60|       it('returns system memory info object', async () => {
+     61|         const systemMemoryInfo = await invoke(() => process.getSystemM…
+       |                                                             ^
+     62|         expect(systemMemoryInfo.free).toBeTypeOf('number');
+     63|         expect(systemMemoryInfo.total).toBeTypeOf('number');
+ ❯ api-process.spec.ts:141:36
+ ❯ api-process.spec.ts:61:40
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[69/396]⎯
+
+ FAIL   parallel  api-process.spec.ts:145 > process module > process.env > can add variables while another thread reads the environment
+ FAIL   parallel  api-process.spec.ts:145 > process module > process.env > can add variables while another thread reads the environment
+ FAIL   parallel  api-process.spec.ts:145 > process module > process.env > can add variables while another thread reads the environment
+ FAIL   parallel  api-process.spec.ts:145 > process module > process.env > can add variables while another thread reads the environment
+AssertionError: expected { code: null, signal: 'SIGSEGV', stdout: '' } to deeply equal { code: +0, signal: null, stdout: 'done' }
+
+- Expected
++ Received
+
+  {
+-   "code": 0,
+-   "signal": null,
+-   "stdout": "done",
++   "code": null,
++   "signal": "SIGSEGV",
++   "stdout": "",
+  }
+
+ ❯ api-process.spec.ts:153:55
+    151|       });
+    152|       const [code, signal] = await once(child, 'close');
+    153|       expect({ code, signal, stdout: stdout.trim() }).toEqual({ code: …
+       |                                                       ^
+    154|     });
+    155|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[70/396]⎯
+
+ FAIL   parallel  api-safe-storage.spec.ts:207 > safeStorage module > safeStorage persists encryption key across app relaunch > can decrypt after closing and reopening app
+ FAIL   parallel  api-safe-storage.spec.ts:207 > safeStorage module > safeStorage persists encryption key across app relaunch > can decrypt after closing and reopening app
+ FAIL   parallel  api-safe-storage.spec.ts:207 > safeStorage module > safeStorage persists encryption key across app relaunch > can decrypt after closing and reopening app
+ FAIL   parallel  api-safe-storage.spec.ts:207 > safeStorage module > safeStorage persists encryption key across app relaunch > can decrypt after closing and reopening app
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-safe-storage.spec.ts:207:5
+    205|
+    206|   describe('safeStorage persists encryption key across app relaunch', …
+    207|     it('can decrypt after closing and reopening app', async () => {
+       |     ^
+    208|       const fixturesPath = path.resolve(import.meta.dirname, 'fixtures…
+    209|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[71/396]⎯
+
+ FAIL   parallel  api-session.spec.ts:1468 > session module > DownloadItem > session.downloadURL > can perform a download
+ FAIL   parallel  api-session.spec.ts:1468 > session module > DownloadItem > session.downloadURL > can perform a download
+ FAIL   parallel  api-session.spec.ts:1468 > session module > DownloadItem > session.downloadURL > can perform a download
+ FAIL   parallel  api-session.spec.ts:1468 > session module > DownloadItem > session.downloadURL > can perform a download
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-session.spec.ts:1468:7
+    1466|         }
+    1467|       });
+    1468|       it('can perform a download', async () => {
+       |       ^
+    1469|         const willDownload = once(session.defaultSession, 'will-downlo…
+    1470|         session.defaultSession.downloadURL(`${url}:${port}`);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[72/396]⎯
+
+ FAIL   parallel  api-session.spec.ts:1477 > session module > DownloadItem > session.downloadURL > can perform a download with a valid auth header
+ FAIL   parallel  api-session.spec.ts:1477 > session module > DownloadItem > session.downloadURL > can perform a download with a valid auth header
+ FAIL   parallel  api-session.spec.ts:1477 > session module > DownloadItem > session.downloadURL > can perform a download with a valid auth header
+ FAIL   parallel  api-session.spec.ts:1477 > session module > DownloadItem > session.downloadURL > can perform a download with a valid auth header
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-session.spec.ts:1477:7
+    1475|       });
+    1476|
+    1477|       it('can perform a download with a valid auth header', async () =…
+       |       ^
+    1478|         server = http.createServer((req, res) => {
+    1479|           const { authorization } = req.headers;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[73/396]⎯
+
+ FAIL   parallel  api-session.spec.ts:1591 > session module > DownloadItem > webContents.downloadURL > can perform a download
+ FAIL   parallel  api-session.spec.ts:1591 > session module > DownloadItem > webContents.downloadURL > can perform a download
+ FAIL   parallel  api-session.spec.ts:1591 > session module > DownloadItem > webContents.downloadURL > can perform a download
+ FAIL   parallel  api-session.spec.ts:1591 > session module > DownloadItem > webContents.downloadURL > can perform a download
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-session.spec.ts:1591:7
+    1589|         }
+    1590|       });
+    1591|       it('can perform a download', async () => {
+       |       ^
+    1592|         const w = new BrowserWindow({ show: false });
+    1593|         const willDownload = once(w.webContents.session, 'will-downloa…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[74/396]⎯
+
+ FAIL   parallel  api-session.spec.ts:1601 > session module > DownloadItem > webContents.downloadURL > can perform a download with a valid auth header
+ FAIL   parallel  api-session.spec.ts:1601 > session module > DownloadItem > webContents.downloadURL > can perform a download with a valid auth header
+ FAIL   parallel  api-session.spec.ts:1601 > session module > DownloadItem > webContents.downloadURL > can perform a download with a valid auth header
+ FAIL   parallel  api-session.spec.ts:1601 > session module > DownloadItem > webContents.downloadURL > can perform a download with a valid auth header
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-session.spec.ts:1601:7
+    1599|       });
+    1600|
+    1601|       it('can perform a download with a valid auth header', async () =…
+       |       ^
+    1602|         server = http.createServer((req, res) => {
+    1603|           const { authorization } = req.headers;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[75/396]⎯
+
+ FAIL   parallel  api-session.spec.ts:1647 > session module > DownloadItem > webContents.downloadURL > can perform a download with referer header
+ FAIL   parallel  api-session.spec.ts:1647 > session module > DownloadItem > webContents.downloadURL > can perform a download with referer header
+ FAIL   parallel  api-session.spec.ts:1647 > session module > DownloadItem > webContents.downloadURL > can perform a download with referer header
+ FAIL   parallel  api-session.spec.ts:1647 > session module > DownloadItem > webContents.downloadURL > can perform a download with referer header
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-session.spec.ts:1647:7
+    1645|       });
+    1646|
+    1647|       it('can perform a download with referer header', async () => {
+       |       ^
+    1648|         const server = http.createServer((req, res) => {
+    1649|           const { referer } = req.headers;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[76/396]⎯
+
+ FAIL   parallel  api-session.spec.ts:1748 > session module > DownloadItem > webContents.downloadURL > can download from custom protocols
+ FAIL   parallel  api-session.spec.ts:1748 > session module > DownloadItem > webContents.downloadURL > can download from custom protocols
+ FAIL   parallel  api-session.spec.ts:1748 > session module > DownloadItem > webContents.downloadURL > can download from custom protocols
+ FAIL   parallel  api-session.spec.ts:1748 > session module > DownloadItem > webContents.downloadURL > can download from custom protocols
+AssertionError: expected 'interrupted' to be 'completed' // Object.is equality
+
+Expected: "completed"
+Received: "interrupted"
+
+ ❯ assertDownload api-session.spec.ts:1443:21
+    1441|     };
+    1442|     const assertDownload = (state: string, item: Electron.DownloadItem…
+    1443|       expect(state).toBe('completed');
+       |                     ^
+    1444|       expect(item.getFilename()).toBe('mock.pdf');
+    1445|       expect(path.isAbsolute(item.savePath)).toBe(true);
+ ❯ api-session.spec.ts:1761:9
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[77/396]⎯
+
+ FAIL   parallel  api-session.spec.ts:1845 > session module > DownloadItem > WebView.downloadURL > can perform a download
+ FAIL   parallel  api-session.spec.ts:1845 > session module > DownloadItem > WebView.downloadURL > can perform a download
+ FAIL   parallel  api-session.spec.ts:1845 > session module > DownloadItem > WebView.downloadURL > can perform a download
+ FAIL   parallel  api-session.spec.ts:1845 > session module > DownloadItem > WebView.downloadURL > can perform a download
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-session.spec.ts:1845:7
+    1843|
+    1844|     describe('WebView.downloadURL', () => {
+    1845|       it('can perform a download', async () => {
+       |       ^
+    1846|         const w = new BrowserWindow({ show: false, webPreferences: { w…
+    1847|         await w.loadURL('about:blank');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[78/396]⎯
+
+ FAIL   parallel  api-session.spec.ts:1895 > session module > ses.createInterruptedDownload(options) > can be resumed
+ FAIL   parallel  api-session.spec.ts:1895 > session module > ses.createInterruptedDownload(options) > can be resumed
+ FAIL   parallel  api-session.spec.ts:1895 > session module > ses.createInterruptedDownload(options) > can be resumed
+ FAIL   parallel  api-session.spec.ts:1895 > session module > ses.createInterruptedDownload(options) > can be resumed
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-session.spec.ts:1895:5
+    1893|     });
+    1894|
+    1895|     it('can be resumed', async () => {
+       |     ^
+    1896|       const downloadFilePath = path.join(fixtures, 'logo.png');
+    1897|       const rangeServer = http.createServer((req, res) => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[79/396]⎯
+
+ FAIL   parallel  api-session.spec.ts:2197 > session module > ses.setPermissionCheckHandler(handler) > provides iframe origin as requestingOrigin for usb check from cross-origin subFrame
+ FAIL   parallel  api-session.spec.ts:2197 > session module > ses.setPermissionCheckHandler(handler) > provides iframe origin as requestingOrigin for usb check from cross-origin subFrame
+ FAIL   parallel  api-session.spec.ts:2197 > session module > ses.setPermissionCheckHandler(handler) > provides iframe origin as requestingOrigin for usb check from cross-origin subFrame
+ FAIL   parallel  api-session.spec.ts:2197 > session module > ses.setPermissionCheckHandler(handler) > provides iframe origin as requestingOrigin for usb check from cross-origin subFrame
+AssertionError: expected undefined not to be undefined
+ ❯ api-session.spec.ts:2232:32
+    2230|           await frame.executeJavaScript(`${api}.then(() => {}).catch((…
+    2231|
+    2232|           expect(captured).not.toBeUndefined();
+       |                                ^
+    2233|           expect(captured!.origin).toBe(iframeUrl);
+    2234|           expect(captured!.webContents).toBe(w.webContents);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[80/396]⎯
+
+ FAIL   parallel  api-shell.spec.ts:156 > shell module > shell.trashItem() > moves an item to the trash
+ FAIL   parallel  api-shell.spec.ts:156 > shell module > shell.trashItem() > moves an item to the trash
+ FAIL   parallel  api-shell.spec.ts:156 > shell module > shell.trashItem() > moves an item to the trash
+ FAIL   parallel  api-shell.spec.ts:156 > shell module > shell.trashItem() > moves an item to the trash
+Error: Failed to move item to trash
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[81/396]⎯
+
+ FAIL   parallel  api-utility-process.spec.ts:265 > utilityProcess module > app 'child-process-gone' event > does not keep stale observers for crashed processes without JS references
+ FAIL   parallel  api-utility-process.spec.ts:265 > utilityProcess module > app 'child-process-gone' event > does not keep stale observers for crashed processes without JS references
+ FAIL   parallel  api-utility-process.spec.ts:265 > utilityProcess module > app 'child-process-gone' event > does not keep stale observers for crashed processes without JS references
+ FAIL   parallel  api-utility-process.spec.ts:265 > utilityProcess module > app 'child-process-gone' event > does not keep stale observers for crashed processes without JS references
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-utility-process.spec.ts:265:26
+    263|     });
+    264|
+    265|     ifit(!isWindows32Bit)('does not keep stale observers for crashed p…
+       |                          ^
+    266|       const v8Util = process._linkedBinding('electron_common_v8_util');
+    267|       const logExpectedCrash = (phase: string) => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[82/396]⎯
+
+ FAIL   parallel  api-utility-process.spec.ts:699 > utilityProcess module > behavior > allows executing a setuid binary with child_process
+ FAIL   parallel  api-utility-process.spec.ts:699 > utilityProcess module > behavior > allows executing a setuid binary with child_process
+ FAIL   parallel  api-utility-process.spec.ts:699 > utilityProcess module > behavior > allows executing a setuid binary with child_process
+ FAIL   parallel  api-utility-process.spec.ts:699 > utilityProcess module > behavior > allows executing a setuid binary with child_process
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-utility-process.spec.ts:699:92
+    697|     });
+    698|
+    699|     ifit(process.platform === 'linux' || ['freebsd', 'openbsd'].includ…
+       |                                                                                            ^
+    700|       const child = utilityProcess.fork(path.join(fixturesPath, 'suid.…
+    701|       await once(child, 'spawn');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[83/396]⎯
+
+ FAIL   parallel  api-utility-process.spec.ts:726 > utilityProcess module > behavior > does not inherit parent env when custom env is provided
+ FAIL   parallel  api-utility-process.spec.ts:726 > utilityProcess module > behavior > does not inherit parent env when custom env is provided
+ FAIL   parallel  api-utility-process.spec.ts:726 > utilityProcess module > behavior > does not inherit parent env when custom env is provided
+ FAIL   parallel  api-utility-process.spec.ts:726 > utilityProcess module > behavior > does not inherit parent env when custom env is provided
+AssertionError: expected '' to be 'child' // Object.is equality
+
+- Expected
++ Received
+
+- child
+
+ ❯ api-utility-process.spec.ts:743:22
+    741|       await once(appProcess.stdout, 'end');
+    742|       const result = process.platform === 'win32' ? '\r\nchild' : 'chi…
+    743|       expect(output).toBe(result);
+       |                      ^
+    744|     });
+    745|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[84/396]⎯
+
+ FAIL   parallel  api-utility-process.spec.ts:992 > utilityProcess module > behavior > supports generating snapshots via v8.setHeapSnapshotNearHeapLimit
+ FAIL   parallel  api-utility-process.spec.ts:992 > utilityProcess module > behavior > supports generating snapshots via v8.setHeapSnapshotNearHeapLimit
+ FAIL   parallel  api-utility-process.spec.ts:992 > utilityProcess module > behavior > supports generating snapshots via v8.setHeapSnapshotNearHeapLimit
+ FAIL   parallel  api-utility-process.spec.ts:992 > utilityProcess module > behavior > supports generating snapshots via v8.setHeapSnapshotNearHeapLimit
+AssertionError: expected +0 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ api-utility-process.spec.ts:1006:28
+    1004|       await once(child, 'exit');
+    1005|       const files = (await fs.readdir(tmpDir)).filter((file) => file.e…
+    1006|       expect(files.length).toBe(1);
+       |                            ^
+    1007|       const stat = await fs.stat(path.join(tmpDir, files[0]));
+    1008|       expect(stat.size).toBeGreaterThan(0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[85/396]⎯
+
+ FAIL   parallel  api-web-contents.spec.ts:1418 > webContents module > isCurrentlyAudible() API > returns whether audio is playing
+ FAIL   parallel  api-web-contents.spec.ts:1418 > webContents module > isCurrentlyAudible() API > returns whether audio is playing
+ FAIL   parallel  api-web-contents.spec.ts:1418 > webContents module > isCurrentlyAudible() API > returns whether audio is playing
+ FAIL   parallel  api-web-contents.spec.ts:1418 > webContents module > isCurrentlyAudible() API > returns whether audio is playing
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ api-web-contents.spec.ts:1418:5
+    1416|   describe('isCurrentlyAudible() API', () => {
+    1417|     afterEach(closeAllWindows);
+    1418|     it('returns whether audio is playing', async () => {
+       |     ^
+    1419|       const w = new BrowserWindow({ show: false });
+    1420|       await w.loadURL('about:blank');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[86/396]⎯
+
+ FAIL   parallel  chromium.spec.ts:5306 > navigator.bluetooth > can request bluetooth devices
+ FAIL   parallel  chromium.spec.ts:5306 > navigator.bluetooth > can request bluetooth devices
+ FAIL   parallel  chromium.spec.ts:5306 > navigator.bluetooth > can request bluetooth devices
+ FAIL   parallel  chromium.spec.ts:5306 > navigator.bluetooth > can request bluetooth devices
+AssertionError: Unexpected response: Bluetooth Low Energy not available.: expected [ 'Found a device!', 'Bluetooth adapter not available.', 'User cancelled the requestDevice() chooser.', 'User denied the browser permission to scan for Bluetooth devices.' ] to include 'Bluetooth Low Energy not available.'
+ ❯ chromium.spec.ts:5318:67
+    5316|       'User denied the browser permission to scan for Bluetooth device…
+    5317|     ];
+    5318|     expect(requestResponses, `Unexpected response: ${bluetooth}`).toCo…
+       |                                                                   ^
+    5319|   });
+    5320| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[87/396]⎯
+
+ FAIL   parallel  chromium.spec.ts:5627 > navigator.usb > returns a device when select-usb-device event is defined
+ FAIL   parallel  chromium.spec.ts:5627 > navigator.usb > returns a device when select-usb-device event is defined
+ FAIL   parallel  chromium.spec.ts:5627 > navigator.usb > returns a device when select-usb-device event is defined
+ FAIL   parallel  chromium.spec.ts:5627 > navigator.usb > returns a device when select-usb-device event is defined
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ chromium.spec.ts:5641:25
+    5639|     });
+    5640|     const device = await requestDevices();
+    5641|     expect(selectFired).toBe(true);
+       |                         ^
+    5642|     if (haveDevices) {
+    5643|       expect(device).toContain('[object USBDevice]');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[88/396]⎯
+
+ FAIL   parallel  chromium.spec.ts:5662 > navigator.usb > returns a device when DevicePermissionHandler is defined
+ FAIL   parallel  chromium.spec.ts:5662 > navigator.usb > returns a device when DevicePermissionHandler is defined
+ FAIL   parallel  chromium.spec.ts:5662 > navigator.usb > returns a device when DevicePermissionHandler is defined
+ FAIL   parallel  chromium.spec.ts:5662 > navigator.usb > returns a device when DevicePermissionHandler is defined
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ chromium.spec.ts:5689:25
+    5687|     await w.webContents.executeJavaScript('navigator.usb.getDevices();…
+    5688|     const device = await requestDevices();
+    5689|     expect(selectFired).toBe(true);
+       |                         ^
+    5690|     if (haveDevices) {
+    5691|       expect(device).toContain('[object USBDevice]');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[89/396]⎯
+
+ FAIL   parallel  chromium.spec.ts:5735 > navigator.usb > does not crash when the requesting webContents is destroyed from the select-usb-device handler
+ FAIL   parallel  chromium.spec.ts:5735 > navigator.usb > does not crash when the requesting webContents is destroyed from the select-usb-device handler
+ FAIL   parallel  chromium.spec.ts:5735 > navigator.usb > does not crash when the requesting webContents is destroyed from the select-usb-device handler
+ FAIL   parallel  chromium.spec.ts:5735 > navigator.usb > does not crash when the requesting webContents is destroyed from the select-usb-device handler
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ chromium.spec.ts:5735:3
+    5733|   });
+    5734|
+    5735|   it('does not crash when the requesting webContents is destroyed from…
+       |   ^
+    5736|     const guest = (webContents as typeof ElectronInternal.WebContents)…
+    5737|       type: 'webview',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[90/396]⎯
+
+ FAIL   parallel  crash.spec.ts:85 > crash cases > the "node-options-parsing" case should not crash
+ FAIL   parallel  crash.spec.ts:85 > crash cases > the "node-options-parsing" case should not crash
+ FAIL   parallel  crash.spec.ts:85 > crash cases > the "node-options-parsing" case should not crash
+ FAIL   parallel  crash.spec.ts:85 > crash cases > the "node-options-parsing" case should not crash
+AssertionError: should have exited with code 0: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ runFixtureAndEnsureCleanExit crash.spec.ts:43:50
+     41|
+     42|   expect(signal, 'exit signal should be null').toBe(null);
+     43|   expect(code, 'should have exited with code 0').toBe(0);
+       |                                                  ^
+     44| };
+     45|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[91/396]⎯
+
+ FAIL   serial  api-power-monitor.spec.ts:62 > powerMonitor > when powerMonitor module is loaded with dbus mock > should call Inhibit to delay suspend once a listener is added
+ FAIL   serial  api-power-monitor.spec.ts:62 > powerMonitor > when powerMonitor module is loaded with dbus mock > should call Inhibit to delay suspend once a listener is added
+ FAIL   serial  api-power-monitor.spec.ts:62 > powerMonitor > when powerMonitor module is loaded with dbus mock > should call Inhibit to delay suspend once a listener is added
+ FAIL   serial  api-power-monitor.spec.ts:62 > powerMonitor > when powerMonitor module is loaded with dbus mock > should call Inhibit to delay suspend once a listener is added
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ api-power-monitor.spec.ts:82:25
+     80|           }
+     81|           expect(calls).toBeInstanceOf(Array);
+     82|           expect(calls).toHaveLength(1);
+       |                         ^
+     83|           expect(calls[0].slice(1)).toEqual([
+     84|             'Inhibit',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[92/396]⎯
+
+ FAIL   serial  api-power-monitor.spec.ts:111 > powerMonitor > when powerMonitor module is loaded with dbus mock > when PrepareForSleep(true) signal is sent by logind > when PrepareForSleep(false) signal is sent by logind > should have called Inhibit again
+ FAIL   serial  api-power-monitor.spec.ts:111 > powerMonitor > when powerMonitor module is loaded with dbus mock > when PrepareForSleep(true) signal is sent by logind > when PrepareForSleep(false) signal is sent by logind > should have called Inhibit again
+ FAIL   serial  api-power-monitor.spec.ts:111 > powerMonitor > when powerMonitor module is loaded with dbus mock > when PrepareForSleep(true) signal is sent by logind > when PrepareForSleep(false) signal is sent by logind > should have called Inhibit again
+ FAIL   serial  api-power-monitor.spec.ts:111 > powerMonitor > when powerMonitor module is loaded with dbus mock > when PrepareForSleep(true) signal is sent by logind > when PrepareForSleep(false) signal is sent by logind > should have called Inhibit again
+AssertionError: expected [] to have a length of 2 but got +0
+
+- Expected
++ Received
+
+- 2
++ 0
+
+ ❯ api-power-monitor.spec.ts:114:27
+    112|             const calls = await getCalls();
+    113|             expect(calls).toBeInstanceOf(Array);
+    114|             expect(calls).toHaveLength(2);
+       |                           ^
+    115|             expect(calls[1].slice(1)).toEqual([
+    116|               'Inhibit',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[93/396]⎯
+
+ FAIL   serial  chromium.spec.ts:1554 > chromium features > File System API, > allows permission when trying to create a writable file handle
+ FAIL   serial  chromium.spec.ts:1554 > chromium features > File System API, > allows permission when trying to create a writable file handle
+ FAIL   serial  chromium.spec.ts:1554 > chromium features > File System API, > allows permission when trying to create a writable file handle
+ FAIL   serial  chromium.spec.ts:1554 > chromium features > File System API, > allows permission when trying to create a writable file handle
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ chromium.spec.ts:1598:22
+    1596|         true
+    1597|       );
+    1598|       expect(result).toBe(true);
+       |                      ^
+    1599|       for (const details of permissionRequests) {
+    1600|         expect(details).toEqual({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[94/396]⎯
+
+ FAIL   serial  chromium.spec.ts:1962 > chromium features > File System Access permission scope > asks about a restricted path once per requester, with that requester's identity
+ FAIL   serial  chromium.spec.ts:1962 > chromium features > File System Access permission scope > asks about a restricted path once per requester, with that requester's identity
+ FAIL   serial  chromium.spec.ts:1962 > chromium features > File System Access permission scope > asks about a restricted path once per requester, with that requester's identity
+ FAIL   serial  chromium.spec.ts:1962 > chromium features > File System Access permission scope > asks about a restricted path once per requester, with that requester's identity
+Error: waitUntil timed out after 10000ms
+ ❯ lib/spec-helpers.ts:288:13
+    286|
+    287|     if (timedOut) {
+    288|       throw new Error(`waitUntil timed out after ${timeout}ms`);
+       |             ^
+    289|     }
+    290|   })();
+ ❯ chromium.spec.ts:1975:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[95/396]⎯
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 2 unhandled errors during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯⎯⎯⎯ Test Run Error ⎯⎯⎯⎯⎯⎯⎯
+TypeError: Cannot read properties of undefined (reading 'beforeAll')
+ ❯ ElectronSpecRunner.onBeforeRunSuite vitest/runner.ts:75:33
+     73|       prepared.add(suite);
+     74|       const hooks = TestRunner.getSuiteHooks(suite);
+     75|       for (const list of [hooks.beforeAll, hooks.beforeEach, hooks.aft…
+       |                                 ^
+     76|         list.splice(0, list.length, ...list.map(fromFreshMacrotask));
+     77|       }
+ ❯ runSuite node_modules/vitest/dist/chunks/run.C5UmxDPh.js:4007:33
+ ❯ node_modules/vitest/dist/chunks/run.C5UmxDPh.js:4123:12
+ ❯ Traces.$ node_modules/vitest/dist/traces.js:143:27
+ ❯ ElectronSpecRunner.trace node_modules/vitest/dist/chunks/index.m3L2HgmY.js:8551:21
+ ❯ runFiles node_modules/vitest/dist/chunks/run.C5UmxDPh.js:4120:16
+ ❯ startTests node_modules/vitest/dist/chunks/run.C5UmxDPh.js:4159:9
+ ❯ process.processTicksAndRejections ../../node:internal/process/task_queues:104:5
+ ❯ node_modules/vitest/dist/chunks/base.Cc3oda2V.js:90:6
+ ❯ run node_modules/vitest/dist/chunks/base.Cc3oda2V.js:81:3
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker electron emitted error.
+ ❯ EventEmitter.onTaskError node_modules/vitest/dist/chunks/index.DzobfTyw.js:11460:21
+ ❯ EventEmitter.emit ../../node:events:514:28
+ ❯ ChildProcess.emitUnexpectedExit node_modules/vitest/dist/chunks/index.DzobfTyw.js:10937:22
+ ❯ ChildProcess.emit ../../node:events:526:24
+ ❯ Process.ChildProcess._handle.onexit ../../node:internal/child_process:324:12
+
+Caused by: Error: Worker exited unexpectedly with signal SIGILL during started state while running test file /usr/obj/ports/electron-43.8.10/src/electron/spec/extensions.spec.ts
+ ❯ ChildProcess.emitUnexpectedExit node_modules/vitest/dist/chunks/index.DzobfTyw.js:10935:33
+ ❯ ChildProcess.emit ../../node:events:526:24
+ ❯ Process.ChildProcess._handle.onexit ../../node:internal/child_process:324:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  19 failed | 62 passed | 30 skipped (112)
+      Tests  96 failed | 3398 passed | 2 expected fail | 2649 skipped | 2 todo (6263)
+     Errors  2 errors
+   Start at  07:29:35
+   Duration  7596.45s (tests 100%)
+
+Traceback (most recent call last):
+  File "/usr/obj/ports/electron-43.8.10/src/electron/script/dbus_mock.py", line 38, in <module>
+    subprocess.check_call(sys.argv[1:])
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/subprocess.py", line 420, in check_call
+    raise CalledProcessError(retcode, cmd)
+subprocess.CalledProcessError: Command '['/usr/local/bin/node', '/usr/obj/ports/electron-43.8.10/src/electron/spec/node_modules/vitest/vitest.mjs', 'run', '--config', '/usr/obj/ports/electron-43.8.10/src/electron/spec/vitest.config.ts']' returned non-zero exit status 1.
+✗ Electron tests failed with code 1.
+*** Error 1 in . (Makefile:560 'do-test')
+*** Error 2 in . (/usr/ports/infrastructure/mk/bsd.port.mk:3117 '/usr/obj/ports/electron-43.8.10/.test_done': @cd /usr/ports/mystuff/www/ele...)
+*** Error 2 in /usr/ports/mystuff/www/electron (/usr/ports/infrastructure/mk/bsd.port.mk:2723 'test': @lock=electron-43.8.10p0;  export _LOC...)
+/usr/ports/mystuff/www/electron $
